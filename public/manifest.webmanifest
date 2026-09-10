@@ -1,0 +1,23 @@
+{
+  "id": "/",
+  "name": "Bass Guitar · Complete Reference",
+  "short_name": "Bass Reference",
+  "description": "Four-string bass reference, fretboard study and practice companion.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f2f4f6",
+  "theme_color": "#1d2733",
+  "lang": "en",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Fretboard", "url": "/fretboard" },
+    { "name": "Practice programs", "url": "/programs" },
+    { "name": "Quick improvisation", "url": "/improvisation" }
+  ]
+}

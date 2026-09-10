@@ -1,0 +1,5 @@
+node_modules
+dist
+bass.tex
+*.pdf
+src/data/book.json

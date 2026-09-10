@@ -1,0 +1,3955 @@
+{
+  "scales": [
+    {
+      "id": "major",
+      "name": "Major",
+      "degreeLabels": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "stepPattern": [
+        "W",
+        "W",
+        "H",
+        "W",
+        "W",
+        "W",
+        "H"
+      ],
+      "signature": "Natural 3 and natural 7",
+      "applications": "Major keys; major and major-7 chords",
+      "description": "Stable, bright, resolved",
+      "comparison": "Reference scale for all interval formulas.",
+      "fingering": [
+        {
+          "string": "A",
+          "fret": 5,
+          "degree": "1",
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "degree": "2",
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 9,
+          "degree": "3",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "degree": "4",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "degree": "5",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 9,
+          "degree": "6",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 6,
+          "degree": "7",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "degree": "1",
+          "duration": "q"
+        }
+      ]
+    },
+    {
+      "id": "natural-minor",
+      "name": "Natural minor",
+      "degreeLabels": [
+        "1",
+        "2",
+        "b3",
+        "4",
+        "5",
+        "b6",
+        "b7"
+      ],
+      "stepPattern": [
+        "W",
+        "H",
+        "W",
+        "W",
+        "H",
+        "W",
+        "W"
+      ],
+      "signature": "b3, b6, b7",
+      "applications": "Minor keys; minor and minor-7 chords when the harmony contains b6",
+      "description": "Dark, settled minor sound",
+      "comparison": "Relative minor of F major; parallel minor of D major.",
+      "fingering": [
+        {
+          "string": "A",
+          "fret": 5,
+          "degree": "1",
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "degree": "2",
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "degree": "b3",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "degree": "4",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "degree": "5",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 8,
+          "degree": "b6",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "degree": "b7",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "degree": "1",
+          "duration": "q"
+        }
+      ]
+    },
+    {
+      "id": "dorian",
+      "name": "Dorian",
+      "degreeLabels": [
+        "1",
+        "2",
+        "b3",
+        "4",
+        "5",
+        "6",
+        "b7"
+      ],
+      "stepPattern": [
+        "W",
+        "H",
+        "W",
+        "W",
+        "W",
+        "H",
+        "W"
+      ],
+      "signature": "Natural 6 over a minor chord",
+      "applications": "Minor-7 grooves, funk, modal jazz, Latin harmony",
+      "description": "Minor with a brighter, more open sixth",
+      "comparison": "Natural minor with b6 raised to 6.",
+      "fingering": [
+        {
+          "string": "A",
+          "fret": 5,
+          "degree": "1",
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "degree": "2",
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "degree": "b3",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "degree": "4",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "degree": "5",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 9,
+          "degree": "6",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "degree": "b7",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "degree": "1",
+          "duration": "q"
+        }
+      ]
+    },
+    {
+      "id": "phrygian",
+      "name": "Phrygian",
+      "degreeLabels": [
+        "1",
+        "b2",
+        "b3",
+        "4",
+        "5",
+        "b6",
+        "b7"
+      ],
+      "stepPattern": [
+        "H",
+        "W",
+        "W",
+        "W",
+        "H",
+        "W",
+        "W"
+      ],
+      "signature": "b2",
+      "applications": "Minor chords with a strong lowered-second colour; Spanish and metal contexts",
+      "description": "Dark and compressed around the root",
+      "comparison": "Natural minor with 2 lowered to b2.",
+      "fingering": [
+        {
+          "string": "A",
+          "fret": 5,
+          "degree": "1",
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 6,
+          "degree": "b2",
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "degree": "b3",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "degree": "4",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "degree": "5",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 8,
+          "degree": "b6",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "degree": "b7",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "degree": "1",
+          "duration": "q"
+        }
+      ]
+    },
+    {
+      "id": "lydian",
+      "name": "Lydian",
+      "degreeLabels": [
+        "1",
+        "2",
+        "3",
+        "#4",
+        "5",
+        "6",
+        "7"
+      ],
+      "stepPattern": [
+        "W",
+        "W",
+        "W",
+        "H",
+        "W",
+        "W",
+        "H"
+      ],
+      "signature": "#4",
+      "applications": "Major chords with #11; sustained major harmony",
+      "description": "Bright, floating, less final than Ionian",
+      "comparison": "Major scale with 4 raised to #4.",
+      "fingering": [
+        {
+          "string": "A",
+          "fret": 5,
+          "degree": "1",
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "degree": "2",
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 9,
+          "degree": "3",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 6,
+          "degree": "#4",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "degree": "5",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 9,
+          "degree": "6",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 6,
+          "degree": "7",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "degree": "1",
+          "duration": "q"
+        }
+      ]
+    },
+    {
+      "id": "mixolydian",
+      "name": "Mixolydian",
+      "degreeLabels": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "b7"
+      ],
+      "stepPattern": [
+        "W",
+        "W",
+        "H",
+        "W",
+        "W",
+        "H",
+        "W"
+      ],
+      "signature": "b7 over a major third",
+      "applications": "Dominant-7 chords, blues, funk, rock and salsa harmony",
+      "description": "Major with dominant tension",
+      "comparison": "Major scale with 7 lowered to b7.",
+      "fingering": [
+        {
+          "string": "A",
+          "fret": 5,
+          "degree": "1",
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "degree": "2",
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 9,
+          "degree": "3",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "degree": "4",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "degree": "5",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 9,
+          "degree": "6",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "degree": "b7",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "degree": "1",
+          "duration": "q"
+        }
+      ]
+    },
+    {
+      "id": "locrian",
+      "name": "Locrian",
+      "degreeLabels": [
+        "1",
+        "b2",
+        "b3",
+        "4",
+        "b5",
+        "b6",
+        "b7"
+      ],
+      "stepPattern": [
+        "H",
+        "W",
+        "W",
+        "H",
+        "W",
+        "W",
+        "W"
+      ],
+      "signature": "b2 and b5",
+      "applications": "Half-diminished / minor-7-flat-5 chords",
+      "description": "Unstable because the perfect fifth is absent",
+      "comparison": "Natural minor with 2 and 5 lowered.",
+      "fingering": [
+        {
+          "string": "A",
+          "fret": 5,
+          "degree": "1",
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 6,
+          "degree": "b2",
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "degree": "b3",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "degree": "4",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 6,
+          "degree": "b5",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 8,
+          "degree": "b6",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "degree": "b7",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "degree": "1",
+          "duration": "q"
+        }
+      ]
+    },
+    {
+      "id": "harmonic-minor",
+      "name": "Harmonic minor",
+      "degreeLabels": [
+        "1",
+        "2",
+        "b3",
+        "4",
+        "5",
+        "b6",
+        "7"
+      ],
+      "stepPattern": [
+        "W",
+        "H",
+        "W",
+        "W",
+        "H",
+        "A2",
+        "H"
+      ],
+      "signature": "Raised 7 and the augmented second from b6 to 7",
+      "applications": "Minor-key cadences; dominant V7 resolving to minor i",
+      "description": "Minor with strong leading-tone pull",
+      "comparison": "Natural minor with b7 raised to 7.",
+      "fingering": [
+        {
+          "string": "A",
+          "fret": 5,
+          "degree": "1",
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "degree": "2",
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "degree": "b3",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "degree": "4",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "degree": "5",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 8,
+          "degree": "b6",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 6,
+          "degree": "7",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "degree": "1",
+          "duration": "q"
+        }
+      ]
+    },
+    {
+      "id": "melodic-minor",
+      "name": "Melodic minor",
+      "degreeLabels": [
+        "1",
+        "2",
+        "b3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "stepPattern": [
+        "W",
+        "H",
+        "W",
+        "W",
+        "W",
+        "W",
+        "H"
+      ],
+      "signature": "b3 with natural 6 and 7",
+      "applications": "Minor-major-7 harmony and modern jazz sounds",
+      "description": "Minor tonic with a smooth upper half",
+      "comparison": "Diagram uses the ascending/jazz form; classical descent often uses natural minor.",
+      "fingering": [
+        {
+          "string": "A",
+          "fret": 5,
+          "degree": "1",
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "degree": "2",
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "degree": "b3",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "degree": "4",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "degree": "5",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 9,
+          "degree": "6",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 6,
+          "degree": "7",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "degree": "1",
+          "duration": "q"
+        }
+      ]
+    },
+    {
+      "id": "major-pentatonic",
+      "name": "Major pentatonic",
+      "degreeLabels": [
+        "1",
+        "2",
+        "3",
+        "5",
+        "6"
+      ],
+      "stepPattern": [
+        "W",
+        "W",
+        "m3",
+        "W",
+        "m3"
+      ],
+      "signature": "No 4 or 7",
+      "applications": "Major chords, melodic fills, country, soul and pop",
+      "description": "Open and consonant",
+      "comparison": "Major scale with 4 and 7 removed.",
+      "fingering": [
+        {
+          "string": "A",
+          "fret": 5,
+          "degree": "1",
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "degree": "2",
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 9,
+          "degree": "3",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "degree": "5",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 9,
+          "degree": "6",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "degree": "1",
+          "duration": "q"
+        }
+      ]
+    },
+    {
+      "id": "minor-pentatonic",
+      "name": "Minor pentatonic",
+      "degreeLabels": [
+        "1",
+        "b3",
+        "4",
+        "5",
+        "b7"
+      ],
+      "stepPattern": [
+        "m3",
+        "W",
+        "W",
+        "m3",
+        "W"
+      ],
+      "signature": "b3 and b7; no 2 or 6",
+      "applications": "Minor grooves, blues, rock and funk",
+      "description": "Strong, compact minor vocabulary",
+      "comparison": "Natural minor with 2 and b6 removed.",
+      "fingering": [
+        {
+          "string": "A",
+          "fret": 5,
+          "degree": "1",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 3,
+          "degree": "b3",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "degree": "4",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "degree": "5",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "degree": "b7",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "degree": "1",
+          "duration": "q"
+        }
+      ]
+    },
+    {
+      "id": "blues",
+      "name": "Blues",
+      "degreeLabels": [
+        "1",
+        "b3",
+        "4",
+        "b5",
+        "5",
+        "b7"
+      ],
+      "stepPattern": [
+        "m3",
+        "W",
+        "H",
+        "H",
+        "m3",
+        "W"
+      ],
+      "signature": "b5 passing between 4 and 5",
+      "applications": "Blues language and tension inside minor-pentatonic lines",
+      "description": "Minor pentatonic with an added chromatic pull",
+      "comparison": "Minor pentatonic plus b5.",
+      "fingering": [
+        {
+          "string": "A",
+          "fret": 5,
+          "degree": "1",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 3,
+          "degree": "b3",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "degree": "4",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 6,
+          "degree": "b5",
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "degree": "5",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "degree": "b7",
+          "duration": "q"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "degree": "1",
+          "duration": "q"
+        }
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "P1",
+      "number": 1,
+      "globalNumber": 1,
+      "category": "physical",
+      "title": "1-2-3-4 chromatic cell",
+      "startBpm": 50,
+      "targetBpm": 100,
+      "rhythm": "eighth notes",
+      "instructions": "Use fingers 1\u20132\u20133\u20134, then return 4\u20133\u20132\u20131. Repeat on every string.",
+      "target": "Equal attacks and minimum left-hand motion.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Technique",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "P2",
+      "number": 2,
+      "globalNumber": 2,
+      "category": "physical",
+      "title": "4-3-2-1 reverse cell",
+      "startBpm": 50,
+      "targetBpm": 100,
+      "rhythm": "eighth notes",
+      "instructions": "Begin with finger 4 and descend. Keep all unused fingers close to the string.",
+      "target": "The fourth finger initiates cleanly without collapsing the hand.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Technique",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "P3",
+      "number": 3,
+      "globalNumber": 3,
+      "category": "physical",
+      "title": "Permutation 1-3-2-4",
+      "startBpm": 45,
+      "targetBpm": 90,
+      "rhythm": "eighth notes",
+      "instructions": "Use fingering 1\u20133\u20132\u20134, then 4\u20132\u20133\u20131. Move the pattern to each string.",
+      "target": "No finger moves before its note is required.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Technique",
+        "Muting",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "P4",
+      "number": 4,
+      "globalNumber": 4,
+      "category": "physical",
+      "title": "Permutation 1-4-2-3",
+      "startBpm": 40,
+      "targetBpm": 85,
+      "rhythm": "eighth notes",
+      "instructions": "Use fingering 1\u20134\u20132\u20133 and reverse. Keep the thumb relaxed behind the neck.",
+      "target": "The 1-to-4 reach stays quiet and controlled.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Technique",
+        "Muting"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "P5",
+      "number": 5,
+      "globalNumber": 5,
+      "category": "physical",
+      "title": "Same-fret string ladder",
+      "startBpm": 50,
+      "targetBpm": 110,
+      "rhythm": "eighth notes",
+      "instructions": "Cross all four strings at fret 5 and return. Alternate plucking fingers continuously.",
+      "target": "No open-string ringing during either direction change.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Technique",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "E",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "E",
+          "fret": 5,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "P6",
+      "number": 6,
+      "globalNumber": 6,
+      "category": "physical",
+      "title": "Diagonal spider outward",
+      "startBpm": 40,
+      "targetBpm": 80,
+      "rhythm": "eighth notes",
+      "instructions": "Assign fingers 1\u20132\u20133\u20134 to the first diagonal, then 1\u20132\u20133\u20134 to the returning diagonal.",
+      "target": "Every string change is muted before the next note sounds.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Technique",
+        "Muting",
+        "Shifting",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "E",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "E",
+          "fret": 8,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "P7",
+      "number": 7,
+      "globalNumber": 7,
+      "category": "physical",
+      "title": "Diagonal spider inward",
+      "startBpm": 40,
+      "targetBpm": 80,
+      "rhythm": "eighth notes",
+      "instructions": "Reverse the diagonal direction from P6 while preserving finger assignments.",
+      "target": "The hand remains centered; the wrist does not twist between strings.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Technique",
+        "Shifting",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "E",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "E",
+          "fret": 5,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "P8",
+      "number": 8,
+      "globalNumber": 8,
+      "category": "physical",
+      "title": "String-skipping ladder",
+      "startBpm": 45,
+      "targetBpm": 95,
+      "rhythm": "eighth notes",
+      "instructions": "Skip one string on every move. Use movable-thumb or floating-thumb muting.",
+      "target": "Skipped strings remain completely silent.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Technique",
+        "Muting",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "E",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "E",
+          "fret": 6,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "P9",
+      "number": 9,
+      "globalNumber": 9,
+      "category": "physical",
+      "title": "Two-fret position shift",
+      "startBpm": 45,
+      "targetBpm": 90,
+      "rhythm": "eighth notes",
+      "instructions": "Play frets 5\u20138, then shift the entire hand to frets 7\u201310 without pausing.",
+      "target": "The shift lands exactly on fret 7 without an audible slide unless deliberately added.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Technique",
+        "Shifting",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 9,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 10,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "P10",
+      "number": 10,
+      "globalNumber": 10,
+      "category": "physical",
+      "title": "Whole-position string shift",
+      "startBpm": 45,
+      "targetBpm": 95,
+      "rhythm": "eighth notes",
+      "instructions": "Ascend across the strings at fret 5, shift to fret 7, and descend.",
+      "target": "The left hand shifts as one unit; right-hand alternation does not restart.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Technique",
+        "Shifting",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "E",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "E",
+          "fret": 7,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "P11",
+      "number": 11,
+      "globalNumber": 11,
+      "category": "physical",
+      "title": "Movable octave shapes",
+      "startBpm": 50,
+      "targetBpm": 100,
+      "rhythm": "eighth notes",
+      "instructions": "Play each low note followed by its octave two strings higher and two frets forward.",
+      "target": "Both notes of every octave pair match in pitch identity and volume.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Technique",
+        "Chord tones",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "E",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "E",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 9,
+          "duration": "8"
+        },
+        {
+          "string": "E",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 10,
+          "duration": "8"
+        },
+        {
+          "string": "E",
+          "fret": 10,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 12,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "P12",
+      "number": 12,
+      "globalNumber": 12,
+      "category": "physical",
+      "title": "Root-fifth-octave triangle",
+      "startBpm": 55,
+      "targetBpm": 110,
+      "rhythm": "eighth notes",
+      "instructions": "Cycle root\u2013fifth\u2013octave\u2013fifth. Move the shape to G and A after one minute each.",
+      "target": "String crossings sound connected without notes overlapping.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Technique",
+        "Chord tones",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "P13",
+      "number": 13,
+      "globalNumber": 13,
+      "category": "physical",
+      "title": "Minor-third and major-third control",
+      "startBpm": 50,
+      "targetBpm": 95,
+      "rhythm": "eighth notes",
+      "instructions": "Alternate the minor third and major third above D. Use fingers that keep the hand relaxed.",
+      "target": "The one-fret distinction is visually, physically and aurally clear.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Technique",
+        "Chord tones",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 3,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 4,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 3,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 4,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 3,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "P14",
+      "number": 14,
+      "globalNumber": 14,
+      "category": "physical",
+      "title": "One-fret diagonal crawl",
+      "startBpm": 40,
+      "targetBpm": 85,
+      "rhythm": "eighth notes",
+      "instructions": "Move one fret higher with each higher string, then reverse by one fret per string.",
+      "target": "Finger placement stays immediately behind each fret.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Technique",
+        "Shifting",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "E",
+          "fret": 4,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 4,
+          "duration": "8"
+        },
+        {
+          "string": "E",
+          "fret": 3,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "P15",
+      "number": 15,
+      "globalNumber": 15,
+      "category": "physical",
+      "title": "Three-notes-per-string coordination",
+      "startBpm": 50,
+      "targetBpm": 105,
+      "rhythm": "eighth notes",
+      "instructions": "Use the D-major fingering but treat it as a coordination drill. Reverse after the octave.",
+      "target": "String changes do not disturb the eighth-note pulse.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Technique",
+        "Rhythm",
+        "Chord tones",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 9,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 9,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "P16",
+      "number": 16,
+      "globalNumber": 16,
+      "category": "physical",
+      "title": "Repeated-note plucking alternation",
+      "startBpm": 60,
+      "targetBpm": 140,
+      "rhythm": "eighth notes",
+      "instructions": "Play one D repeatedly with strict index-middle alternation. Start the next repetition with the opposite finger.",
+      "target": "No change in tone, volume or timing between plucking fingers.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Technique",
+        "Rhythm"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "P17",
+      "number": 17,
+      "globalNumber": 17,
+      "category": "physical",
+      "title": "Two-string alternation",
+      "startBpm": 55,
+      "targetBpm": 125,
+      "rhythm": "eighth notes",
+      "instructions": "Alternate A and D strings while maintaining index-middle alternation.",
+      "target": "The lower string is muted immediately after each change.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Technique",
+        "Muting",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "P18",
+      "number": 18,
+      "globalNumber": 18,
+      "category": "physical",
+      "title": "Wide string-skip control",
+      "startBpm": 40,
+      "targetBpm": 90,
+      "rhythm": "eighth notes",
+      "instructions": "Alternate between E and G strings. Keep A and D muted throughout.",
+      "target": "The attack remains centered despite the two-string leap.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Technique",
+        "Muting",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "E",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "E",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "E",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "E",
+          "fret": 10,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 10,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "P19",
+      "number": 19,
+      "globalNumber": 19,
+      "category": "physical",
+      "title": "Hammer-on and pull-off cell",
+      "startBpm": 45,
+      "targetBpm": 90,
+      "rhythm": "eighth notes",
+      "instructions": "Pluck the first note of each four-note group; use hammer-ons and pull-offs for the remaining notes.",
+      "target": "Legato notes match the plucked note in volume and rhythmic placement.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Technique",
+        "Rhythm"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "P20",
+      "number": 20,
+      "globalNumber": 20,
+      "category": "physical",
+      "title": "Four-string endurance pedal",
+      "startBpm": 70,
+      "targetBpm": 140,
+      "rhythm": "eighth notes",
+      "instructions": "Play four repeated notes on each string without stopping. Reverse the string order on alternate repetitions.",
+      "target": "Maintain relaxed hands and consistent sound for the full five minutes.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Technique",
+        "Rhythm",
+        "Improvisation",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "E",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "E",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "E",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "E",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "M1",
+      "number": 1,
+      "globalNumber": 21,
+      "category": "musical",
+      "title": "D major scale",
+      "startBpm": 60,
+      "targetBpm": 120,
+      "rhythm": "eighth notes",
+      "instructions": "Play ascending, then reverse. Say either note names or degrees 1\u20132\u20133\u20134\u20135\u20136\u20137\u20138.",
+      "target": "Hear the half steps F-sharp\u2013G and C-sharp\u2013D.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Musical",
+        "Scale",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 9,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 9,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "M2",
+      "number": 2,
+      "globalNumber": 22,
+      "category": "musical",
+      "title": "D natural minor scale",
+      "startBpm": 55,
+      "targetBpm": 110,
+      "rhythm": "eighth notes",
+      "instructions": "Play ascending and descending. Compare F and B-flat with the major-scale F-sharp and B.",
+      "target": "The flat third, flat sixth and flat seventh sound intentional.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Musical",
+        "Scale",
+        "Chord tones",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "M3",
+      "number": 3,
+      "globalNumber": 23,
+      "category": "musical",
+      "title": "D major-pentatonic phrase",
+      "startBpm": 65,
+      "targetBpm": 125,
+      "rhythm": "eighth notes",
+      "instructions": "Loop the phrase over a D-major backing track. Change only the rhythm after the notes feel secure.",
+      "target": "Every note sounds stable against a D-major chord.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Musical",
+        "Rhythm",
+        "Scale",
+        "Chord tones",
+        "Improvisation"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 9,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 9,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 9,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "M4",
+      "number": 4,
+      "globalNumber": 24,
+      "category": "musical",
+      "title": "D minor-pentatonic phrase",
+      "startBpm": 60,
+      "targetBpm": 120,
+      "rhythm": "eighth notes",
+      "instructions": "Loop over Dm7 or a D-minor groove. End alternate repetitions on F, then D.",
+      "target": "The phrase resolves differently on the flat third and root.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Musical",
+        "Rhythm",
+        "Scale",
+        "Chord tones",
+        "Improvisation"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "M5",
+      "number": 5,
+      "globalNumber": 25,
+      "category": "musical",
+      "title": "D blues-scale phrase",
+      "startBpm": 55,
+      "targetBpm": 110,
+      "rhythm": "eighth notes",
+      "instructions": "Treat A-flat as a passing tension between G and A rather than a resting point.",
+      "target": "The blue note resolves immediately and does not obscure the chord.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Musical",
+        "Scale",
+        "Chord tones",
+        "Improvisation",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "M6",
+      "number": 6,
+      "globalNumber": 26,
+      "category": "musical",
+      "title": "D major triad",
+      "startBpm": 60,
+      "targetBpm": 115,
+      "rhythm": "eighth notes",
+      "instructions": "Sing or say 1\u20133\u20135\u20138 while playing. Move the same shape to G and A.",
+      "target": "The major third is audible as the defining chord tone.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Musical",
+        "Arpeggio",
+        "Chord tones"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 4,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 4,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "M7",
+      "number": 7,
+      "globalNumber": 27,
+      "category": "musical",
+      "title": "D minor triad",
+      "startBpm": 60,
+      "targetBpm": 115,
+      "rhythm": "eighth notes",
+      "instructions": "Say 1\u2013flat3\u20135\u20138. Alternate one repetition of M6 with one repetition of M7.",
+      "target": "The ear recognizes the one-fret major/minor change immediately.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Musical",
+        "Arpeggio",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 3,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 3,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "M8",
+      "number": 8,
+      "globalNumber": 28,
+      "category": "musical",
+      "title": "D dominant-seven arpeggio",
+      "startBpm": 55,
+      "targetBpm": 110,
+      "rhythm": "eighth notes",
+      "instructions": "Play over D7. Emphasize F-sharp and C, the notes that define dominant quality.",
+      "target": "The flat seventh sounds like controlled tension, not a wrong major seventh.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Musical",
+        "Arpeggio"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 4,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 4,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "M9",
+      "number": 9,
+      "globalNumber": 29,
+      "category": "musical",
+      "title": "D minor-seven arpeggio",
+      "startBpm": 55,
+      "targetBpm": 110,
+      "rhythm": "eighth notes",
+      "instructions": "Play over Dm7. Compare directly with M8.",
+      "target": "Flat third and flat seventh clearly establish minor-seven harmony.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Musical",
+        "Arpeggio",
+        "Chord tones"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 3,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 3,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "M10",
+      "number": 10,
+      "globalNumber": 30,
+      "category": "musical",
+      "title": "I-IV-V-I root-fifth line",
+      "startBpm": 70,
+      "targetBpm": 125,
+      "rhythm": "quarter notes",
+      "instructions": "Two notes per chord: D\u2013A, G\u2013D, A\u2013E, D\u2013A. Use a D-major I\u2013IV\u2013V\u2013I backing track.",
+      "target": "Every chord change is audible from the destination root.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Musical",
+        "Chord tones"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "q"
+        }
+      ]
+    },
+    {
+      "id": "M11",
+      "number": 11,
+      "globalNumber": 31,
+      "category": "musical",
+      "title": "I-vi-ii-V root-third targeting",
+      "startBpm": 60,
+      "targetBpm": 105,
+      "rhythm": "quarter notes",
+      "instructions": "Play D\u2013F-sharp, B\u2013D, E\u2013G, A\u2013C-sharp over D\u2013Bm\u2013Em\u2013A.",
+      "target": "The third reveals each chord quality while the line remains compact.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Musical",
+        "Chord tones"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 4,
+          "duration": "q"
+        },
+        {
+          "string": "E",
+          "fret": 7,
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "q"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "q"
+        },
+        {
+          "string": "E",
+          "fret": 5,
+          "duration": "q"
+        },
+        {
+          "string": "A",
+          "fret": 4,
+          "duration": "q"
+        }
+      ]
+    },
+    {
+      "id": "M12",
+      "number": 12,
+      "globalNumber": 32,
+      "category": "musical",
+      "title": "ii-V-I seventh-chord chain in C",
+      "startBpm": 55,
+      "targetBpm": 100,
+      "rhythm": "eighth notes",
+      "instructions": "Arpeggiate Dm7, G7 and Cmaj7. Listen for F remaining common between Dm7 and G7, then resolving to E over Cmaj7.",
+      "target": "Chord tones track the harmony without relying on a single scale.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Musical",
+        "Scale",
+        "Arpeggio",
+        "Chord tones",
+        "Fretboard"
+      ],
+      "baseRoot": "C",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 3,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 9,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 10,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 3,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 9,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 3,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "M13",
+      "number": 13,
+      "globalNumber": 33,
+      "category": "musical",
+      "title": "D-major scale in thirds",
+      "startBpm": 45,
+      "targetBpm": 90,
+      "rhythm": "eighth notes",
+      "instructions": "Play adjacent diatonic thirds: 1\u20133, 2\u20134, 3\u20135 and onward.",
+      "target": "See the scale as relationships rather than a straight run.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Musical",
+        "Scale",
+        "Chord tones",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 9,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 9,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 9,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 9,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 9,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 9,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "M14",
+      "number": 14,
+      "globalNumber": 34,
+      "category": "musical",
+      "title": "Chromatic approaches from below",
+      "startBpm": 55,
+      "targetBpm": 105,
+      "rhythm": "eighth notes",
+      "instructions": "Approach D, G, A and high D from one fret below. Place each target on a strong beat.",
+      "target": "The chromatic note points clearly toward the following chord tone.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Musical",
+        "Chord tones",
+        "Improvisation",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 4,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 4,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "M15",
+      "number": 15,
+      "globalNumber": 35,
+      "category": "musical",
+      "title": "Chromatic approaches from above",
+      "startBpm": 55,
+      "targetBpm": 105,
+      "rhythm": "eighth notes",
+      "instructions": "Approach each target from one fret above. Keep the approach short and the target longer when improvising.",
+      "target": "Tension consistently resolves downward by a semitone.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Musical",
+        "Improvisation",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "M16",
+      "number": 16,
+      "globalNumber": 36,
+      "category": "musical",
+      "title": "Two-sided enclosures",
+      "startBpm": 45,
+      "targetBpm": 90,
+      "rhythm": "eighth notes",
+      "instructions": "Surround each target with one scale step above and one chromatic step below: E\u2013C-sharp\u2013D, A\u2013F-sharp\u2013G, and so on.",
+      "target": "The final target sounds metrically stronger than both enclosure notes.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Musical",
+        "Scale",
+        "Improvisation",
+        "Fretboard"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 4,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 4,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 9,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 9,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "M17",
+      "number": 17,
+      "globalNumber": 37,
+      "category": "musical",
+      "title": "D pedal-tone groove",
+      "startBpm": 70,
+      "targetBpm": 125,
+      "rhythm": "eighth notes",
+      "instructions": "Return repeatedly to D while changing the upper note. Accent beats 1 and 3, then move the accents to 2 and 4.",
+      "target": "The pedal root anchors the phrase while upper tones create motion.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Musical",
+        "Rhythm",
+        "Improvisation"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 4,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 6,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "M18",
+      "number": 18,
+      "globalNumber": 38,
+      "category": "musical",
+      "title": "Syncopated D-minor groove",
+      "startBpm": 65,
+      "targetBpm": 110,
+      "rhythm": "eighth-note grid",
+      "instructions": "Count 1-and-2-and-3-and-4-and. Respect every written rest and let silence shape the line.",
+      "target": "Entrances remain accurate after rests; notes do not bleed into silence.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Musical",
+        "Muting",
+        "Rhythm"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 8,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "M19",
+      "number": 19,
+      "globalNumber": 39,
+      "category": "musical",
+      "title": "Basic Latin two-hit cell",
+      "startBpm": 70,
+      "targetBpm": 110,
+      "rhythm": "eighth-note grid",
+      "instructions": "Over Dm7 then G7, play the fifth on 2-and and the root on beat 4. Do not add notes on beats 1 or 3.",
+      "target": "The offbeat arrives without rushing and beat 4 points into the next measure.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Musical",
+        "Rhythm",
+        "Chord tones",
+        "Latin / Salsa"
+      ],
+      "baseRoot": "D",
+      "events": [
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        }
+      ]
+    },
+    {
+      "id": "M20",
+      "number": 20,
+      "globalNumber": 40,
+      "category": "musical",
+      "title": "Latin ii-V-I-VI turnaround",
+      "startBpm": 70,
+      "targetBpm": 105,
+      "rhythm": "eighth-note grid",
+      "instructions": "Four bars: Dm7\u2013G7\u2013Cmaj7\u2013A7. In each bar place the fifth on 2-and and the root on beat 4.",
+      "target": "The beat-4 root anticipates and propels the next chord while the clave remains undisturbed.",
+      "progression": "Begin at the lower tempo. Add 4 bpm after three clean repetitions; reduce by 6\u20138 bpm when timing or muting breaks down.",
+      "tags": [
+        "Musical",
+        "Rhythm",
+        "Chord tones",
+        "Latin / Salsa"
+      ],
+      "baseRoot": "C",
+      "events": [
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "string": "G",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "string": "D",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 3,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "string": "A",
+          "fret": 7,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        },
+        {
+          "string": "E",
+          "fret": 5,
+          "duration": "8"
+        },
+        {
+          "rest": true,
+          "duration": "8"
+        }
+      ]
+    }
+  ],
+  "programs": [
+    {
+      "id": "clean-restart",
+      "number": 1,
+      "name": "Clean restart",
+      "blocks": [
+        {
+          "exerciseId": "P1",
+          "purpose": "Basic left-hand coordination"
+        },
+        {
+          "exerciseId": "P5",
+          "purpose": "String crossing and muting"
+        },
+        {
+          "exerciseId": "P16",
+          "purpose": "Right-hand alternation"
+        },
+        {
+          "exerciseId": "M1",
+          "purpose": "Major-scale map"
+        },
+        {
+          "exerciseId": "M6",
+          "purpose": "Major chord tones"
+        },
+        {
+          "exerciseId": "M10",
+          "purpose": "Simple progression"
+        }
+      ]
+    },
+    {
+      "id": "fretting-hand-control",
+      "number": 2,
+      "name": "Fretting-hand control",
+      "blocks": [
+        {
+          "exerciseId": "P3",
+          "purpose": "Permutation"
+        },
+        {
+          "exerciseId": "P4",
+          "purpose": "Wide finger order"
+        },
+        {
+          "exerciseId": "P9",
+          "purpose": "Position shift"
+        },
+        {
+          "exerciseId": "P13",
+          "purpose": "Third control"
+        },
+        {
+          "exerciseId": "M1",
+          "purpose": "Scale application"
+        },
+        {
+          "exerciseId": "M14",
+          "purpose": "Target-note approach"
+        }
+      ]
+    },
+    {
+      "id": "right-hand-muting",
+      "number": 3,
+      "name": "Right hand and muting",
+      "blocks": [
+        {
+          "exerciseId": "P5",
+          "purpose": "Four-string crossing"
+        },
+        {
+          "exerciseId": "P8",
+          "purpose": "String skips"
+        },
+        {
+          "exerciseId": "P16",
+          "purpose": "Alternating fingers"
+        },
+        {
+          "exerciseId": "P17",
+          "purpose": "Two-string alternation"
+        },
+        {
+          "exerciseId": "P20",
+          "purpose": "Endurance"
+        },
+        {
+          "exerciseId": "M18",
+          "purpose": "Rests and releases"
+        }
+      ]
+    },
+    {
+      "id": "shifting-register",
+      "number": 4,
+      "name": "Shifting and register",
+      "blocks": [
+        {
+          "exerciseId": "P9",
+          "purpose": "Two-fret shift"
+        },
+        {
+          "exerciseId": "P10",
+          "purpose": "Whole-position shift"
+        },
+        {
+          "exerciseId": "P11",
+          "purpose": "Octave movement"
+        },
+        {
+          "exerciseId": "P14",
+          "purpose": "Diagonal position control"
+        },
+        {
+          "exerciseId": "M13",
+          "purpose": "Scale in thirds"
+        },
+        {
+          "exerciseId": "M17",
+          "purpose": "Register around a pedal"
+        }
+      ]
+    },
+    {
+      "id": "major-foundation",
+      "number": 5,
+      "name": "Major-key foundation",
+      "blocks": [
+        {
+          "exerciseId": "P15",
+          "purpose": "Major fingering coordination"
+        },
+        {
+          "exerciseId": "M1",
+          "purpose": "D major"
+        },
+        {
+          "exerciseId": "M3",
+          "purpose": "Major pentatonic"
+        },
+        {
+          "exerciseId": "M6",
+          "purpose": "Major triad"
+        },
+        {
+          "exerciseId": "M10",
+          "purpose": "I\u2013IV\u2013V\u2013I"
+        },
+        {
+          "exerciseId": "M11",
+          "purpose": "I\u2013vi\u2013ii\u2013V"
+        }
+      ]
+    },
+    {
+      "id": "minor-foundation",
+      "number": 6,
+      "name": "Minor-key foundation",
+      "blocks": [
+        {
+          "exerciseId": "P13",
+          "purpose": "Minor/major third distinction"
+        },
+        {
+          "exerciseId": "M2",
+          "purpose": "Natural minor"
+        },
+        {
+          "exerciseId": "M4",
+          "purpose": "Minor pentatonic"
+        },
+        {
+          "exerciseId": "M7",
+          "purpose": "Minor triad"
+        },
+        {
+          "exerciseId": "M9",
+          "purpose": "Minor-seven arpeggio"
+        },
+        {
+          "exerciseId": "M18",
+          "purpose": "Minor groove"
+        }
+      ]
+    },
+    {
+      "id": "chord-tones-voice-leading",
+      "number": 7,
+      "name": "Chord tones and voice leading",
+      "blocks": [
+        {
+          "exerciseId": "P12",
+          "purpose": "Root/fifth/octave"
+        },
+        {
+          "exerciseId": "M6",
+          "purpose": "Major triad"
+        },
+        {
+          "exerciseId": "M7",
+          "purpose": "Minor triad"
+        },
+        {
+          "exerciseId": "M8",
+          "purpose": "Dominant seven"
+        },
+        {
+          "exerciseId": "M9",
+          "purpose": "Minor seven"
+        },
+        {
+          "exerciseId": "M12",
+          "purpose": "ii\u2013V\u2013I chain"
+        }
+      ]
+    },
+    {
+      "id": "groove-syncopation",
+      "number": 8,
+      "name": "Groove and syncopation",
+      "blocks": [
+        {
+          "exerciseId": "P16",
+          "purpose": "Even pulse"
+        },
+        {
+          "exerciseId": "P17",
+          "purpose": "String-change pulse"
+        },
+        {
+          "exerciseId": "M17",
+          "purpose": "Pedal groove"
+        },
+        {
+          "exerciseId": "M18",
+          "purpose": "Syncopation and rests"
+        },
+        {
+          "exerciseId": "M19",
+          "purpose": "Latin two-hit cell"
+        },
+        {
+          "exerciseId": "M20",
+          "purpose": "Latin turnaround"
+        }
+      ]
+    },
+    {
+      "id": "salsa-latin",
+      "number": 9,
+      "name": "Salsa and latin bass",
+      "blocks": [
+        {
+          "exerciseId": "P5",
+          "purpose": "Clean string crossings"
+        },
+        {
+          "exerciseId": "P8",
+          "purpose": "Muted string skips"
+        },
+        {
+          "exerciseId": "M8",
+          "purpose": "Dominant chord tones"
+        },
+        {
+          "exerciseId": "M9",
+          "purpose": "Minor-seven chord tones"
+        },
+        {
+          "exerciseId": "M19",
+          "purpose": "Two-hit tumbao cell"
+        },
+        {
+          "exerciseId": "M20",
+          "purpose": "ii\u2013V\u2013I\u2013VI turnaround"
+        }
+      ]
+    },
+    {
+      "id": "improvisation-preparation",
+      "number": 10,
+      "name": "Improvisation preparation",
+      "blocks": [
+        {
+          "exerciseId": "P15",
+          "purpose": "One-position note map"
+        },
+        {
+          "exerciseId": "M3",
+          "purpose": "Major-pentatonic vocabulary"
+        },
+        {
+          "exerciseId": "M4",
+          "purpose": "Minor-pentatonic vocabulary"
+        },
+        {
+          "exerciseId": "M14",
+          "purpose": "Approach from below"
+        },
+        {
+          "exerciseId": "M16",
+          "purpose": "Enclosures"
+        },
+        {
+          "exerciseId": "song",
+          "purpose": "Use the improvisation workflow on one song"
+        }
+      ]
+    }
+  ]
+}
