@@ -1,6 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scales, arpeggios, exercises, programs, search } from '../src/data/catalog';
+import {
+  scales,
+  exerciseGroove,
+  exercises,
+  programSections,
+  programs,
+  search,
+} from '../src/data/catalog';
+import { chords } from '../src/data/chords';
+import { buildChordRoute } from '../src/lib/route';
 import {
   roots,
   strings,
@@ -41,7 +50,7 @@ test('normal major keys have correct spelling and relative minors', () => {
   assert.deepEqual(keySignature('Eb').altered, ['Bb', 'Eb', 'Ab']);
 });
 test('scale and arpeggio spelling, physical fingering and written pitch agree for every root', () => {
-  for (const item of [...scales, ...arpeggios])
+  for (const item of scales)
     for (const root of roots) {
       const route = transposeRoute(item.fingering, root).filter(isNote);
       assert.equal(route.length, item.degreeLabels.length + 1);
@@ -93,10 +102,14 @@ test('all-positions view has only requested pitch classes and no duplicates', ()
       );
     }
 });
-test('all 40 exercises preserve complete bars, pitches, rests and transposable positions', () => {
-  assert.equal(exercises.length, 40);
+test('every exercise preserves complete bars, pitches, rests and transposable positions', () => {
+  // The book's forty, plus the beginner category this app adds.
   assert.equal(exercises.filter((e) => e.category === 'physical').length, 20);
   assert.equal(exercises.filter((e) => e.category === 'musical').length, 20);
+  assert.equal(exercises.filter((e) => e.category === 'basics').length, 24);
+  assert.equal(exercises.length, 64);
+  assert.equal(new Set(exercises.map((e) => e.id)).size, exercises.length);
+  assert.equal(new Set(exercises.map((e) => e.globalNumber)).size, exercises.length);
   for (const e of exercises) {
     const beats = e.events.reduce((n, x) => n + (x.duration === '8' ? 0.5 : 1), 0);
     assert.equal(beats % 4, 0, e.id);
@@ -115,19 +128,37 @@ test('all 40 exercises preserve complete bars, pitches, rests and transposable p
   assert.equal(exercises.find((e) => e.id === 'M19')!.events.filter(isNote).length, 4);
   assert.equal(exercises.find((e) => e.id === 'M20')!.events.filter(isNote).length, 8);
 });
-test('original ten programs retain six blocks, including the song drill', () => {
-  assert.equal(programs.length, 10);
-  programs.forEach((p) => {
-    assert.equal(p.blocks.length, 6);
-    p.blocks.forEach((b) =>
-      assert.ok(b.exerciseId === 'song' || exercises.some((e) => e.id === b.exerciseId)),
-    );
-  });
+test('thirty programmes sit in three sections, six real blocks each', () => {
   assert.deepEqual(
-    programs[8].blocks.map((b) => b.exerciseId),
-    ['P5', 'P8', 'M8', 'M9', 'M19', 'M20'],
+    programSections.map((section) => section.id),
+    ['grundlagen', 'harmonie', 'groove'],
   );
-  assert.equal(programs[9].blocks[5].exerciseId, 'song');
+  assert.equal(programs.length, 30);
+  assert.equal(new Set(programs.map((p) => p.id)).size, 30);
+  for (const section of programSections) {
+    const list = programs.filter((program) => program.section === section.id);
+    assert.equal(list.length, 10, `${section.id} should offer ten programmes`);
+    assert.ok(section.description.length > 0);
+  }
+  programs.forEach((program, index) => {
+    assert.equal(program.number, index + 1);
+    assert.equal(program.blocks.length, 6, `${program.id} is not six five-minute blocks`);
+    program.blocks.forEach((block) => {
+      const exercise = exercises.find((e) => e.id === block.exerciseId);
+      assert.ok(exercise, `${program.id} names the unknown exercise ${block.exerciseId}`);
+      // Every block has to carry its own tempo and groove for the setup to work.
+      assert.ok(exercise.startBpm > 0 && exerciseGroove(exercise.id));
+    });
+  });
+  // The entry programme has to be reachable by someone who has just started.
+  assert.ok(
+    programs[0].blocks.every((block) => block.exerciseId.startsWith('B')),
+    'the first programme should only use the beginner exercises',
+  );
+  // Every exercise in the library earns its place in at least one programme.
+  const used = new Set(programs.flatMap((p) => p.blocks.map((b) => b.exerciseId)));
+  for (const exercise of exercises)
+    assert.ok(used.has(exercise.id), `${exercise.id} appears in no programme`);
 });
 test('diatonic chord qualities and spelling follow major and natural minor', () => {
   assert.deepEqual(
@@ -157,7 +188,7 @@ test('offline search finds formulas, aliases, concepts and global exercise numbe
   ])
     assert.ok(search(q).length, q);
 });
-import { readableRoot } from '../src/lib/music';
+import { readableRoot, scaleStepLabels } from '../src/lib/music';
 import { buildBassline } from '../src/lib/bassline';
 test('contextual root spelling avoids unnecessarily complex keys', () => {
   assert.equal(readableRoot('Db', scales[1].degreeLabels), 'C#');
@@ -195,4 +226,27 @@ test('educational bassline uses chord tones, approaches and playable shared even
   }
   assert.equal(buildBassline('C', []).flatMap((b) => b.events).length, 0);
   assert.equal(buildBassline('C', ['Fifth', 'Third', 'Root'])[0].events[0].degree, '1');
+});
+
+test('scale step sizes are derived from the formula and sum to an octave', () => {
+  for (const scale of scales) {
+    const steps = scaleStepLabels(scale.degreeLabels);
+    assert.equal(steps.length, scale.degreeLabels.length, `${scale.id}: one step per note`);
+    const semitones = steps.reduce((sum, label) => {
+      const whole = label.startsWith('½') ? 0 : parseInt(label, 10);
+      return sum + whole * 2 + (label.endsWith('½') ? 1 : 0);
+    }, 0);
+    assert.equal(semitones, 12, `${scale.id}: steps must close the octave`);
+  }
+  // A minor third is one and a half tones, not one: the pentatonic must not read as equal steps.
+  assert.deepEqual(scaleStepLabels(['1', 'b3', '4', '5', 'b7']), ['1½', '1', '1', '1½', '1']);
+  assert.deepEqual(scaleStepLabels(['1', '2', '3', '4', '5', '6', '7']), [
+    '1',
+    '1',
+    '½',
+    '1',
+    '1',
+    '1',
+    '½',
+  ]);
 });

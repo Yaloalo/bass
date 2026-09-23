@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useStore } from '../lib/store';
-import { roots, pretty } from '../lib/music';
+import { roots } from '../lib/music';
+import { germanNoteName, textDe } from '../lib/i18n';
 export function Icon({ name, size = 18 }: { name: string; size?: number }) {
   const paths: Record<string, ReactNode> = {
     search: (
@@ -15,7 +16,6 @@ export function Icon({ name, size = 18 }: { name: string; size?: number }) {
     chevron: <path d="m8 10 4 4 4-4" />,
     play: <path d="m8 5 11 7-11 7Z" />,
     pause: <path d="M8 5v14M16 5v14" />,
-    star: <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z" />,
     menu: <path d="M4 6h16M4 12h16M4 18h16" />,
     close: <path d="m6 6 12 12M18 6 6 18" />,
     clock: (
@@ -55,6 +55,8 @@ export function Icon({ name, size = 18 }: { name: string; size?: number }) {
       </>
     ),
     layers: <path d="m12 3 10 5-10 5L2 8Zm-9 10 9 5 9-5M3 18l9 5 9-5" />,
+    // Round caps turn these zero-length segments into the usual six-dot grip.
+    grip: <path d="M9 6h.01M9 12h.01M9 18h.01M15 6h.01M15 12h.01M15 18h.01" strokeWidth="2.6" />,
   };
   return (
     <svg
@@ -76,11 +78,11 @@ export function RootSelector() {
   const { root, setRoot } = useStore();
   return (
     <label className="root-control">
-      <span>ROOT</span>
-      <select aria-label="Global root" value={root} onChange={(e) => setRoot(e.target.value)}>
+      <span>GRUNDTON</span>
+      <select aria-label="Globaler Grundton" value={root} onChange={(e) => setRoot(e.target.value)}>
         {roots.map((r) => (
           <option key={r} value={r}>
-            {pretty(r)}
+            {germanNoteName(r)}
           </option>
         ))}
       </select>
@@ -109,32 +111,40 @@ export function PageHeading({
     </header>
   );
 }
-export function ReferenceActions({ title }: { title: string }) {
-  const { pathname } = useLocation();
-  const { favorites, toggleFavorite, progress, setStatus } = useStore();
-  const starred = favorites.some((x) => x.path === pathname);
+/**
+ * A panel you can fold away. Open by default everywhere: the content is the page,
+ * collapsing is only there to get a long reference page back under control.
+ */
+export function Section({
+  title,
+  children,
+  aside,
+  className = '',
+  defaultOpen = true,
+}: {
+  title: string;
+  children: ReactNode;
+  aside?: ReactNode;
+  className?: string;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="reference-actions">
-      <button
-        className={starred ? 'icon-button starred' : 'icon-button'}
-        aria-label={starred ? 'Remove favorite' : 'Add favorite'}
-        aria-pressed={starred}
-        onClick={() => toggleFavorite({ title, path: pathname })}
-      >
-        <Icon name="star" />
-      </button>
-      <select
-        aria-label="Study status"
-        value={progress[pathname] ?? 'New'}
-        onChange={(e) => setStatus(pathname, e.target.value)}
-      >
-        {['New', 'Learning', 'Known'].map((x) => (
-          <option key={x}>{x}</option>
-        ))}
-      </select>
-    </div>
+    <details
+      className={`panel section-panel ${className}`}
+      open={open}
+      onToggle={(event) => setOpen(event.currentTarget.open)}
+    >
+      <summary className="section-heading">
+        <Icon name="chevron" size={15} />
+        <h2>{title}</h2>
+        {aside && <span className="section-aside">{aside}</span>}
+      </summary>
+      <div className="section-body">{children}</div>
+    </details>
   );
 }
+
 export function Panel({
   title,
   children,
@@ -183,7 +193,7 @@ export function Segmented({
           className={value === x ? 'selected' : ''}
           onClick={() => onChange(x)}
         >
-          {x}
+          {textDe(x)}
         </button>
       ))}
     </div>
@@ -238,19 +248,27 @@ export function ItemLink({
   );
 }
 export function usePageTitle(title: string) {
-  const { pathname } = useLocation();
-  const { visit } = useStore();
-  const old = useRef('');
   useEffect(() => {
     document.title = `${title} · Bass Reference`;
-    if (old.current !== pathname) {
-      old.current = pathname;
-      visit({ title, path: pathname });
-    }
-  }, [title, pathname, visit]);
+  }, [title]);
 }
 export function Notice({ children }: { children: ReactNode }) {
   return <div className="notice">{children}</div>;
+}
+/**
+ * Progressive disclosure for theory: the concept sits where it is used, collapsed by
+ * default, so a page teaches without turning into a textbook.
+ */
+export function Konzept({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <details className="konzept">
+      <summary>
+        <Icon name="book" size={15} />
+        {title}
+      </summary>
+      <div className="konzept-body">{children}</div>
+    </details>
+  );
 }
 export function AudioError({ error }: { error: string }) {
   return error ? (
@@ -272,7 +290,7 @@ export function CopyNotes({ text }: { text: string }) {
         }
       }}
     >
-      {copied ? 'Copied' : 'Copy notes'}
+      {copied ? 'Kopiert' : 'Noten kopieren'}
     </button>
   );
 }

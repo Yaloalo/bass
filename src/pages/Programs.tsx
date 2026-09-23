@@ -1,140 +1,126 @@
-import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { programs, exercises, exercisePath } from '../data/catalog';
+import { useState } from 'react';
+import { Link, useLocation, useParams } from 'react-router-dom';
+import { programs, programGroove, programSections, exercises } from '../data/catalog';
+import { drumPresets } from '../lib/drum-presets';
 import type { PracticeProgram } from '../data/catalog';
-import { useLocal, useStore } from '../lib/store';
-import { PageHeading, Panel, Icon, ReferenceActions, Notice, usePageTitle } from '../components/UI';
-import { Timer } from '../components/Timer';
-import { ExercisePattern, ExerciseInstructions } from './Exercises';
-function balanced(): PracticeProgram {
-  const themes = [
-    {
-      name: 'Major vocabulary',
-      blocks: [['P1', 'P3', 'P15'], ['P5', 'P12', 'P16'], ['M1', 'M3'], ['M6'], ['M10'], ['M11']],
-    },
-    {
-      name: 'Minor vocabulary',
-      blocks: [
-        ['P2', 'P4', 'P13'],
-        ['P5', 'P8', 'P17'],
-        ['M2', 'M4'],
-        ['M7', 'M9'],
-        ['M18'],
-        ['song'],
-      ],
-    },
-    {
-      name: 'Latin chord tones',
-      blocks: [['P5', 'P17'], ['P8', 'P12'], ['M8'], ['M9'], ['M19'], ['M20']],
-    },
-  ];
-  const theme = themes[Math.floor(Math.random() * themes.length)];
-  return {
-    id: 'balanced',
-    number: 0,
-    name: `Balanced · ${theme.name}`,
-    blocks: theme.blocks.map((pool, i) => ({
-      exerciseId: pool[Math.floor(Math.random() * pool.length)],
-      purpose: i < 2 ? 'Physical control' : i < 4 ? 'Musical vocabulary' : 'Apply it to a line',
-    })),
-  };
-}
+import { useStore } from '../lib/store';
+import { PageHeading, Panel, Icon, Notice, usePageTitle } from '../components/UI';
+import { ExerciseView } from './Exercises';
+import { practiceExerciseTitle } from '../lib/practice';
+import { usePracticeSetup } from '../lib/use-practice-setup';
+import '../practice.css';
+/** The drum preset a programme opens with, named for the card. */
+const grooveName = (program: PracticeProgram) =>
+  drumPresets.find((preset) => preset.id === programGroove(program))?.pattern.name;
+
 export function ProgramLibrary() {
-  usePageTitle('Practice programs');
-  const [, setBalanced] = useLocal<PracticeProgram | null>('balanced', null);
+  usePageTitle('Übeprogramme');
   return (
     <>
       <PageHeading
-        eyebrow="08 / STRUCTURED PRACTICE"
-        title="Thirty minutes, well spent"
-        description="Ten programs from the book. Six five-minute blocks. Choose a focus and follow the sequence."
+        eyebrow="BASS / STRUKTURIERT ÜBEN"
+        title="Dreißig Minuten sinnvoll üben"
+        description="Dreißig Programme in drei Bereichen. Jedes besteht aus sechs Fünf-Minuten-Blöcken und ist von leicht nach schwer einsortiert – fang oben an."
       />
-      <Panel className="quick-practice">
-        <div>
-          <span className="eyebrow">QUICK PRACTICE</span>
-          <h2>Let the session take shape.</h2>
-          <p>
-            10 minutes of physical control, 10 of musical vocabulary, 10 of application. A coherent
-            major, minor, or Latin focus.
-          </p>
-        </div>
-        <Link
-          className="button primary"
-          to="/programs/balanced"
-          onClick={() => setBalanced(balanced())}
-        >
-          <Icon name="play" />
-          Random balanced program
-        </Link>
-      </Panel>
-      <div className="program-grid">
-        {programs.map((p) => (
-          <Link className="program-card" to={'/programs/' + p.id} key={p.id}>
-            <div className="program-card-top">
-              <span className="eyebrow">PROGRAM {String(p.number).padStart(2, '0')}</span>
-              <span>
-                <Icon name="clock" size={13} />
-                30 MIN
-              </span>
-            </div>
-            <h2>{p.name}</h2>
-            <p>{p.blocks.map((b) => b.exerciseId).join('  /  ')}</p>
-            <div className="program-block-preview">
-              {p.blocks.map((b, i) => (
-                <span
-                  key={i}
-                  title={b.purpose}
-                  className={b.exerciseId.startsWith('P') ? 'physical' : 'musical'}
-                />
+      {programSections.map((section) => (
+        <section className="program-section" key={section.id}>
+          <div className="program-section-head">
+            <h2>{section.name}</h2>
+            <p>{section.description}</p>
+            <span className="small-label">
+              {programs.filter((item) => item.section === section.id).length} PROGRAMME
+            </span>
+          </div>
+          <div className="program-grid">
+            {programs
+              .filter((item) => item.section === section.id)
+              .map((item, index) => (
+                <Link className="program-card" to={'/programs/' + item.id} key={item.id}>
+                  <div className="program-card-top">
+                    <span className="eyebrow">{String(index + 1).padStart(2, '0')}</span>
+                    <span>
+                      <Icon name="clock" size={13} />
+                      30 MIN
+                    </span>
+                  </div>
+                  <h3>{item.name}</h3>
+                  <div className="program-card-bottom">
+                    <span>
+                      {item.blocks.map((block) => block.exerciseId).join(' · ')}
+                      {grooveName(item) && <em> · {grooveName(item)}</em>}
+                    </span>
+                    <Icon name="arrow" />
+                  </div>
+                </Link>
               ))}
-            </div>
-            <div className="program-card-bottom">
-              <span>6 × 5-minute blocks</span>
-              <Icon name="arrow" />
-            </div>
-          </Link>
-        ))}
-      </div>
+          </div>
+        </section>
+      ))}
     </>
   );
 }
 export function ProgramPage() {
   const { id } = useParams();
-  const [randomProgram] = useLocal<PracticeProgram | null>('balanced', null);
-  const fallback = useMemo(() => balanced(), []);
-  const p = id === 'balanced' ? (randomProgram ?? fallback) : programs.find((p) => p.id === id);
-  usePageTitle(p?.name ?? 'Program not found');
+  const p = programs.find((item) => item.id === id);
+  usePageTitle(p?.name ?? 'Programm nicht gefunden');
   return p ? (
     <ProgramRunner key={p.id + p.name} program={p} />
   ) : (
     <PageHeading
       eyebrow="PROGRAMS"
-      title="Program not found"
-      actions={<Link to="/programs">Browse programs</Link>}
+      title="Programm nicht gefunden"
+      actions={<Link to="/programs">Programme ansehen</Link>}
     />
   );
 }
-function ProgramRunner({ program }: { program: PracticeProgram }) {
-  const [block, setBlock] = useState(0),
+export function ProgramRunner({
+  program,
+  showHeading = true,
+  autoStart = false,
+  onChangeSession,
+}: {
+  program: PracticeProgram;
+  showHeading?: boolean;
+  autoStart?: boolean;
+  onChangeSession?: () => void;
+}) {
+  // `?block=` lets a return trip — from editing an exercise's groove, say — land on the
+  // block you left rather than at the start of the session.
+  const requested = Number(new URLSearchParams(useLocation().search).get('block'));
+  const [block, setBlock] = useState(
+      Number.isInteger(requested) && requested > 0 && requested < program.blocks.length
+        ? requested
+        : 0,
+    ),
     [done, setDone] = useState<number[]>([]),
-    [saved, setSaved] = useState(false),
-    [loggedDone, setLoggedDone] = useState<number[]>([]),
-    [notes, setNotes] = useState('');
-  const { setBpm, addLog } = useStore();
+    [startFirstBlock, setStartFirstBlock] = useState(autoStart);
+  const { root } = useStore();
+  const blockCount = program.blocks.length;
+  const changeBlock = (index: number) => {
+    // Only the initial session launch starts a timer automatically.
+    setStartFirstBlock(false);
+    setBlock(index);
+  };
   const exercise = exercises.find((e) => e.id === program.blocks[block].exerciseId);
+  usePracticeSetup(exercise);
   const next = program.blocks[block + 1];
   const nextExercise = next && exercises.find((e) => e.id === next.exerciseId);
   return (
     <>
-      <PageHeading
-        eyebrow={`08 / PROGRAM ${program.number || 'CUSTOM'} / 30 MINUTES`}
-        title={program.name}
-        description="Keep the order. Lower the tempo on a difficult day. Transpose the final musical blocks when ready."
-        actions={<ReferenceActions title={program.name} />}
-      />
-      <div className="program-layout">
+      {showHeading && (
+        <PageHeading
+          eyebrow={`BASS / ${blockCount * 5} MINUTEN`}
+          title={program.name}
+          actions={
+            <Link className="text-link" to="/programs">
+              ← Anderes Programm
+            </Link>
+          }
+        />
+      )}
+      <div className="program-layout session-runner">
         <aside className="program-sequence">
-          <Panel title="Your six blocks">
+          <Panel title={`Deine ${blockCount} Blöcke`}>
             <ol>
               {program.blocks.map((b, i) => {
                 const e = exercises.find((e) => e.id === b.exerciseId);
@@ -143,15 +129,17 @@ function ProgramRunner({ program }: { program: PracticeProgram }) {
                     className={`${i === block ? 'current' : ''} ${done.includes(i) ? 'done' : ''}`}
                     key={i}
                   >
-                    <button onClick={() => setBlock(i)}>
+                    <button
+                      aria-current={i === block ? 'step' : undefined}
+                      onClick={() => changeBlock(i)}
+                    >
                       <span className="block-number">{done.includes(i) ? '✓' : i + 1}</span>
                       <span>
                         <small>
                           {i * 5}–{(i + 1) * 5} MIN ·{' '}
-                          {b.exerciseId === 'song' ? 'APPLICATION' : b.exerciseId}
+                          {b.exerciseId === 'song' ? 'ANWENDUNG' : b.exerciseId}
                         </small>
-                        <strong>{e?.title ?? 'Song drill'}</strong>
-                        <em>{b.purpose}</em>
+                        <strong>{e ? practiceExerciseTitle(e, root) : 'Songübung'}</strong>
                       </span>
                     </button>
                   </li>
@@ -159,113 +147,84 @@ function ProgramRunner({ program }: { program: PracticeProgram }) {
               })}
             </ol>
             <div className="session-count">
-              {done.length} of 6 blocks complete · {done.length * 5} minutes
-            </div>
-          </Panel>
-          <Panel title="Session note">
-            <div className="practice-note">
-              <textarea
-                aria-label="Program practice note"
-                placeholder="One thing for next time…"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-              />
-              <button
-                disabled={!done.length || saved}
-                onClick={() => {
-                  addLog({
-                    title: program.name,
-                    minutes: done.filter((i) => !loggedDone.includes(i)).length * 5,
-                    completed: done
-                      .filter((i) => !loggedDone.includes(i))
-                      .map((i) => program.blocks[i].exerciseId),
-                    notes,
-                  });
-                  setLoggedDone(done);
-                  setSaved(true);
-                }}
-              >
-                {saved
-                  ? 'Session saved'
-                  : `Save ${done.filter((i) => !loggedDone.includes(i)).length * 5} practiced minutes`}
-              </button>
+              {done.length} von {blockCount} Blöcken abgeschlossen · {done.length * 5} Minuten
             </div>
           </Panel>
         </aside>
         <div className="program-current">
           <div className="program-current-header">
             <div>
-              <span className="eyebrow">BLOCK {block + 1} OF 6</span>
-              <h2>{exercise ? `${exercise.id} · ${exercise.title}` : 'Song drill'}</h2>
-              <p>{program.blocks[block].purpose}</p>
+              <span className="eyebrow">
+                BLOCK {block + 1} VON {blockCount}
+              </span>
+              <h2>
+                {exercise
+                  ? `${exercise.id} · ${practiceExerciseTitle(exercise, root)}`
+                  : 'Songübung'}
+              </h2>
             </div>
-            {exercise && (
-              <button onClick={() => setBpm(exercise.startBpm)}>Set {exercise.startBpm} BPM</button>
-            )}
           </div>
           <div className="program-player">
-            <Timer
-              key={block}
-              compact
-              onComplete={() => {
-                setDone((old) => (old.includes(block) ? old : [...old, block]));
-                setSaved(false);
-              }}
-            />
             <div className="program-player-next">
-              <span className="eyebrow">COMING NEXT</span>
+              <span className="eyebrow">ALS NÄCHSTES</span>
               <h3>
                 {next
                   ? nextExercise
-                    ? `${next.exerciseId} · ${nextExercise.title}`
-                    : 'Song drill'
-                  : 'Session complete'}
+                    ? `${next.exerciseId} · ${practiceExerciseTitle(nextExercise, root)}`
+                    : 'Songübung'
+                  : done.length === blockCount
+                    ? 'Einheit abgeschlossen'
+                    : 'Letzter Block'}
               </h3>
-              <p>
-                {next
-                  ? next.purpose
-                  : 'Take a moment to record what felt clean and what needs attention.'}
-              </p>
+              {!next && (
+                <p>
+                  {done.length === blockCount
+                    ? 'Dreißig Minuten sind geschafft.'
+                    : 'Schließe diesen Block ab und geh weiter.'}
+                </p>
+              )}
               <div className="timer-controls">
-                <button disabled={block === 0} onClick={() => setBlock((n) => n - 1)}>
-                  ← Previous
+                <button disabled={block === 0} onClick={() => changeBlock(block - 1)}>
+                  ← Zurück
                 </button>
-                <button disabled={block === 5} onClick={() => setBlock((n) => n + 1)}>
-                  Next <Icon name="arrow" />
+                <button disabled={block === blockCount - 1} onClick={() => changeBlock(block + 1)}>
+                  Weiter <Icon name="arrow" />
                 </button>
+                {onChangeSession && <button onClick={onChangeSession}>Andere Einheit</button>}
               </div>
-              <small>Move on when you are ready. Skipping does not mark a block complete.</small>
+              <small>
+                Wechsle weiter, wenn du bereit bist. Übersprungene Blöcke zählen nicht als
+                abgeschlossen.
+              </small>
             </div>
           </div>
           {done.includes(block) && (
-            <Notice>✓ This block is complete. Use Next to continue when you’re ready.</Notice>
+            <Notice>
+              <div className="session-completion">
+                <span>
+                  {done.length === blockCount
+                    ? '✓ Alle Blöcke sind abgeschlossen. Dreißig Minuten geübt.'
+                    : next
+                      ? '✓ Dieser Block ist abgeschlossen. Wähle „Weiter“, wenn du bereit bist.'
+                      : '✓ Dieser Block ist abgeschlossen. Kehre zu den offenen Blöcken zurück.'}
+                </span>
+              </div>
+            </Notice>
           )}
           {exercise ? (
-            <>
-              <ExerciseInstructions exercise={exercise} />
-              <ExercisePattern exercise={exercise} />
-              <Link className="text-link" to={exercisePath(exercise)}>
-                Open the full exercise <Icon name="arrow" />
-              </Link>
-            </>
+            /* The same view as the exercise page, so a block and the full exercise are
+               the same thing — only the surrounding chapter list differs. */
+            <ExerciseView
+              exercise={exercise}
+              autoStart={startFirstBlock && block === 0}
+              standaloneLink
+              backTo={`/programs/${program.id}?block=${block}`}
+              onComplete={() => setDone((old) => (old.includes(block) ? old : [...old, block]))}
+            />
           ) : (
-            <>
-              <Notice>
-                Choose one song. Locate the chord roots, begin with roots and fifths, then add
-                thirds and one deliberate approach. Repeat a short motif and leave space.
-              </Notice>
-              <Panel title="Four-stage song drill">
-                <ol className="instruction-list">
-                  <li>Roots only: establish form and chord timing.</li>
-                  <li>Add fifths while keeping the same rhythm.</li>
-                  <li>Add thirds and sevenths; make chord quality audible.</li>
-                  <li>Add passing tones between clear chord-tone targets.</li>
-                </ol>
-                <Link className="text-link" to="/improvisation/play">
-                  Open the play-along reference <Icon name="arrow" />
-                </Link>
-              </Panel>
-            </>
+            <Panel title="Songübung">
+              <p className="program-song">Wende den Ablauf auf ein Stück deiner Wahl an.</p>
+            </Panel>
           )}
         </div>
       </div>

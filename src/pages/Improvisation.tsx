@@ -4,6 +4,7 @@ import { scales, scaleById } from '../data/catalog';
 import { phraseRows } from '../data/theory';
 import { useStore } from '../lib/store';
 import { transposeRoute, routeRange, pretty, spellDegree, readableRoot } from '../lib/music';
+import { germanNoteName } from '../lib/i18n';
 import {
   PageHeading,
   Panel,
@@ -14,38 +15,41 @@ import {
   usePageTitle,
 } from '../components/UI';
 import { Fretboard } from '../components/Fretboard';
+import { Playback } from '../components/Playback';
+
 const checklist = [
-  'Find the key or tonal center.',
-  'Identify the chord progression.',
-  'Locate the roots in one area.',
-  'Begin with thirds and fifths around the roots.',
-  'Choose a scale that fits the chord and context.',
-  'Target a tone of the next chord.',
-  'Build a short two- or three-note motif.',
-  'Repeat it, then vary the rhythm.',
-  'Leave space; control note lengths.',
-  'Listen to the drums and the rest of the band.',
+  'Finde die Tonart oder das tonale Zentrum.',
+  'Erkenne die Akkordfolge.',
+  'Lokalisiere die Grundtöne in einer Lage.',
+  'Beginne mit Terzen und Quinten rund um die Grundtöne.',
+  'Wähle eine Tonleiter, die zu Akkord und Kontext passt.',
+  'Ziele auf einen Ton des nächsten Akkords.',
+  'Baue ein kurzes Motiv aus zwei oder drei Tönen.',
+  'Wiederhole es und variiere dann den Rhythmus.',
+  'Lass Platz und kontrolliere die Tonlängen.',
+  'Höre auf das Schlagzeug und den Rest der Band.',
 ];
+
 export function Improvisation() {
-  usePageTitle('Quick improvisation guide');
+  usePageTitle('Improvisation – Einstieg');
   return (
     <>
       <PageHeading
-        eyebrow="06 / BEFORE THE TRACK STARTS"
-        title="A quick guide to improvising"
-        description="Find the harmony. Choose a small idea. Give it rhythm and space."
+        eyebrow="BASS / BEVOR DER TRACK LÄUFT"
+        title="Kurzer Leitfaden zum Improvisieren"
+        description="Finde die Harmonie. Wähle eine kleine Idee. Gib ihr Rhythmus und Raum."
         actions={
           <Link to="/improvisation/play" className="button primary">
             <Icon name="play" />
-            Open play-along screen
+            Spickzettel für den Notenständer
           </Link>
         }
       />
       <div className="impro-top">
         <Panel
-          title="Quick impro checklist"
+          title="Checkliste für den Einstieg"
           className="checklist-panel"
-          aside={<span className="small-label">60-SECOND PREPARATION</span>}
+          aside={<span className="small-label">VORBEREITUNG IN 60 SEKUNDEN</span>}
         >
           <ol className="impro-checklist">
             {checklist.map((text, i) => (
@@ -60,44 +64,64 @@ export function Improvisation() {
       </div>
       <div className="note-hierarchy">
         <span>
-          <strong>Chord tones</strong>
-          <small>State the harmony</small>
+          <strong>Akkordtöne</strong>
+          <small>Sagen, welche Harmonie klingt</small>
         </span>
         <b>›</b>
         <span>
-          <strong>Scale tones</strong>
-          <small>Connect the targets</small>
+          <strong>Tonleitertöne</strong>
+          <small>Verbinden die Zieltöne</small>
         </span>
         <b>›</b>
         <span>
-          <strong>Chromatic tones</strong>
-          <small>Create a clear resolution</small>
+          <strong>Chromatische Töne</strong>
+          <small>Machen die Auflösung deutlich</small>
         </span>
       </div>
-      <Panel title="Make phrases, not scale runs">
-        <ReferenceTable headers={['Tool', 'Try this']} rows={phraseRows} />
+      <Panel title="Phrasen bilden statt Tonleitern rauf und runter">
+        <ReferenceTable headers={['Mittel', 'Probier das']} rows={phraseRows} />
       </Panel>
       <div className="two-col">
-        <Panel title="When the key is unclear">
+        <Panel title="Wenn die Tonart unklar ist">
           <p>
-            Stay with roots and fifths while listening. Test major versus minor thirds quietly.
-            Check major versus flat sevenths if the chord sounds extended. Leave space until the
-            changes make sense.
+            Bleib beim Hören zunächst bei Grundtönen und Quinten. Teste leise große gegen kleine
+            Terz. Prüfe große gegen kleine Septime, wenn der Akkord erweitert klingt. Lass Platz,
+            bis die Harmonie für dich Sinn ergibt.
           </p>
         </Panel>
-        <Panel title="One useful constraint">
+        <Panel title="Eine nützliche Beschränkung">
           <p>
-            For an entire song, use only each chord’s root, third and fifth plus one chromatic
-            approach. Create interest through rhythm, repetition, register and note length.
+            Nimm für einen ganzen Song nur Grundton, Terz und Quinte jedes Akkords plus eine
+            chromatische Annäherung. Spannung entsteht dann aus Rhythmus, Wiederholung, Lage und
+            Tonlänge.
           </p>
           <Link className="text-link" to="/improvisation/latin">
-            Salsa / Latin improvisation <Icon name="arrow" />
+            Improvisation in Salsa und Latin <Icon name="arrow" />
           </Link>
         </Panel>
       </div>
     </>
   );
 }
+
+/** The ids stay stable so the branching below reads the same as the source book. */
+const qualities = [
+  { id: 'Major', label: 'Dur-Dreiklang' },
+  { id: 'Major 7', label: 'Großer Septakkord (maj7)' },
+  { id: 'Minor', label: 'Moll-Dreiklang' },
+  { id: 'Minor 7', label: 'Kleiner Septakkord (m7)' },
+  { id: 'Dominant 7', label: 'Dominantseptakkord (7)' },
+  { id: 'Half-diminished', label: 'Halbvermindert (m7♭5)' },
+  { id: 'Minor-major 7', label: 'Moll mit großer Septime' },
+];
+const contexts = [
+  { id: 'Major key', label: 'Dur-Tonart' },
+  { id: 'Minor key', label: 'Moll-Tonart' },
+  { id: 'Blues', label: 'Blues' },
+  { id: 'Funk', label: 'Funk' },
+  { id: 'Latin / Salsa', label: 'Latin / Salsa' },
+];
+
 export function ScaleChooser() {
   const { root } = useStore();
   const [quality, setQuality] = useState('Minor 7'),
@@ -107,64 +131,69 @@ export function ScaleChooser() {
   if (context === 'Blues') {
     ids = ['minor-pentatonic', 'blues', 'mixolydian'];
     explanation =
-      'Blues language can mix major and minor thirds stylistically. Resolve expressive tensions and still follow the chord changes.';
+      'Die Bluessprache mischt große und kleine Terz stilistisch. Löse ausdrucksstarke Spannungen auf und folge trotzdem der Akkordfolge.';
   } else if (quality === 'Dominant 7' && context === 'Minor key') {
     ids = ['mixolydian', 'harmonic-minor'];
     explanation =
-      'For V7 → i, use harmonic minor around the tonic key center; its fifth mode fits the dominant. Do not simply run harmonic minor from the dominant root. Check extensions and resolution.';
+      'Für V7 → i nimm harmonisch Moll vom tonalen Zentrum aus; sein fünfter Modus passt auf die Dominante. Spiele harmonisch Moll nicht einfach vom Dominantgrundton aus. Prüfe Erweiterungen und Auflösung.';
   } else if (quality === 'Dominant 7') {
     ids = ['mixolydian'];
     explanation =
-      'Start with 1–3–5–♭7. Mixolydian is a starting point for an unaltered dominant; altered extensions require more context.';
+      'Beginne mit 1–3–5–♭7. Mixolydisch ist der Ausgangspunkt für eine unalterierte Dominante; alterierte Erweiterungen brauchen mehr Kontext.';
   } else if (quality === 'Half-diminished') {
     ids = ['locrian'];
-    explanation = 'Prioritize 1–♭3–♭5–♭7. Locrian natural 2 can also occur in minor-key contexts.';
+    explanation =
+      'Priorisiere 1–♭3–♭5–♭7. Lokrisch mit großer Sekunde kommt in Moll-Zusammenhängen ebenfalls vor.';
   } else if (quality === 'Minor-major 7') {
     ids = ['melodic-minor', 'harmonic-minor'];
     explanation =
-      'The major seventh over a minor triad matters. Check whether the sixth is natural or flat.';
+      'Entscheidend ist die große Septime über dem Mollakkord. Prüfe, ob die Sexte groß oder klein ist.';
   } else if (quality.startsWith('Minor')) {
     ids =
       context === 'Minor key'
         ? ['natural-minor', 'minor-pentatonic']
         : ['dorian', 'minor-pentatonic', 'natural-minor'];
     explanation =
-      'Natural 6 suggests Dorian; ♭6 suggests Aeolian. Minor pentatonic is a compact starting pool when the sixth is unclear. Chord function and melody decide.';
+      'Eine große Sexte spricht für Dorisch, eine kleine für Äolisch. Moll-Pentatonik ist ein kompakter Ausgangsvorrat, solange die Sexte unklar ist. Entscheidend sind Akkordfunktion und Melodie.';
   } else {
     ids = quality === 'Major 7' ? ['major', 'lydian'] : ['major-pentatonic', 'major', 'lydian'];
     explanation =
-      'Land on 1–3–5, adding 7 for major-seven harmony. Use Lydian when ♯4 is supported; a scale is not a guarantee that every tone can be sustained.';
+      'Lande auf 1–3–5, bei maj7-Harmonie zusätzlich auf der 7. Lydisch passt, wenn die ♯4 getragen wird; eine Tonleiter garantiert nicht, dass jeder Ton ausgehalten werden kann.';
   }
   return (
-    <Panel title="Find a starting scale">
+    <Panel title="Eine Tonleiter zum Einstieg finden">
       <div className="scale-chooser">
         <div className="chooser-inputs">
           <label>
-            Chord quality
-            <select value={quality} onChange={(e) => setQuality(e.target.value)}>
-              {[
-                'Major',
-                'Major 7',
-                'Minor',
-                'Minor 7',
-                'Dominant 7',
-                'Half-diminished',
-                'Minor-major 7',
-              ].map((x) => (
-                <option key={x}>{x}</option>
+            Akkordtyp
+            <select
+              aria-label="Akkordtyp"
+              value={quality}
+              onChange={(e) => setQuality(e.target.value)}
+            >
+              {qualities.map((x) => (
+                <option key={x.id} value={x.id}>
+                  {x.label}
+                </option>
               ))}
             </select>
           </label>
           <label>
-            Context
-            <select value={context} onChange={(e) => setContext(e.target.value)}>
-              {['Major key', 'Minor key', 'Blues', 'Funk', 'Latin / Salsa'].map((x) => (
-                <option key={x}>{x}</option>
+            Zusammenhang
+            <select
+              aria-label="Zusammenhang"
+              value={context}
+              onChange={(e) => setContext(e.target.value)}
+            >
+              {contexts.map((x) => (
+                <option key={x.id} value={x.id}>
+                  {x.label}
+                </option>
               ))}
             </select>
           </label>
         </div>
-        <div className="eyebrow">LIKELY STARTING POINTS</div>
+        <div className="eyebrow">WAHRSCHEINLICHE AUSGANGSPUNKTE</div>
         {ids.map((id, i) => {
           const s = scaleById(id)!;
           return (
@@ -172,13 +201,17 @@ export function ScaleChooser() {
               <span>
                 <strong>
                   {context === 'Minor key' && quality === 'Dominant 7' && id === 'harmonic-minor'
-                    ? 'Tonic-key '
-                    : pretty(root) + ' '}
+                    ? 'Von der Zieltonart: '
+                    : germanNoteName(root) + ' '}
                   {s.name}
                 </strong>
                 <small>{s.degreeLabels.map(pretty).join(' ')}</small>
               </span>
-              {i === 0 ? <span className="pill">Start here</span> : <Icon name="arrow" size={15} />}
+              {i === 0 ? (
+                <span className="pill">Hier anfangen</span>
+              ) : (
+                <Icon name="arrow" size={15} />
+              )}
             </Link>
           );
         })}
@@ -187,6 +220,7 @@ export function ScaleChooser() {
     </Panel>
   );
 }
+
 export function PlayAlong() {
   const { root: selectedRoot } = useStore();
   const [id, setId] = useState('dorian'),
@@ -194,7 +228,7 @@ export function PlayAlong() {
   const scale = scaleById(id)!;
   const root = readableRoot(selectedRoot, scale.degreeLabels);
   const route = useMemo(() => transposeRoute(scale.fingering, root), [scale, root]);
-  usePageTitle('Play-along screen');
+  usePageTitle('Spickzettel für den Notenständer');
   const chord = scale.degreeLabels.filter(
     (d) => ['1', '3', 'b3', '5', 'b5', '7', 'b7'].includes(d) && !(id === 'blues' && d === 'b5'),
   );
@@ -202,13 +236,13 @@ export function PlayAlong() {
   return (
     <>
       <PageHeading
-        eyebrow="06 / KEEP THIS ON THE MUSIC STAND"
-        title={`${pretty(root)} ${scale.name}`}
-        description="Keep the targets clear. Repeat a short motif. Leave space."
+        eyebrow="BASS / FÜR DEN NOTENSTÄNDER"
+        title={`${germanNoteName(root)} ${scale.name}`}
+        description="Halte die Zieltöne klar. Wiederhole ein kurzes Motiv. Lass Platz."
         actions={
           <label className="play-scale-select">
-            <span>Scale</span>
-            <select value={id} onChange={(e) => setId(e.target.value)}>
+            <span>Tonleiter</span>
+            <select aria-label="Tonleiter" value={id} onChange={(e) => setId(e.target.value)}>
               {scales.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.name}
@@ -220,26 +254,26 @@ export function PlayAlong() {
       />
       <div className="play-priorities">
         <Panel>
-          <span className="eyebrow">01 / CHORD-TONE PRIORITY</span>
+          <span className="eyebrow">01 / AKKORDTÖNE ZUERST</span>
           <strong>{chord.map(pretty).join('  ·  ')}</strong>
-          <p>{chord.map((d) => pretty(spellDegree(root, d))).join(' · ')}</p>
+          <p>{chord.map((d) => germanNoteName(spellDegree(root, d))).join(' · ')}</p>
         </Panel>
         <Panel>
-          <span className="eyebrow">02 / CONNECTING SCALE TONES</span>
-          <strong>{rest.map(pretty).join('  ·  ') || 'Use the chord tones'}</strong>
-          <p>{rest.map((d) => pretty(spellDegree(root, d))).join(' · ')}</p>
+          <span className="eyebrow">02 / VERBINDENDE TONLEITERTÖNE</span>
+          <strong>{rest.map(pretty).join('  ·  ') || 'Nimm die Akkordtöne'}</strong>
+          <p>{rest.map((d) => germanNoteName(spellDegree(root, d))).join(' · ')}</p>
         </Panel>
         <Panel>
-          <span className="eyebrow">CHARACTERISTIC COLOR</span>
+          <span className="eyebrow">CHARAKTERISTISCHE FARBE</span>
           <strong>{scale.characteristic.map(pretty).join('  ·  ')}</strong>
           <p>{scale.signature}</p>
         </Panel>
       </div>
       <Panel
-        title="Your compact fingering"
+        title="Dein kompakter Fingersatz"
         aside={
           <Segmented
-            label="Play-along labels"
+            label="Beschriftung"
             value={labels}
             onChange={setLabels}
             options={['Degrees', 'Notes']}
@@ -256,18 +290,26 @@ export function PlayAlong() {
         />
         <div className="play-formula">
           <span>{scale.degreeLabels.map(pretty).join('   ')}</span>
-          <span>{scale.degreeLabels.map((d) => pretty(spellDegree(root, d))).join(' · ')}</span>
+          <span>
+            {scale.degreeLabels.map((d) => germanNoteName(spellDegree(root, d))).join(' · ')}
+          </span>
         </div>
       </Panel>
       <Notice>
-        Chord-tone priorities here describe the selected scale’s tonic harmony. Follow each actual
-        chord change; connecting tones are not universally safe resting points. The blues ♭5 is a
-        passing tension.
+        Die Akkordton-Priorität beschreibt hier die Tonika-Harmonie der gewählten Tonleiter. Folge
+        jedem tatsächlichen Akkordwechsel; verbindende Töne sind nicht überall sichere Ruhepunkte.
+        Die ♭5 im Blues ist eine Durchgangsspannung.
       </Notice>
+      <div className="reference-play-row">
+        <Playback events={route} scale />
+        <Link className="text-link" to="/drums">
+          Groove dazu starten <Icon name="arrow" size={15} />
+        </Link>
+      </div>
       <div className="play-reminders">
-        <span>ROOTS → CHORD TONES → PASSING TONES</span>
-        <span>Repeat · Answer · Breathe</span>
-        <Link to={'/scales/' + id}>Open full scale reference →</Link>
+        <span>GRUNDTÖNE → AKKORDTÖNE → DURCHGANGSTÖNE</span>
+        <span>Wiederholen · Antworten · Atmen</span>
+        <Link to={'/scales/' + id}>Zur vollständigen Tonleiter →</Link>
       </div>
     </>
   );

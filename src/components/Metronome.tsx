@@ -1,98 +1,64 @@
-import { useState, useEffect, useRef } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useStore } from '../lib/store';
-import { audioContext, tone } from '../lib/audio';
+import { useRhythm, useRhythmStatus } from '../lib/rhythm-store';
 import { Icon } from './UI';
+import { TempoInput } from './tools/TempoInput';
+
 export function Metronome() {
   const { bpm, setBpm } = useStore();
-  const [running, setRunning] = useState(false),
-    [beat, setBeat] = useState(0),
-    [error, setError] = useState('');
-  const tempo = useRef(bpm);
-  tempo.current = bpm;
-  useEffect(() => {
-    if (!running) return;
-    let canceled = false;
-    let interval: ReturnType<typeof setInterval> | undefined;
-    const oscillators: OscillatorNode[] = [];
-    let next = 0,
-      count = 0;
-    audioContext()
-      .then((ctx) => {
-        if (canceled) return;
-        next = ctx.currentTime + 0.04;
-        const schedule = () => {
-          while (next < ctx.currentTime + 0.1) {
-            oscillators.push(tone(ctx, count % 4 === 0 ? 1100 : 800, next, 0.045, true));
-            if (oscillators.length > 12) oscillators.shift();
-            setBeat(count % 4);
-            next += 60 / tempo.current;
-            count++;
-          }
-        };
-        schedule();
-        interval = setInterval(schedule, 25);
-      })
-      .catch(() => {
-        setError('Audio unavailable');
-        setRunning(false);
-      });
-    return () => {
-      canceled = true;
-      clearInterval(interval);
-      oscillators.forEach((n) => {
-        try {
-          n.stop();
-        } catch {
-          /* Ended. */
-        }
-      });
-    };
-  }, [running]);
+  const { preferences, start, stop } = useRhythm();
+  const status = useRhythmStatus();
+  const { pathname } = useLocation();
+  const running = status.running || status.starting;
+  // On the drum page the footer Start must start the groove the user just built,
+  // not a click track. While something plays, it always controls what is playing.
+  const target = running ? status.mode : pathname === '/drums' ? 'drums' : 'metronome';
+  const drums = target === 'drums';
+  const beats = drums ? 4 : preferences.metronome.beats;
+  const label = drums ? 'Drum-Maschine' : 'Metronom';
   return (
     <div className="metronome">
-      <span className="metronome-label">
+      <Link
+        className="metronome-label"
+        to={drums ? '/drums' : '/tools/metronome'}
+        aria-label="Rhythmus-Werkzeuge öffnen"
+      >
         <Icon name="metronome" />
-        Metronome
-      </span>
-      <div className="beat-lights" aria-label={running ? 'Metronome running' : 'Metronome stopped'}>
-        {[0, 1, 2, 3].map((i) => (
-          <i key={i} className={running && beat === i ? 'on' : ''} />
+        {label}
+      </Link>
+      <div
+        className="beat-lights"
+        role="img"
+        aria-label={`${label}: ${running ? 'läuft' : 'gestoppt'}`}
+      >
+        {Array.from({ length: beats }, (_, i) => (
+          <i key={i} className={running && status.pulse?.beat === i ? 'on' : ''} />
         ))}
       </div>
-      <button
-        className="small-button"
-        aria-label="Decrease tempo by 5"
-        onClick={() => setBpm(bpm - 5)}
-      >
+      <button aria-label="Tempo um 5 verringern" onClick={() => setBpm(bpm - 5)}>
         −5
       </button>
       <label>
-        <input
-          type="number"
-          aria-label="Metronome BPM"
-          min="30"
-          max="240"
-          value={bpm}
-          onChange={(e) => setBpm(Number(e.target.value))}
-        />
+        <TempoInput label="Tempo in BPM" />
         <span>BPM</span>
       </label>
-      <button
-        className="small-button"
-        aria-label="Increase tempo by 5"
-        onClick={() => setBpm(bpm + 5)}
-      >
+      <button aria-label="Tempo um 5 erhöhen" onClick={() => setBpm(bpm + 5)}>
         +5
       </button>
       <button
         className={running ? 'metro-toggle active' : 'metro-toggle'}
-        aria-label={running ? 'Stop metronome' : 'Start metronome'}
-        onClick={() => setRunning((v) => !v)}
+        aria-label={`${label} ${running ? 'stoppen' : 'starten'}`}
+        onClick={() => (running ? stop() : start(target))}
       >
         <Icon name={running ? 'pause' : 'play'} size={14} />
-        <span>{running ? 'Stop' : 'Start'}</span>
+        <span>{running ? 'Stopp' : 'Start'}</span>
       </button>
-      {error && <span role="status">{error}</span>}
+      {/* One owner for the transport error: the footer is always mounted. */}
+      {status.error && (
+        <span className="footer-audio-error" role="alert">
+          {status.error}
+        </span>
+      )}
     </div>
   );
 }

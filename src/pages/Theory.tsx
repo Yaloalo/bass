@@ -1,8 +1,11 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { scales, arpeggios, extraChords, theoryPages } from '../data/catalog';
+import { scales, theoryPages } from '../data/catalog';
+import { chords } from '../data/chords';
 import { readingRows, articulationRows, rhythmRows } from '../data/theory';
 import { useStore } from '../lib/store';
+import { germanNoteName, textDe } from '../lib/i18n';
+import { chordLabel } from '../lib/music';
 import {
   pretty,
   spellDegree,
@@ -13,8 +16,8 @@ import {
   intervalBetween,
   pitchClass,
   mod,
-  intervalNames,
-  chromaticDegrees,
+  chromaticDegreesFor,
+  degreeIntervalName,
   allPositions,
   readableRoot,
 } from '../lib/music';
@@ -32,43 +35,49 @@ import { Fretboard } from '../components/Fretboard';
 import { Score } from '../components/Score';
 export function Chords() {
   const { root } = useStore();
-  usePageTitle('Chords & formulas');
+  usePageTitle('Akkorde & Formeln');
   return (
     <>
       <PageHeading
-        eyebrow="04 / HARMONIC REFERENCE"
-        title="Chords & their tones"
-        description="Read the symbol. Know the formula. Make the harmony clear."
+        eyebrow="MUSIKTHEORIE / AKKORDE"
+        title="Akkorde & ihre Töne"
+        description="Symbole lesen, Formeln verstehen und Harmonie hörbar machen."
       />
-      <Panel title={`Chord construction from ${pretty(root)}`}>
+      <Panel title={`Akkordaufbau ab ${germanNoteName(root)}`}>
         <ReferenceTable
-          headers={['Chord', 'Symbol', 'Formula', 'Notes', 'Bass priority']}
-          rows={[...arpeggios, ...extraChords].map((c) => [
-            c.name,
-            <strong>{pretty(root + c.symbol)}</strong>,
-            c.degreeLabels.map(pretty).join(' '),
-            c.degreeLabels.map((d) => pretty(spellDegree(root, d))).join(' · '),
-            c.description,
-          ])}
+          headers={['Akkord', 'Symbol', 'Formel', 'Noten', 'Für den Bass']}
+          rows={chords
+            .filter((c) => ['triad', 'suspended', 'seventh'].includes(c.family))
+            .map((c) => [
+              <Link to={`/chords/${c.id}`}>{c.nameDe}</Link>,
+              <strong>{chordLabel(root, c.symbol)}</strong>,
+              c.formula.map(pretty).join(' '),
+              c.formula.map((d) => germanNoteName(spellDegree(root, d))).join(' · '),
+              c.descriptionDe,
+            ])}
         />
+        <p className="tool-footnote">
+          Das sind die Grundtypen. Alle {chords.length} Akkorde – bis in die erweiterte Jazzharmonik
+          – findest du im <Link to="/chords">Akkord-Atlas</Link>.
+        </p>
       </Panel>
       <div className="two-col">
-        <Panel title="Hear the quality">
+        <Panel title="Akkordcharakter hören">
           <p>
-            A root and fifth establish a stable frame. The third tells you major or minor; the
-            seventh distinguishes major-seven, dominant-seven and minor-seven harmony.
+            Grundton und Quinte geben Stabilität. Die Terz unterscheidet Dur und Moll; die Septime
+            prägt den Dur-, Dominant- oder Mollseptakkord.
           </p>
-          <Link className="text-link" to="/arpeggios">
-            Open the arpeggio atlas →
+          <Link className="text-link" to="/chords">
+            Zum Akkord-Atlas →
           </Link>
         </Panel>
-        <Panel title="Put chords in a key">
+        <Panel title="Akkorde einer Tonart">
           <p>
-            Diatonic harmony stacks thirds using the notes of a key. Change the global root to
-            explore the same relationships elsewhere.
+            Diatonische Harmonie schichtet Terzen aus den Tönen einer Tonart. Ändere den globalen
+            Grundton, um dieselben Beziehungen in anderen Tonarten zu erkunden.
           </p>
           <Link className="text-link" to="/harmony">
-            Explore diatonic harmony →
+            Diatonische Harmonie erkunden →
           </Link>
         </Panel>
       </div>
@@ -83,21 +92,21 @@ export function Harmony({ embedded = false }: { embedded?: boolean }) {
     mode === 'Major' ? ['1', '2', '3', '4', '5', '6', '7'] : ['1', '2', 'b3', '4', '5', 'b6', 'b7'],
   );
   const chords = harmony(root, mode === 'Natural minor');
-  usePageTitle('Diatonic harmony');
+  usePageTitle('Diatonische Harmonie');
   return (
     <>
       {!embedded && (
         <PageHeading
-          eyebrow="04 / DIATONIC HARMONY"
-          title={`${pretty(root)} ${mode.toLowerCase()} harmony`}
-          description="Seven degrees. A family of chords. Follow the roots and hear the relationships."
+          eyebrow="MUSIKTHEORIE / DIATONISCHE HARMONIE"
+          title={`${germanNoteName(root)} · ${textDe(mode)}`}
+          description="Sieben Stufen, eine Akkordfamilie. Folge den Grundtönen und höre die Zusammenhänge."
         />
       )}
       <Panel
-        title="Chords in the key"
+        title="Akkorde der Tonart"
         aside={
           <Segmented
-            label="Harmony system"
+            label="Tongeschlecht"
             value={mode}
             onChange={setMode}
             options={['Major', 'Natural minor']}
@@ -108,40 +117,56 @@ export function Harmony({ embedded = false }: { embedded?: boolean }) {
           {chords.map((c) => (
             <div key={c.roman}>
               <span className="roman">{c.roman}</span>
-              <strong>{pretty(c.root)}</strong>
-              <span>{c.quality}</span>
-              <small>{pretty(c.root + c.symbol)}</small>
+              <strong>{germanNoteName(c.root)}</strong>
+              <span>{textDe(c.quality)}</span>
+              <small>{chordLabel(c.root, c.symbol)}</small>
             </div>
           ))}
         </div>
         <ReferenceTable
-          headers={['Degree', 'Triad', 'Seventh chord', 'Triad tones']}
+          headers={['Stufe', 'Dreiklang', 'Septakkord', 'Dreiklangstöne']}
           rows={chords.map((c) => [
             c.roman,
-            `${pretty(c.root)} ${c.quality.toLowerCase()}`,
-            pretty(c.root + c.symbol),
+            `${germanNoteName(c.root)} ${textDe(c.quality)}`,
+            chordLabel(c.root, c.symbol),
             (c.quality === 'Major'
               ? ['1', '3', '5']
               : c.quality === 'Minor'
                 ? ['1', 'b3', '5']
                 : ['1', 'b3', 'b5']
             )
-              .map((d) => pretty(spellDegree(c.root, d)))
+              .map((d) => germanNoteName(spellDegree(c.root, d)))
               .join(' · '),
           ])}
         />
       </Panel>
       <Notice>
         {mode === 'Natural minor'
-          ? `In functional minor harmony, v often becomes V7. In ${pretty(root)} minor, ${pretty(spellDegree(root, '5'))}7 contains ${pretty(spellDegree(root, '7'))}, the raised leading tone, and resolves to ${pretty(root)} minor.`
-          : 'The major-key pattern is I – ii – iii – IV – V – vi – vii°. Adding another diatonic third gives maj7 – m7 – m7 – maj7 – 7 – m7 – m7♭5.'}
+          ? `In funktionaler Mollharmonik wird v oft zu V7. In ${germanNoteName(root)}-Moll enthält ${germanNoteName(spellDegree(root, '5'))}7 den erhöhten Leitton ${germanNoteName(spellDegree(root, '7'))} und löst sich nach ${germanNoteName(root)}-Moll auf.`
+          : 'Das Stufenmuster in Dur lautet I – ii – iii – IV – V – vi – vii°. Eine weitere diatonische Terz ergibt maj7 – m7 – m7 – maj7 – 7 – m7 – m7♭5.'}
       </Notice>
     </>
   );
 }
+/** Each chromatic step with every spelling that is actually used for it. */
+const intervalRows: [number, string[]][] = [
+  [0, ['1']],
+  [1, ['b2', '#1']],
+  [2, ['2']],
+  [3, ['b3', '#2']],
+  [4, ['3']],
+  [5, ['4']],
+  [6, ['#4', 'b5']],
+  [7, ['5']],
+  [8, ['b6', '#5']],
+  [9, ['6']],
+  [10, ['b7']],
+  [11, ['7']],
+];
+
 export function Theory() {
   const { id } = useParams();
-  usePageTitle(theoryPages.find((x) => x[0] === id)?.[1] ?? 'Theory quick reference');
+  usePageTitle(textDe(theoryPages.find((x) => x[0] === id)?.[1] ?? 'Theorie kompakt'));
   const { root } = useStore();
   const [target, setTarget] = useState('Eb');
   const [signatureRoot, setSignatureRoot] = useState(root);
@@ -161,27 +186,27 @@ export function Theory() {
     return (
       <>
         <PageHeading
-          eyebrow="09 / QUICK LOOKUP"
-          title="Theory, within reach"
-          description="The things you need to check while the bass is still in your hands."
+          eyebrow="MUSIKTHEORIE / NACHSCHLAGEN"
+          title="Theorie kompakt"
+          description="Schnelle Antworten, während der Bass in deinen Händen bleibt."
         />
         <div className="two-col">
           {theoryPages.map(([key, title]) => (
             <Panel key={key}>
               <ItemLink
-                title={title}
+                title={textDe(title)}
                 description={
                   {
-                    fretboard: 'Complete notes, tuning and octave shapes',
-                    intervals: 'Degree names, semitones and an interval calculator',
-                    'scale-formulas': 'Every scale formula in one table',
-                    modes: 'Seven rotations of the major scale',
-                    'chord-formulas': 'Triads, sevenths and suspended chords',
-                    'key-signatures': 'Altered notes, relative minor and chords',
-                    harmony: 'Major and natural-minor chord families',
-                    rhythm: 'Durations, rests and counting',
-                    notation: 'Bass clef, articulations and TAB symbols',
-                    transposition: 'Move a shape without changing its intervals',
+                    fretboard: 'Alle Noten, Stimmung und Oktavgriffe',
+                    intervals: 'Stufen, Halbtonschritte und Intervallrechner',
+                    'scale-formulas': 'Alle Tonleiterformeln in einer Tabelle',
+                    modes: 'Die sieben Modi der Durtonleiter',
+                    'chord-formulas': 'Dreiklänge, Septakkorde und Vorhalte',
+                    'key-signatures': 'Vorzeichen, paralleles Moll und Akkorde',
+                    harmony: 'Akkordfamilien in Dur und natürlichem Moll',
+                    rhythm: 'Notenwerte, Pausen und Zählweise',
+                    notation: 'Bassschlüssel, Artikulation und TAB-Zeichen',
+                    transposition: 'Griffe verschieben und Intervalle erhalten',
                   }[key]
                 }
                 to={'/theory/' + key}
@@ -194,31 +219,31 @@ export function Theory() {
   return (
     <>
       <PageHeading
-        eyebrow="09 / THEORY REFERENCE"
-        title={theoryPages.find((x) => x[0] === id)?.[1] ?? 'Theory'}
-        description="Conventional notation. Clear relationships. Quick answers."
+        eyebrow="MUSIKTHEORIE / GRUNDLAGEN"
+        title={textDe(theoryPages.find((x) => x[0] === id)?.[1] ?? 'Musiktheorie')}
+        description="Vertraute Notation. Klare Zusammenhänge. Schnelle Antworten."
       />
       {id === 'fretboard' && (
         <>
-          <Panel title="Complete fretboard · frets 0–24">
+          <Panel title="Das gesamte Griffbrett · Bünde 0–24">
             <Fretboard
               root={root}
-              events={allPositions(root, chromaticDegrees)}
+              events={allPositions(root, chromaticDegreesFor(root))}
               range={[0, 24]}
               labels="Notes"
             />
           </Panel>
           <div className="two-col">
-            <Panel title="Movable octave">
+            <Panel title="Verschiebbare Oktave">
               <p>
-                From an E- or A-string root, move two strings toward G and two frets higher.
-                A-string fret 5 (D) → G-string fret 7 (D).
+                Vom Grundton auf E- oder A-Saite gehst du zwei Saiten Richtung G und zwei Bünde
+                höher. A-Saite, Bund 5 (D) → G-Saite, Bund 7 (D).
               </p>
             </Panel>
-            <Panel title="Same-string octave">
+            <Panel title="Oktave auf derselben Saite">
               <p>
-                Move twelve frets along any string. The twelfth fret repeats the open-string note
-                one octave higher; fret 24 is two octaves above the open string.
+                Gehe auf einer Saite zwölf Bünde weiter. Bund 12 erklingt eine Oktave über der
+                Leersaite, Bund 24 zwei Oktaven darüber.
               </p>
             </Panel>
           </div>
@@ -226,47 +251,59 @@ export function Theory() {
       )}
       {id === 'intervals' && (
         <>
-          <Panel title="Interval calculator">
+          <Panel title="Intervallrechner">
             <div className="theory-calculator">
               <div>
-                <span className="eyebrow">ROOT</span>
-                <strong>{pretty(root)}</strong>
+                <span className="eyebrow">GRUNDTON</span>
+                <strong>{germanNoteName(root)}</strong>
               </div>
               <label>
-                Target
+                Zielton
                 <select value={target} onChange={(e) => setTarget(e.target.value)}>
                   {[...roots, 'D#', 'G#', 'A#', 'C#', 'Gb', 'Cb'].map((r) => (
-                    <option key={r}>{r}</option>
+                    <option key={r} value={r}>
+                      {germanNoteName(r)}
+                    </option>
                   ))}
                 </select>
               </label>
               <span className="calculator-arrow">→</span>
               <div>
-                <span className="eyebrow">INTERVAL</span>
-                <strong>{intervalBetween(root, target)}</strong>
-                <p>{mod(pitchClass(target) - pitchClass(root))} semitones · within one octave</p>
+                <span className="eyebrow">INTERVALL</span>
+                <strong>{textDe(intervalBetween(root, target))}</strong>
+                <p>
+                  {mod(pitchClass(target) - pitchClass(root))}{' '}
+                  {mod(pitchClass(target) - pitchClass(root)) === 1
+                    ? 'Halbtonschritt'
+                    : 'Halbtonschritte'}{' '}
+                  · innerhalb einer Oktave
+                </p>
               </div>
             </div>
           </Panel>
-          <Panel title="Intervals from the root">
+          <Panel title="Intervalle vom Grundton">
             <ReferenceTable
-              headers={['Semitones', 'Degree', 'Name', 'From ' + pretty(root)]}
-              rows={chromaticDegrees
-                .map((d, i) => [
-                  String(i),
-                  i === 6 ? '♯4 / ♭5' : pretty(d),
-                  intervalNames[i],
-                  pretty(spellDegree(root, d)),
+              headers={['Halbtonschritte', 'Stufe', 'Name', 'Ab ' + germanNoteName(root)]}
+              rows={intervalRows
+                .map(([semitones, degrees]) => [
+                  String(semitones),
+                  degrees.map(pretty).join(' / '),
+                  degrees.map(degreeIntervalName).join(' / '),
+                  degrees.map((d) => germanNoteName(spellDegree(root, d))).join(' / '),
                 ])
-                .concat([['12', '8', 'Octave', pretty(root)]])}
+                .concat([['12', '8', 'Oktave', germanNoteName(root)]])}
             />
+            <p className="tool-footnote">
+              Gleich klingende Stufen sind nicht dasselbe Intervall: Dis ist die übermäßige Prime,
+              Es die kleine Sekunde. Welche Schreibweise richtig ist, entscheidet die Harmonie.
+            </p>
           </Panel>
         </>
       )}
       {(id === 'scale-formulas' || id === 'modes') && (
-        <Panel title={id === 'modes' ? 'Modes of major' : 'The complete formula sheet'}>
+        <Panel title={id === 'modes' ? 'Modi der Durtonleiter' : 'Alle Formeln im Überblick'}>
           <ReferenceTable
-            headers={['Scale', 'Formula', 'Identifying tone', 'Harmonic application']}
+            headers={['Tonleiter', 'Formel', 'Charakteristischer Ton', 'Harmonische Anwendung']}
             rows={scales
               .filter((s) => id !== 'modes' || s.parentMode)
               .sort((a, b) => (id === 'modes' ? (a.parentMode ?? 0) - (b.parentMode ?? 0) : 0))
@@ -284,116 +321,119 @@ export function Theory() {
       )}
       {id === 'modes' && (
         <Notice>
-          A mode changes which note acts as the tonal center. Running the same major scale from
-          another starting note does not establish a mode unless the harmony and phrasing support
-          that root.
+          Ein Modus verändert das tonale Zentrum. Dieselbe Durtonleiter von einem anderen Ton aus zu
+          spielen genügt nicht: Harmonie und Phrasierung müssen den neuen Grundton stützen.
         </Notice>
       )}
       {id === 'chord-formulas' && (
-        <Panel title={`Triads and seventh chords · ${pretty(root)}`}>
+        <Panel title={`Dreiklänge und Septakkorde · ${germanNoteName(root)}`}>
           <ReferenceTable
-            headers={['Quality', 'Formula', 'Notes', 'Symbol']}
-            rows={[...arpeggios, ...extraChords].map((c) => [
-              c.name,
-              c.degreeLabels.map(pretty).join(' '),
-              c.degreeLabels.map((d) => pretty(spellDegree(root, d))).join(' · '),
-              pretty(root + c.symbol),
+            headers={['Akkordtyp', 'Formel', 'Noten', 'Symbol']}
+            rows={chords.map((c) => [
+              <Link to={`/chords/${c.id}`}>{c.nameDe}</Link>,
+              c.formula.map(pretty).join(' '),
+              c.formula.map((d) => germanNoteName(spellDegree(root, d))).join(' · '),
+              chordLabel(root, c.symbol),
             ])}
           />
         </Panel>
       )}
       {id === 'key-signatures' && (
         <>
-          <Panel title="Key signature selector">
+          <Panel title="Tonart und Vorzeichen">
             <div className="theory-calculator">
               <label>
-                Major key
+                Durtonart
                 <select value={signatureRoot} onChange={(e) => setSignatureRoot(e.target.value)}>
                   {keyRoots.map((r) => (
                     <option value={r} key={r}>
-                      {pretty(r)} major
+                      {germanNoteName(r)}-Dur
                     </option>
                   ))}
                 </select>
               </label>
               <div>
-                <span className="eyebrow">SIGNATURE</span>
-                <strong>{signature.altered.map(pretty).join('  ') || 'No sharps or flats'}</strong>
+                <span className="eyebrow">VORZEICHEN</span>
+                <strong>
+                  {signature.altered.map(germanNoteName).join('  ') || 'Keine Vorzeichen'}
+                </strong>
               </div>
               <div>
-                <span className="eyebrow">RELATIVE MINOR</span>
-                <strong>{pretty(signature.relativeMinor)} minor</strong>
+                <span className="eyebrow">PARALLELES MOLL</span>
+                <strong>{germanNoteName(signature.relativeMinor)}-Moll</strong>
               </div>
             </div>
             <ReferenceTable
-              headers={['Degree', 'Diatonic triad', 'Notes']}
+              headers={['Stufe', 'Diatonischer Dreiklang', 'Noten']}
               rows={harmony(signatureRoot).map((c) => [
                 c.roman,
-                `${pretty(c.root)} ${c.quality}`,
+                `${germanNoteName(c.root)} ${textDe(c.quality)}`,
                 (c.quality === 'Major'
                   ? ['1', '3', '5']
                   : c.quality === 'Minor'
                     ? ['1', 'b3', '5']
                     : ['1', 'b3', 'b5']
                 )
-                  .map((d) => pretty(spellDegree(c.root, d)))
+                  .map((d) => germanNoteName(spellDegree(c.root, d)))
                   .join(' · '),
               ])}
             />
           </Panel>
           <Notice>
-            Relative major and minor share a key signature. The relative minor begins on degree 6 of
-            major. Parallel major and minor share the same tonic, with different key signatures.
+            Dur und paralleles Moll teilen dieselben Vorzeichen. Die Mollparallele beginnt auf Stufe
+            6 der Durtonleiter. Gleichnamiges Dur und Moll haben denselben Grundton, aber andere
+            Vorzeichen.
           </Notice>
         </>
       )}
       {id === 'harmony' && <Harmony embedded />}
       {id === 'rhythm' && (
         <>
-          <Panel title="Rhythmic values in 4/4">
+          <Panel title="Notenwerte im 4/4-Takt">
             <ReferenceTable
-              headers={['Value', 'Length', 'Density', 'Counting reference']}
+              headers={['Notenwert', 'Dauer', 'Dichte', 'Zählweise']}
               rows={rhythmRows}
             />
           </Panel>
           <Score events={rhythm} meter />
           <Notice>
-            Every rest occupies its written duration. Count through silence. A dot adds half the
-            value; a tie combines the duration of notes of the same pitch.
+            Jede Pause dauert ihren notierten Wert. Zähle auch in der Stille weiter. Ein Punkt
+            verlängert um den halben Wert; ein Haltebogen verbindet gleich hohe Töne zu einer Dauer.
           </Notice>
         </>
       )}
       {id === 'notation' && (
         <>
-          <Panel title="Reading the bass clef">
-            <ReferenceTable headers={['Reference', 'Meaning']} rows={readingRows} />
+          <Panel title="Bassschlüssel lesen">
+            <ReferenceTable headers={['Begriff', 'Bedeutung']} rows={readingRows} />
           </Panel>
-          <Panel title="Common notation & TAB markings">
-            <ReferenceTable headers={['Technique', 'Marking', 'Meaning']} rows={articulationRows} />
+          <Panel title="Notation und TAB-Zeichen">
+            <ReferenceTable headers={['Technik', 'Zeichen', 'Bedeutung']} rows={articulationRows} />
           </Panel>
         </>
       )}
       {id === 'transposition' && (
         <>
-          <Panel title="Move the intervals, rename the notes">
+          <Panel title="Intervalle verschieben, Noten neu benennen">
             <ol className="instruction-list">
-              <li>Choose the new root and find the semitone distance from the old root.</li>
+              <li>Wähle den neuen Grundton und bestimme den Abstand in Halbtonschritten.</li>
               <li>
-                Move every note by that same distance. Preserve string choices and rhythmic values.
+                Verschiebe jeden Ton um denselben Abstand. Behalte Saitenwahl und Notenwerte bei.
               </li>
               <li>
-                If a fret would fall below 0, move the whole shape up an octave or choose another
-                valid position.
+                Läge ein Bund unter 0, verschiebe den ganzen Griff eine Oktave höher oder wähle eine
+                andere spielbare Lage.
               </li>
-              <li>Spell scale degrees using their letter names: F major has B♭, not A♯.</li>
+              <li>Schreibe Stufen mit ihren passenden Stammtönen: F-Dur enthält B, nicht Ais.</li>
               <li>
-                Keep notation one octave above sounding pitch; TAB still shows the physical fret.
+                Notiere den Bass eine Oktave über dem Klang; TAB zeigt weiterhin den gespielten
+                Bund.
               </li>
             </ol>
           </Panel>
           <Notice>
-            Example: D major → F major shifts the entire fingering three frets higher. A-string fret
-            5 becomes fret 8. The formula remains 1 2 3 4 5 6 7; the notes become F G A B♭ C D E.
+            Beispiel: D-Dur → F-Dur verschiebt den Fingersatz drei Bünde höher. Bund 5 auf der
+            A-Saite wird zu Bund 8. Die Formel bleibt 1 2 3 4 5 6 7; die Töne heißen F G A B C D E.
           </Notice>
         </>
       )}

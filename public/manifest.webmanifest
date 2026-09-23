@@ -16,6 +16,8 @@
     { "src": "/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
+    { "name": "Daily practice", "url": "/practice" },
+    { "name": "Drum machine", "url": "/drums" },
     { "name": "Fretboard", "url": "/fretboard" },
     { "name": "Practice programs", "url": "/programs" },
     { "name": "Quick improvisation", "url": "/improvisation" }

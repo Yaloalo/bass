@@ -1,3 +1,5 @@
+import { germanNoteName } from './i18n';
+
 export type BassString = 'E' | 'A' | 'D' | 'G';
 export interface FingeringNote {
   string: BassString;
@@ -38,20 +40,110 @@ const natural: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B:
 const letters = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
 const majorSteps = [0, 2, 4, 5, 7, 9, 11];
 export const chromaticDegrees = ['1', 'b2', '2', 'b3', '3', '4', 'b5', '5', 'b6', '6', 'b7', '7'];
+
+/**
+ * Chromatic degrees spelled to match the note names the fretboard actually prints.
+ * A fixed flat-only list labelled Gis over D as b5, so the marker contradicted itself.
+ * For each semitone we pick the degree whose spelling equals the displayed name.
+ */
+export function chromaticDegreesFor(root: string): string[] {
+  const preferFlats = root.includes('b');
+  const candidates = [
+    '1',
+    'b2',
+    '#1',
+    '2',
+    'b3',
+    '#2',
+    '3',
+    'b4',
+    '#3',
+    '4',
+    'b5',
+    '#4',
+    '5',
+    'b6',
+    '#5',
+    '6',
+    'bb7',
+    '#6',
+    'b7',
+    '7',
+  ];
+  return Array.from({ length: 12 }, (_, offset) => {
+    const wanted = noteName(pitchClass(root) + offset, preferFlats);
+    return (
+      candidates.find(
+        (degree) => mod(degreeSemitones(degree)) === offset && spellDegree(root, degree) === wanted,
+      ) ??
+      candidates.find((degree) => mod(degreeSemitones(degree)) === offset) ??
+      '1'
+    );
+  });
+}
+
 export const intervalNames = [
-  'Unison',
-  'Minor second',
-  'Major second',
-  'Minor third',
-  'Major third',
-  'Perfect fourth',
-  'Tritone',
-  'Perfect fifth',
-  'Minor sixth',
-  'Major sixth',
-  'Minor seventh',
-  'Major seventh',
+  'Prime',
+  'Kleine Sekunde',
+  'Große Sekunde',
+  'Kleine Terz',
+  'Große Terz',
+  'Reine Quarte',
+  'Tritonus',
+  'Reine Quinte',
+  'Kleine Sexte',
+  'Große Sexte',
+  'Kleine Septime',
+  'Große Septime',
 ];
+
+/** Ordinals for degree numbers, so a 9 is a None and not a "Große Sekunde". */
+const degreeNouns = [
+  'Prime',
+  'Sekunde',
+  'Terz',
+  'Quarte',
+  'Quinte',
+  'Sexte',
+  'Septime',
+  'Oktave',
+  'None',
+  'Dezime',
+  'Undezime',
+  'Duodezime',
+  'Tredezime',
+];
+/** 1, 4, 5 and their compounds are perfect; the rest are major/minor. */
+const perfectNumbers = [1, 4, 5, 8, 11, 12];
+
+/**
+ * Names an interval from its degree token rather than its pitch class, because the two
+ * genuinely differ: bb7 and 6 sound alike but a diminished seventh is not a major sixth,
+ * and #9 is an augmented ninth, not a minor third.
+ */
+export function degreeIntervalName(degree: string): string {
+  const match = /^([b#]*)(\d+)$/.exec(degree);
+  if (!match) return degree;
+  const number = Number(match[2]);
+  const alteration = [...match[1]].reduce((sum, c) => sum + (c === '#' ? 1 : -1), 0);
+  const noun = degreeNouns[number - 1] ?? `${number}. Stufe`;
+  const perfect = perfectNumbers.includes(number);
+  const quality = perfect
+    ? alteration === 0
+      ? 'Reine'
+      : alteration > 0
+        ? 'Übermäßige'
+        : 'Verminderte'
+    : alteration === 0
+      ? 'Große'
+      : alteration === -1
+        ? 'Kleine'
+        : alteration > 0
+          ? 'Übermäßige'
+          : 'Verminderte';
+  return number === 1 && alteration === 0 ? 'Prime' : `${quality} ${noun}`;
+}
+
 export function pitchClass(name: string): number {
   const normalized = name.replaceAll('♭', 'b').replaceAll('♯', '#');
   const letter = normalized[0]?.toUpperCase();
@@ -79,6 +171,23 @@ export function spellDegree(root: string, degree: string): string {
   if (delta > 6) delta -= 12;
   return letter + (delta > 0 ? '#'.repeat(delta) : 'b'.repeat(-delta));
 }
+/**
+ * Step sizes derived from the formula itself, so they can never disagree with it.
+ * The source data uses W/H/m3/A2 tokens; a minor third is one and a half tones, and
+ * rendering it as "1" made the minor pentatonic read as five equal steps.
+ */
+export function scaleStepLabels(degrees: string[]): string[] {
+  const semitones = degrees.map(degreeSemitones);
+  const wrapped = [...semitones, 12];
+  return wrapped.slice(1).map((value, index) => {
+    const step = value - wrapped[index];
+    const whole = Math.floor(step / 2);
+    const half = step % 2 === 1;
+    if (!whole) return '½';
+    return half ? `${whole}½` : String(whole);
+  });
+}
+
 export function noteName(midi: number, preferFlats = false): string {
   return (
     preferFlats
@@ -87,6 +196,31 @@ export function noteName(midi: number, preferFlats = false): string {
   )[mod(midi)];
 }
 export const pretty = (text: string) => text.replaceAll('b', '♭').replaceAll('#', '♯');
+
+export type NoteNameStyle = 'de' | 'int';
+
+/**
+ * Presentation only. The model stays international everywhere (B = 11, Bb = 10) because
+ * degree arithmetic, key signatures and VexFlow keys all depend on the letter order
+ * C D E F G A B — VexFlow rejects an "H" key outright.
+ * German names come from one place, germanNoteName(): B -> H, Bb -> B, Eb -> Es, F# -> Fis.
+ */
+export function noteLabel(name: string, style: NoteNameStyle = 'de'): string {
+  return style === 'int' ? pretty(name) : germanNoteName(name);
+}
+
+/**
+ * The root letter follows the note-name setting; the quality suffix never does.
+ * Otherwise one table could show the note H beside the chord Bm7 and contradict itself.
+ */
+export const chordLabel = (root: string, symbol: string, style: NoteNameStyle = 'de') =>
+  noteLabel(root, style) + pretty(symbol);
+
+/** German capitalises major keys and lower-cases minor ones: C-Dur, a-Moll, h-Moll. */
+export const keyLabel = (root: string, minor: boolean, style: NoteNameStyle = 'de') => {
+  const label = noteLabel(root, style);
+  return minor ? label[0].toLowerCase() + label.slice(1) + '-Moll' : label + '-Dur';
+};
 export const soundingMidi = (note: FingeringNote) => tuning[note.string] + note.fret;
 export function writtenPitch(note: FingeringNote): {
   key: string;
@@ -153,14 +287,6 @@ export function allPositions(
         });
     }
   return result;
-}
-/** A compact arpeggio based at A5 in D; each pitch appears once plus the octave. */
-export function arpeggioRoute(degrees: string[]): FingeringNote[] {
-  return [...degrees, '1'].map((degree, i) => {
-    const offset = i === degrees.length ? 12 : degreeSemitones(degree);
-    const string: BassString = offset === 0 ? 'A' : offset < 5 ? 'D' : offset < 10 ? 'D' : 'G';
-    return { string, fret: 38 + offset - tuning[string], degree, duration: 'q' };
-  });
 }
 export function routeRange(events: MusicEvent[]): [number, number] {
   const frets = events.filter(isNote).map((n) => n.fret);

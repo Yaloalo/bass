@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import {
+  degreeIntervalName,
   isNote,
   strings,
   tuning,
@@ -11,6 +12,7 @@ import {
   intervalBetween,
 } from '../lib/music';
 import type { FingeringNote, MusicEvent } from '../lib/music';
+import { germanNoteName, textDe } from '../lib/i18n';
 interface Props {
   events: MusicEvent[];
   range: [number, number];
@@ -60,12 +62,12 @@ export function Fretboard({
             gridTemplateColumns: `36px repeat(${frets.length},minmax(44px,1fr))`,
           }}
           role="group"
-          aria-label={`${title} fretboard, frets ${range[0]} to ${range[1]}`}
+          aria-label={`${title} Griffbrett, Bünde ${range[0]} bis ${range[1]}`}
         >
           <div />
           {frets.map((f) => (
             <div className="fret-number" key={f}>
-              {f === 0 ? '0 · open' : f}
+              {f === 0 ? '0 · leer' : f}
             </div>
           ))}
           {strings.map((string, i) => (
@@ -84,7 +86,7 @@ export function Fretboard({
                 const visible = n && !conceal;
                 const label = visible
                   ? labels === 'Notes'
-                    ? pretty(n.name ?? noteName(tuning[string] + fret))
+                    ? germanNoteName(n.name ?? noteName(tuning[string] + fret))
                     : pretty(degree ?? n.name ?? noteName(tuning[string] + fret))
                   : isMarked
                     ? '?'
@@ -96,8 +98,8 @@ export function Fretboard({
                     className={`fret-cell string-${i} ${fret === 0 ? 'open' : ''} ${picked?.string === string && picked?.fret === fret ? 'picked' : ''}`}
                     aria-label={
                       conceal
-                        ? `${string} string fret ${fret}`
-                        : `${n?.name ?? noteName(tuning[string] + fret)}${degree ? `, degree ${degree}` : ''}${n?.role === 'Passing tone' ? ', passing tone' : ''}, ${string} string fret ${fret}`
+                        ? `${string}-Saite Bund ${fret}`
+                        : `${germanNoteName(n?.name ?? noteName(tuning[string] + fret))}${degree ? `, ${degreeIntervalName(degree)}` : ''}${n?.role === 'Passing tone' ? ', Durchgangston' : ''}, ${string}-Saite Bund ${fret}`
                     }
                     onClick={() => pick(string, fret)}
                     onKeyDown={(event) => {
@@ -144,19 +146,19 @@ export function Fretboard({
         <div className="legend">
           <span>
             <i className="root" />
-            Root · 1
+            Grundton · 1
           </span>
           <span>
             <i className="chord" />
-            Chord tone
+            Akkordton
           </span>
           <span>
             <i className="scale" />
-            Scale tone
+            Tonleiterton
           </span>
         </div>
         <span>
-          {route ? 'One route · only played positions' : 'G string at top · standard E–A–D–G'}
+          {route ? 'Ein Fingersatz · nur gespielte Positionen' : 'G-Saite oben · Standard E–A–D–G'}
         </span>
       </div>
       {!conceal && (
@@ -164,21 +166,21 @@ export function Fretboard({
           {picked ? (
             <>
               <strong>
-                {pretty(picked.name ?? noteName(tuning[picked.string] + picked.fret))}
+                {germanNoteName(picked.name ?? noteName(tuning[picked.string] + picked.fret))}
               </strong>
               <span>
-                {picked.string} string · fret {picked.fret}
+                {picked.string}-Saite · Bund {picked.fret}
               </span>
               <span>
                 {picked.name
-                  ? intervalBetween(root, picked.name)
+                  ? textDe(intervalBetween(root, picked.name))
                   : intervalNames[mod(tuning[picked.string] + picked.fret - pitchClass(root))]}{' '}
-                of {pretty(root)}
-                {picked.degree ? ` · degree ${pretty(picked.degree)}` : ''}
+                über {germanNoteName(root)}
+                {picked.degree ? ` · Stufe ${pretty(picked.degree)}` : ''}
               </span>
             </>
           ) : (
-            <span>Click any position to inspect its note and interval.</span>
+            <span>Tippe eine Position an, um Note und Intervall zu sehen.</span>
           )}
         </div>
       )}

@@ -6,7 +6,7 @@ interface InstallPrompt extends Event {
   userChoice: Promise<{ outcome: string }>;
 }
 export function Pdf() {
-  usePageTitle('The complete reference PDF');
+  usePageTitle('Das Originalbuch');
   const [embed, setEmbed] = useState(false),
     [cached, setCached] = useState(false),
     [busy, setBusy] = useState(false),
@@ -34,9 +34,11 @@ export function Pdf() {
       const cache = await caches.open('bass-pdf-v1');
       await cache.put(pdf, response);
       setCached(true);
-      setMessage('The complete PDF is now available offline.');
+      setMessage('Das vollständige PDF ist jetzt offline verfügbar.');
     } catch {
-      setMessage('Could not save the PDF. Connect to the internet and try again.');
+      setMessage(
+        'Das PDF konnte nicht gespeichert werden. Prüfe die Internetverbindung und versuche es erneut.',
+      );
     } finally {
       setBusy(false);
     }
@@ -44,17 +46,17 @@ export function Pdf() {
   return (
     <>
       <PageHeading
-        eyebrow="10 / THE COMPLETE BOOK"
-        title="The original reference"
-        description="The complete 77-page Bass Guitar Fretboard & Complete Reference, exactly as supplied."
+        eyebrow="MUSIKTHEORIE / ORIGINALBUCH"
+        title="Das Originalbuch"
+        description="Das vollständige englischsprachige Original: Bass Guitar Fretboard & Complete Reference, 77 Seiten, unverändert."
       />
       <div className="pdf-layout">
         <div className="book-cover">
           <div className="book-cover-top">
-            STANDARD FOUR-STRING BASS<span>E — A — D — G</span>
+            STANDARD-VIERSAITER<span>E — A — D — G</span>
           </div>
           <div>
-            <span className="eyebrow">THE COMPLETE EDITION</span>
+            <span className="eyebrow">DIE VOLLSTÄNDIGE AUSGABE</span>
             <h2>
               Bass Guitar
               <br />
@@ -63,47 +65,52 @@ export function Pdf() {
               <br />
               Reference
             </h2>
-            <p>Reference · Practice · Improvisation</p>
+            <p>Nachschlagen · Üben · Improvisieren</p>
           </div>
           <div className="book-cover-bottom">
             <span>
-              40 EXERCISES
+              40 ÜBUNGEN
               <br />
-              10 PRACTICE PROGRAMS
+              10 ÜBEPROGRAMME
             </span>
-            <span>REVISION 5</span>
+            <span>AUSGABE 5</span>
           </div>
         </div>
         <div>
-          <Panel title="Keep the book close">
+          <Panel title="Das Buch griffbereit">
             <p>
-              The interactive pages are built from this book. Use the PDF when you want the full
-              static reference, the original page layouts, or a printable copy.
+              Die interaktiven Seiten basieren auf diesem Buch. Das englischsprachige PDF bietet die
+              vollständige Referenz im Original-Layout und eignet sich zum Ausdrucken.
             </p>
             <div className="pdf-actions">
               <a className="button primary" href={pdf} target="_blank" rel="noreferrer">
                 <Icon name="book" />
-                Open complete PDF
+                Vollständiges PDF öffnen
               </a>
               <a className="button" href={pdf} download>
                 <Icon name="download" />
-                Download PDF
+                PDF herunterladen
               </a>
               <button onClick={() => setEmbed((v) => !v)}>
-                {embed ? 'Hide reading view' : 'Read inside the app'}
+                {embed ? 'Leseansicht ausblenden' : 'In der App lesen'}
               </button>
             </div>
-            <p className="pdf-file-info">77 pages · 556 KB · Original PDF</p>
+            <p className="pdf-file-info">77 Seiten · 556 KB · Englisches Original-PDF</p>
           </Panel>
-          <Panel title="Offline & installation">
+          <Panel title="Offline & Installation">
             <p>
-              The installed app runs locally in your browser. Core reference pages, notation,
-              search, and practice tools are cached after the first successful production load.
+              Die installierte App läuft lokal im Browser. Referenzseiten, Notation, Suche und
+              Übewerkzeuge werden nach dem ersten erfolgreichen Laden der veröffentlichten App
+              zwischengespeichert.
             </p>
             <div className="pdf-actions">
               <button onClick={save} disabled={cached || busy}>
                 <Icon name={cached ? 'check' : 'download'} />
-                {busy ? 'Saving…' : cached ? 'PDF saved offline' : 'Save PDF for offline use'}
+                {busy
+                  ? 'Wird gespeichert…'
+                  : cached
+                    ? 'PDF offline gespeichert'
+                    : 'PDF offline speichern'}
               </button>
               <button
                 onClick={async () => {
@@ -112,37 +119,43 @@ export function Pdf() {
                     const choice = await prompt.userChoice;
                     setInstallMessage(
                       choice.outcome === 'accepted'
-                        ? 'Installation requested.'
-                        : 'You can install later from your browser menu.',
+                        ? 'Installation angefordert.'
+                        : 'Du kannst die App später über das Browser-Menü installieren.',
                     );
                     setPrompt(null);
                   } else
                     setInstallMessage(
-                      'Use your browser’s Install app or Add to Home Screen command. Installation is available from HTTPS hosting, or localhost when supported.',
+                      'Nutze im Browser „App installieren“ oder „Zum Startbildschirm hinzufügen“. Die Installation ist bei HTTPS-Verbindungen oder auf unterstützten localhost-Seiten verfügbar.',
                     );
                 }}
               >
-                Install app
+                App installieren
               </button>
             </div>
             {message && <p role="status">{message}</p>}
             {installMessage && <p role="status">{installMessage}</p>}
             <p className="pdf-file-info">
-              Favorites, progress, roots and practice logs stay on this device.
+              Grundtöne, Tempo und gespeicherte Patterns bleiben auf diesem Gerät.
             </p>
           </Panel>
         </div>
       </div>
       {embed && (
-        <Panel title="Complete reference · reading view">
-          <iframe className="pdf-reader" title="Complete bass reference PDF" src={pdf} />
-          <p>If the browser cannot show the PDF inline, use Open complete PDF above.</p>
+        <Panel title="Vollständiges Referenzbuch · Leseansicht">
+          <iframe
+            className="pdf-reader"
+            title="Vollständiges Bass-Referenz-PDF (Englisch)"
+            src={pdf}
+          />
+          <p>
+            Falls dein Browser das PDF hier nicht anzeigt, nutze oben „Vollständiges PDF öffnen“.
+          </p>
         </Panel>
       )}
       <Notice>
-        The PDF remains unchanged. The app uses the LaTeX source for content and derives notation
-        and TAB from shared physical fingerings. Documented source inconsistencies are clarified in
-        the relevant exercise pages.
+        Das englischsprachige Original-PDF bleibt unverändert. Die App nutzt dessen LaTeX-Quelle und
+        erzeugt Notation und TAB aus denselben Fingersätzen. Bekannte Unstimmigkeiten der Quelle
+        werden auf den jeweiligen Übungsseiten erläutert.
       </Notice>
     </>
   );

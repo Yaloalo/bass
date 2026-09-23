@@ -1,118 +1,127 @@
 export const readingRows = [
-  ['Standard tuning', 'E–A–D–G, lowest to highest. G is the top line in TAB.'],
-  ['Bass-clef lines', 'G–B–D–F–A, from the lowest line upward.'],
-  ['Bass-clef spaces', 'A–C–E–G, from the lowest space upward.'],
-  ['Written range', 'Open strings are written E2, A2, D3, G3. They sound E1, A1, D2, G2.'],
+  ['Standardstimmung', 'E–A–D–G, von tief nach hoch. G steht in TAB auf der obersten Linie.'],
+  ['Linien im Bassschlüssel', 'G–H–D–F–A, von der untersten Linie aufwärts.'],
+  ['Zwischenräume im Bassschlüssel', 'A–C–E–G, vom untersten Zwischenraum aufwärts.'],
   [
-    'Accidentals',
-    'A sharp or flat lasts through the current measure for that staff position, unless cancelled or replaced.',
+    'Notierter Tonumfang',
+    'Leersaiten werden als E2, A2, D3, G3 notiert. Sie klingen E1, A1, D2, G2 (internationale Oktavnummerierung).',
   ],
-  ['Tie', 'Joins the same pitch into one sustained duration; do not reattack.'],
-  ['Dot', 'Adds half of the original value. A dotted quarter lasts three eighth notes.'],
+  [
+    'Versetzungszeichen',
+    'Kreuz oder Be gelten für die betreffende Notenposition bis zum Taktende, sofern sie nicht aufgehoben oder ersetzt werden.',
+  ],
+  [
+    'Haltebogen',
+    'Verbindet gleich hohe Töne zu einer durchgehenden Dauer; nicht erneut anschlagen.',
+  ],
+  [
+    'Punktierung',
+    'Verlängert um die Hälfte des ursprünglichen Werts. Eine punktierte Viertel dauert drei Achtel.',
+  ],
 ];
 export const articulationRows = [
   [
     'Staccato',
-    'Dot above or below the note',
-    'Shorten the note while preserving its rhythmic position.',
+    'Punkt über oder unter der Note',
+    'Verkürze den Ton, ohne seine rhythmische Position zu verändern.',
   ],
-  ['Accent', '>', 'A stronger attack.'],
-  ['Dead / ghost note', '×', 'Muted percussive attack without a clear pitch.'],
-  ['Slide', '/ or \\ in TAB', 'Maintain contact while moving to the destination fret.'],
+  ['Akzent', '>', 'Kräftiger anschlagen.'],
+  ['Gedämpfter Ton / Ghost Note', '×', 'Gedämpfter, perkussiver Anschlag ohne klare Tonhöhe.'],
   [
-    'Hammer-on / pull-off',
-    'h / p in TAB',
-    'Sound the following note mainly with the fretting hand.',
+    'Glissando / Slide',
+    '/ oder \\ in TAB',
+    'Halte den Kontakt zur Saite auf dem Weg zum Zielbund.',
   ],
-  ['Let ring', 'Tie or “let ring”', 'Sustain until the indicated release.'],
+  ['Hammer-on / Pull-off', 'h / p in TAB', 'Erzeuge den Folgeton hauptsächlich mit der Greifhand.'],
+  ['Ausklingen lassen', 'Haltebogen oder „let ring“', 'Bis zum angegebenen Ende klingen lassen.'],
 ];
 export const rhythmRows = [
-  ['Whole', '4 beats', '¼ note per beat', '1 whole note = 4 quarter notes'],
-  ['Half', '2 beats', '½ note per beat', '1 half note = 2 quarter notes'],
-  ['Quarter', '1 beat', '1 note per beat', 'The BPM unit in these exercises'],
-  ['Eighth', '½ beat', '2 notes per beat', 'Count: 1 & 2 & 3 & 4 &'],
-  ['Sixteenth', '¼ beat', '4 notes per beat', 'Count: 1 e & a 2 e & a …'],
+  ['Ganze', '4 Schläge', '¼ Note pro Schlag', '1 Ganze = 4 Viertel'],
+  ['Halbe', '2 Schläge', '½ Note pro Schlag', '1 Halbe = 2 Viertel'],
+  ['Viertel', '1 Schlag', '1 Note pro Schlag', 'Die BPM-Einheit dieser Übungen'],
+  ['Achtel', '½ Schlag', '2 Noten pro Schlag', 'Zähle: 1 & 2 & 3 & 4 &'],
+  ['Sechzehntel', '¼ Schlag', '4 Noten pro Schlag', 'Zähle: 1 e & a 2 e & a …'],
 ];
 export const basslineLayers = [
   [
-    'Root',
-    'Establish the chord and tonal center. Put the root at the structural point that fits the groove.',
+    'Grundton',
+    'Verankere Akkord und tonales Zentrum. Setze den Grundton an eine tragende Stelle des Grooves.',
   ],
   [
-    'Chord tones',
-    'The third states major or minor. The fifth supports the root. The seventh defines extended harmony. Octaves add register without changing pitch class.',
+    'Akkordtöne',
+    'Die Terz bestimmt Dur oder Moll, die Quinte stützt den Grundton und die Septime prägt die erweiterte Harmonie. Oktaven ändern die Lage, nicht die Tonklasse.',
   ],
   [
-    'Rhythm',
-    'Choose a short rhythmic cell. Decide when each note starts and stops. Repeat it long enough to establish identity.',
+    'Rhythmus',
+    'Wähle eine kurze rhythmische Zelle. Bestimme Beginn und Ende jedes Tons. Wiederhole sie, bis sie einen Wiedererkennungswert hat.',
   ],
   [
-    'Passing notes',
-    'Connect chord tones with notes from the key. Their destination and rhythmic placement give them meaning.',
+    'Durchgangstöne',
+    'Verbinde Akkordtöne mit Tönen der Tonart. Ziel und rhythmische Position geben ihnen Bedeutung.',
   ],
   [
-    'Approach notes',
-    'One fret below or above a target creates directed tension. Resolve clearly onto the next chord tone.',
+    'Annäherungstöne',
+    'Ein Bund unter oder über einem Zielton erzeugt gerichtete Spannung. Löse sie klar zum nächsten Akkordton auf.',
   ],
   [
-    'Voice leading',
-    'Choose a nearby tone of the next chord. Keep common notes or move by a small interval to make the change audible.',
+    'Stimmführung',
+    'Wähle einen nahen Ton des nächsten Akkords. Behalte gemeinsame Töne bei oder bewege dich in kleinen Intervallen.',
   ],
 ];
 export const latinRows = [
   [
-    'Repeated cell',
-    'A tumbao is recognized through a repeating rhythmic and harmonic cell. Variation should preserve its identity.',
+    'Wiederkehrende Zelle',
+    'Ein Tumbao lebt von einer wiederkehrenden rhythmischen und harmonischen Zelle. Bewahre ihren Charakter auch bei Variationen.',
   ],
   [
-    'Anticipation',
-    'A note may arrive before the downbeat and continue across it. Know which chord owns that note.',
+    'Vorwegnahme',
+    'Ein Ton kann vor der schweren Zählzeit beginnen und darüber hinaus klingen. Wisse, zu welchem Akkord er gehört.',
   ],
   [
-    'Chord tones',
-    'Root and fifth establish stability. Thirds, sixths and sevenths identify the actual harmony.',
+    'Akkordtöne',
+    'Grundton und Quinte geben Stabilität. Terzen, Sexten und Septimen kennzeichnen die Harmonie.',
   ],
   [
-    'Dominant harmony',
-    'Mixolydian and dominant-7 arpeggios expose 3 and ♭7, the defining tritone.',
+    'Dominantharmonik',
+    'Mixolydisch und Dominantsept-Arpeggien betonen 3 und ♭7, den charakteristischen Tritonus.',
   ],
   [
-    'Minor harmony',
-    'Dorian supplies natural 6; natural minor supplies ♭6. Follow the actual chord, key and melody.',
+    'Mollharmonik',
+    'Dorisch liefert die große Sexte, natürliches Moll die kleine Sexte. Orientiere dich an Akkord, Tonart und Melodie.',
   ],
   [
-    'Minor-key cadence',
-    'Harmonic minor explains the raised 7 and major-third dominant chord resolving to minor i.',
+    'Kadenz in Moll',
+    'Harmonisch Moll erklärt die erhöhte Septime und den Dur-Dominantakkord, der sich zur Molltonika auflöst.',
   ],
   [
-    'Chromatic connection',
-    'A one-fret approach into a clear destination can be more useful than a complete scale run.',
+    'Chromatische Verbindung',
+    'Eine Annäherung um einen Bund zu einem klaren Ziel kann nützlicher sein als ein vollständiger Tonleiterlauf.',
   ],
   [
-    'Space & percussion',
-    'Sustains and rests leave room for conga, timbales, piano and vocals. Listen before adding notes.',
+    'Raum und Perkussion',
+    'Lange Töne und Pausen lassen Platz für Conga, Timbales, Klavier und Gesang. Höre zu, bevor du Töne ergänzt.',
   ],
 ];
 export const phraseRows = [
   [
-    'Chord-tone landing',
-    'Aim for the root, third, fifth or seventh at a strong beat or chord change.',
+    'Auf einem Akkordton landen',
+    'Steuere Grundton, Terz, Quinte oder Septime auf einer starken Zählzeit oder beim Akkordwechsel an.',
   ],
   [
-    'Motif & repetition',
-    'Build a two- or three-note idea. Repeat it; change just one pitch or rhythmic detail.',
+    'Motiv und Wiederholung',
+    'Entwickle eine Idee aus zwei oder drei Tönen. Wiederhole sie und verändere nur einen Ton oder ein rhythmisches Detail.',
   ],
   [
-    'Approach note',
-    'Play one fret below or above your destination, then resolve. See M14 and M15.',
+    'Annäherungston',
+    'Spiele einen Bund unter oder über deinem Ziel und löse dann auf. Siehe M14 und M15.',
   ],
-  ['Enclosure', 'Surround a target from above and below before landing on it. See M16.'],
+  ['Umspielung', 'Umspiele den Zielton von oben und unten, bevor du ihn erreichst. Siehe M16.'],
   [
-    'Question and answer',
-    'Play a short phrase, leave space, then answer with a related idea in another register or on another chord tone.',
+    'Frage und Antwort',
+    'Spiele eine kurze Phrase, lasse Platz und antworte mit einer verwandten Idee in anderer Lage oder auf einem anderen Akkordton.',
   ],
   [
-    'Rhythmic variation',
-    'Keep the pitch idea and alter the placement, length or accent. Leave room for the drums.',
+    'Rhythmische Variation',
+    'Behalte die Tonidee und ändere Einsatz, Länge oder Akzent. Lasse Raum für das Schlagzeug.',
   ],
 ];

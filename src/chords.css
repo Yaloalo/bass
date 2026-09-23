@@ -1,0 +1,200 @@
+.chord-filters {
+  display: flex;
+  align-items: end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.chord-filters .filter-search {
+  flex: 1;
+  min-width: 220px;
+}
+.chord-family {
+  margin-bottom: 30px;
+}
+.chord-family-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
+  margin-bottom: 14px;
+}
+.chord-family-head h2 {
+  font-size: 16px;
+  margin: 0;
+}
+.chord-family-head p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.chord-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px;
+}
+.chord-card {
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  padding: 13px 15px;
+}
+.chord-card:hover {
+  border-color: var(--accent);
+}
+.chord-card strong {
+  display: block;
+  font-size: 19px;
+  font-weight: 650;
+}
+.chord-card-name {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.chord-card-formula {
+  display: block;
+  font-size: 13px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  margin-top: 8px;
+}
+.chord-card-notes {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+/* The formula strip is the page's anchor: one row, symbol above note, weight = importance. */
+.chord-formula-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  margin-bottom: 18px;
+}
+.formula-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 56px;
+  padding: 7px 11px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+}
+.formula-chip b {
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.formula-chip small {
+  font-size: 11px;
+  margin-top: 2px;
+}
+.formula-chip em {
+  font-size: 9px;
+  font-style: normal;
+  color: var(--muted);
+  margin-top: 1px;
+}
+.formula-chip.is-required {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.formula-chip.is-omissible {
+  background: var(--surface);
+  color: var(--muted);
+  border-style: dashed;
+}
+.formula-chip.is-altered {
+  box-shadow: inset 0 0 0 2px var(--chord);
+  border-color: var(--chord);
+}
+.formula-legend {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--muted);
+  max-width: 34ch;
+}
+.voicing-line {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 4px 0 8px;
+}
+.tertian-line {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  margin: 4px 0 6px;
+  color: var(--muted);
+}
+.tertian-line .is-avoided {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+.alias-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0;
+}
+.alias-row span {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.practice-controls {
+  display: flex;
+  align-items: end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.practice-controls .tool-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 150px;
+}
+.practice-controls .tool-field > span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+.chord-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  margin-top: 24px;
+}
+.chord-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  color: var(--accent);
+}
+@media (max-width: 700px) {
+  .formula-legend {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+  .chord-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}

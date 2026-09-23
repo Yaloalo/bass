@@ -45,7 +45,7 @@ export function buildBassline(key: string, layers: string[]): BasslineBar[] {
       .map((l) => ({
         degree: degreeMap[l],
         name: spellDegree(chord.root, degreeMap[l]),
-        role: 'Chord tone',
+        role: 'Akkordton',
       }));
     const next = chords[(index + 1) % chords.length];
     const approach = spellDegree(next.root, '7');
@@ -58,12 +58,12 @@ export function buildBassline(key: string, layers: string[]): BasslineBar[] {
         degree: '',
         name: passing,
         role: available.some((n) => n.name === passing)
-          ? 'Chord tone / connection'
-          : 'Passing tone',
+          ? 'Akkordton / Verbindung'
+          : 'Durchgangston',
       });
     if (layers.includes('Chromatic approach'))
-      available.push({ degree: '', name: approach, role: 'Approach to ' + next.root });
-    const stable = available.filter((n) => n.role === 'Chord tone');
+      available.push({ degree: '', name: approach, role: 'Annäherung an ' + next.root });
+    const stable = available.filter((n) => n.role === 'Akkordton');
     if (!stable.length)
       return { symbol: chord.root + chord.symbol, root: chord.root, available, events: [] };
     const choices = [
@@ -74,7 +74,7 @@ export function buildBassline(key: string, layers: string[]): BasslineBar[] {
     ];
     if (layers.includes('Passing tones')) choices[2] = available.find((n) => n.name === passing)!;
     if (layers.includes('Chromatic approach'))
-      choices[3] = available.find((n) => n.role.startsWith('Approach'))!;
+      choices[3] = available.find((n) => n.role.startsWith('Annäherung'))!;
     const events = choices.map((note, i) => {
       let midi = 36 + pitchClass(note.name);
       if (midi > 47) midi -= 12;

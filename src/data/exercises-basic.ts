@@ -1,0 +1,641 @@
+import type { MusicEvent } from '../lib/music';
+
+/**
+ * Twelve deliberately plain exercises for a first year on the instrument. The book's
+ * P- and M-numbers start at a level that already assumes a working hand; these fill the
+ * step before that — one string, one shape, one idea at a time.
+ *
+ * Everything is written in D like the book's material, so the same transposition applies.
+ * `groove` names a drum preset that suits the exercise, which the page offers to load.
+ */
+export interface BasicExercise {
+  id: string;
+  number: number;
+  title: string;
+  instructions: string;
+  target: string;
+  rhythm: string;
+  startBpm: number;
+  targetBpm: number;
+  /** A preset id from the drum library, or none where a bare click is better. */
+  groove?: string;
+  events: MusicEvent[];
+}
+
+type Step = [string, number];
+const note = (pairs: Step[], duration: string): MusicEvent[] =>
+  pairs.map(([string, fret]) => ({ string: string as 'E' | 'A' | 'D' | 'G', fret, duration }));
+/**
+ * Forwards then backwards without repeating the turning note, which leaves an odd
+ * number of notes — the closing rest fills the bar and gives a breath before the repeat.
+ */
+const upDown = (pairs: Step[], duration: string): MusicEvent[] => [
+  ...note([...pairs, ...pairs.slice(0, -1).reverse()], duration),
+  { rest: true, duration },
+];
+
+// One octave of D major on the A and D strings, the shape every beginner learns first.
+const dMajor: Step[] = [
+  ['A', 5],
+  ['A', 7],
+  ['A', 9],
+  ['A', 10],
+  ['D', 7],
+  ['D', 9],
+  ['D', 11],
+  ['D', 12],
+];
+const dMinor: Step[] = [
+  ['A', 5],
+  ['A', 7],
+  ['A', 8],
+  ['A', 10],
+  ['A', 12],
+  ['D', 10],
+  ['D', 12],
+  ['D', 14],
+];
+
+export const basicExercises: BasicExercise[] = [
+  {
+    id: 'B1',
+    number: 1,
+    title: 'Leere Saiten im Wechselschlag',
+    instructions:
+      'Vier Anschläge pro Saite, abwärts von G nach E. Zeigefinger und Mittelfinger wechseln sich streng ab: i–m–i–m. Die Greifhand liegt nur locker auf.',
+    target: 'Beide Anschlagsfinger klingen gleich laut. Nichts scheppert und nichts summt mit.',
+    rhythm: 'Viertelnoten',
+    startBpm: 60,
+    targetBpm: 100,
+    groove: 'sparse',
+    events: note(
+      [
+        ['G', 0],
+        ['G', 0],
+        ['G', 0],
+        ['G', 0],
+        ['D', 0],
+        ['D', 0],
+        ['D', 0],
+        ['D', 0],
+        ['A', 0],
+        ['A', 0],
+        ['A', 0],
+        ['A', 0],
+        ['E', 0],
+        ['E', 0],
+        ['E', 0],
+        ['E', 0],
+      ],
+      'q',
+    ),
+  },
+  {
+    id: 'B2',
+    number: 2,
+    title: 'Ein Ton, ein Klick',
+    instructions:
+      'Ein einziger Ton, eine Viertelnote pro Klick. Lass ihn voll ausklingen und dämpfe ihn erst, wenn der nächste kommt.',
+    target: 'Der Ton landet auf dem Klick, nicht davor und nicht danach.',
+    rhythm: 'Viertelnoten',
+    startBpm: 60,
+    targetBpm: 90,
+    groove: 'sparse',
+    events: note(
+      Array.from({ length: 8 }, () => ['A', 5] as Step),
+      'q',
+    ),
+  },
+  {
+    id: 'B3',
+    number: 3,
+    title: 'Halbtonschritte auf einer Saite',
+    instructions:
+      'Bund für Bund aufwärts und wieder zurück, ein Finger pro Bund. Die Finger bleiben über den Saiten stehen, statt abzuheben.',
+    target: 'Jeder Ton klingt gleich lang. Der kleine Finger drückt ohne Nachhelfen.',
+    rhythm: 'Viertelnoten',
+    startBpm: 50,
+    targetBpm: 90,
+    groove: 'sparse',
+    events: upDown(
+      [
+        ['A', 5],
+        ['A', 6],
+        ['A', 7],
+        ['A', 8],
+      ],
+      'q',
+    ),
+  },
+  {
+    id: 'B4',
+    number: 4,
+    title: 'Ganztonschritte',
+    instructions:
+      'Immer zwei Bünde weiter: 5, 7, 9, 11 und zurück. Die Hand wandert mit, statt sich zu strecken.',
+    target: 'Der Abstand klingt jedes Mal gleich groß. Kein Ton wird abgewürgt.',
+    rhythm: 'Viertelnoten',
+    startBpm: 50,
+    targetBpm: 90,
+    groove: 'sparse',
+    events: upDown(
+      [
+        ['A', 5],
+        ['A', 7],
+        ['A', 9],
+        ['A', 11],
+      ],
+      'q',
+    ),
+  },
+  {
+    id: 'B5',
+    number: 5,
+    title: 'Tonleiter hoch und runter',
+    instructions:
+      'D-Dur über eine Oktave aufwärts, dann ohne Pause wieder abwärts. Der höchste Ton wird nicht wiederholt.',
+    target: 'Der Wechsel von der A- auf die D-Saite geht ohne Loch im Rhythmus.',
+    rhythm: 'Viertelnoten',
+    startBpm: 55,
+    targetBpm: 100,
+    groove: 'pocket',
+    events: upDown(dMajor, 'q'),
+  },
+  {
+    id: 'B6',
+    number: 6,
+    title: 'Moll-Tonleiter hoch und runter',
+    instructions:
+      'Dieselbe Übung in D-Moll. Achte auf die dritte Stufe – sie ist der einzige Ton, der anders klingt als in Dur.',
+    target: 'Du hörst den Unterschied zwischen Dur und Moll, ohne hinzusehen.',
+    rhythm: 'Viertelnoten',
+    startBpm: 55,
+    targetBpm: 100,
+    groove: 'pocket',
+    events: upDown(dMinor, 'q'),
+  },
+  {
+    id: 'B7',
+    number: 7,
+    title: 'Grundton und Oktave',
+    instructions:
+      'Zwei Bünde weiter, zwei Saiten höher: die Oktavform. Spiel sie abwechselnd und lass die Hand dabei stehen.',
+    target: 'Die Form sitzt blind. Die tiefere Saite wird vom Daumen gedämpft.',
+    rhythm: 'Viertelnoten',
+    startBpm: 60,
+    targetBpm: 110,
+    groove: 'four',
+    events: note(
+      [
+        ['A', 5],
+        ['D', 7],
+        ['A', 5],
+        ['D', 7],
+        ['E', 5],
+        ['D', 7],
+        ['A', 5],
+        ['D', 7],
+      ],
+      'q',
+    ),
+  },
+  {
+    id: 'B8',
+    number: 8,
+    title: 'Grundton und Quinte',
+    instructions:
+      'Der zweithäufigste Griff im Bass: Grundton, dann die Quinte eine Saite höher und zwei Bünde weiter. Hin und zurück.',
+    target: 'Grundton und Quinte klingen gleich laut, die Quinte drängt sich nicht vor.',
+    rhythm: 'Viertelnoten',
+    startBpm: 60,
+    targetBpm: 110,
+    groove: 'pocket',
+    events: note(
+      [
+        ['A', 5],
+        ['D', 7],
+        ['A', 5],
+        ['D', 7],
+        ['A', 5],
+        ['D', 7],
+        ['A', 5],
+        ['A', 5],
+      ],
+      'q',
+    ),
+  },
+  {
+    id: 'B9',
+    number: 9,
+    title: 'Dreiklang hoch und runter',
+    instructions:
+      'Grundton, Terz, Quinte, Oktave und zurück. Das sind die Töne, aus denen die meisten Basslinien bestehen.',
+    target: 'Die Terz sitzt sauber – sie entscheidet, ob es nach Dur klingt.',
+    rhythm: 'Viertelnoten',
+    startBpm: 55,
+    targetBpm: 100,
+    groove: 'pocket',
+    events: upDown(
+      [
+        ['A', 5],
+        ['A', 9],
+        ['D', 7],
+        ['D', 12],
+      ],
+      'q',
+    ),
+  },
+  {
+    id: 'B10',
+    number: 10,
+    title: 'Achtel auf dem Grundton',
+    instructions:
+      'Acht gleichmäßige Achtel pro Takt auf einem Ton. Zähl laut mit: 1 und 2 und 3 und 4 und.',
+    target: 'Die Achtel sind exakt gleich lang. Der Wechselschlag bleibt bis zum Schluss sauber.',
+    rhythm: 'Achtelnoten',
+    startBpm: 50,
+    targetBpm: 90,
+    groove: 'rock-eighth',
+    events: note(
+      Array.from({ length: 16 }, () => ['A', 5] as Step),
+      '8',
+    ),
+  },
+  {
+    id: 'B11',
+    number: 11,
+    title: 'Zwei Takte, ein Wechsel',
+    instructions:
+      'Zwei Takte auf dem Grundton, zwei Takte auf der Quarte. Der Wechsel kommt genau auf die Eins.',
+    target: 'Der Akkordwechsel ist hörbar, ohne dass der Puls stolpert.',
+    rhythm: 'Viertelnoten',
+    startBpm: 60,
+    targetBpm: 100,
+    groove: 'pocket',
+    events: note(
+      [
+        ['A', 5],
+        ['A', 5],
+        ['A', 5],
+        ['A', 5],
+        ['A', 10],
+        ['A', 10],
+        ['A', 10],
+        ['A', 10],
+      ],
+      'q',
+    ),
+  },
+  {
+    id: 'B12',
+    number: 12,
+    title: 'Tonleiter in Terzen',
+    instructions:
+      'Immer einen Ton der Tonleiter überspringen: 1–3, 2–4, 3–5 und so weiter. Langsam anfangen.',
+    target: 'Die Tonleiter sitzt so gut, dass du sie auch in Sprüngen findest.',
+    rhythm: 'Achtelnoten',
+    startBpm: 50,
+    targetBpm: 85,
+    groove: 'pocket',
+    events: note(
+      [
+        ['A', 5],
+        ['A', 9],
+        ['A', 7],
+        ['A', 10],
+        ['A', 9],
+        ['D', 7],
+        ['A', 10],
+        ['D', 9],
+        ['D', 7],
+        ['D', 11],
+        ['D', 9],
+        ['D', 12],
+        ['D', 11],
+        ['D', 9],
+        ['D', 7],
+        ['A', 10],
+      ],
+      '8',
+    ),
+  },
+  {
+    id: 'B13',
+    number: 13,
+    title: 'Quarte und Quinte im Wechsel',
+    instructions:
+      'Grundton, Quarte, Grundton, Quinte. Das sind die drei Stufen, auf denen fast jeder Blues steht.',
+    target: 'Du findest Quarte und Quinte, ohne die Bünde zu zählen.',
+    rhythm: 'Viertelnoten',
+    startBpm: 60,
+    targetBpm: 110,
+    groove: 'pocket',
+    events: note(
+      [
+        ['A', 5],
+        ['A', 10],
+        ['A', 5],
+        ['A', 12],
+        ['A', 5],
+        ['A', 10],
+        ['A', 5],
+        ['A', 5],
+      ],
+      'q',
+    ),
+  },
+  {
+    id: 'B14',
+    number: 14,
+    title: 'Pentatonik hoch und runter',
+    instructions:
+      'Fünf Töne statt sieben: die Moll-Pentatonik. Keine Halbtonschritte, nichts kann schief klingen.',
+    target: 'Die Form sitzt in einer Lage, ohne die Hand zu verschieben.',
+    rhythm: 'Viertelnoten',
+    startBpm: 55,
+    targetBpm: 105,
+    groove: 'rock-eighth',
+    events: upDown(
+      [
+        ['A', 5],
+        ['A', 8],
+        ['D', 5],
+        ['D', 7],
+        ['D', 10],
+        ['G', 7],
+      ],
+      'q',
+    ),
+  },
+  {
+    id: 'B15',
+    number: 15,
+    title: 'Halbe Noten halten',
+    instructions:
+      'Ein Ton über zwei Zählzeiten. Lass ihn wirklich stehen, statt ihn früh abzudämpfen – das ist schwerer, als es klingt.',
+    target: 'Der Ton klingt bis zum nächsten durch, ohne zu brummen.',
+    rhythm: 'Viertelnoten',
+    startBpm: 60,
+    targetBpm: 100,
+    groove: 'halftime',
+    events: note(
+      [
+        ['A', 5],
+        ['A', 5],
+        ['A', 10],
+        ['A', 10],
+        ['A', 12],
+        ['A', 12],
+        ['A', 10],
+        ['A', 10],
+      ],
+      'q',
+    ),
+  },
+  {
+    id: 'B16',
+    number: 16,
+    title: 'Die Eins finden',
+    instructions: 'Drei Zählzeiten Pause, dann der Grundton auf der Eins. Zähl die Pause laut mit.',
+    target: 'Die Eins sitzt, auch wenn vorher nichts gespielt wurde.',
+    rhythm: 'Viertelnoten',
+    startBpm: 60,
+    targetBpm: 110,
+    groove: 'four',
+    events: [
+      ...note([['A', 5]], 'q'),
+      { rest: true, duration: 'q' },
+      { rest: true, duration: 'q' },
+      { rest: true, duration: 'q' },
+      ...note([['A', 5]], 'q'),
+      { rest: true, duration: 'q' },
+      { rest: true, duration: 'q' },
+      { rest: true, duration: 'q' },
+    ],
+  },
+  {
+    id: 'B17',
+    number: 17,
+    title: 'Offbeat spielen',
+    instructions: 'Nur die „und“-Zählzeiten. Zähl 1 und 2 und – gespielt wird jeweils das „und“.',
+    target: 'Der Ton liegt genau zwischen zwei Klicks, nicht kurz davor.',
+    rhythm: 'Achtelnoten',
+    startBpm: 50,
+    targetBpm: 90,
+    groove: 'ska',
+    events: [
+      { rest: true, duration: '8' },
+      ...note([['A', 5]], '8'),
+      { rest: true, duration: '8' },
+      ...note([['A', 5]], '8'),
+      { rest: true, duration: '8' },
+      ...note([['A', 5]], '8'),
+      { rest: true, duration: '8' },
+      ...note([['A', 5]], '8'),
+      { rest: true, duration: '8' },
+      ...note([['A', 5]], '8'),
+      { rest: true, duration: '8' },
+      ...note([['A', 5]], '8'),
+      { rest: true, duration: '8' },
+      ...note([['A', 5]], '8'),
+      { rest: true, duration: '8' },
+      ...note([['A', 5]], '8'),
+    ],
+  },
+  {
+    id: 'B18',
+    number: 18,
+    title: 'Derselbe Ton auf zwei Saiten',
+    instructions:
+      'Erst am fünften Bund der A-Saite, dann leer klingend als D-Saite gedacht: derselbe Ton an zwei Orten. Hier: Bund 5 und Bund 10 eine Saite tiefer.',
+    target: 'Du hörst, dass beide Griffe denselben Ton geben.',
+    rhythm: 'Viertelnoten',
+    startBpm: 55,
+    targetBpm: 100,
+    groove: 'four',
+    events: note(
+      [
+        ['A', 5],
+        ['E', 10],
+        ['A', 5],
+        ['E', 10],
+        ['D', 7],
+        ['A', 12],
+        ['D', 7],
+        ['A', 12],
+      ],
+      'q',
+    ),
+  },
+  {
+    id: 'B19',
+    number: 19,
+    title: 'Eine Lage, vier Bünde',
+    instructions:
+      'Bleib in einer Lage und spiel über alle vier Saiten, Zeigefinger bis kleiner Finger. Die Hand bewegt sich nicht.',
+    target: 'Alle vier Finger erreichen ihren Bund, ohne dass die Hand kippt.',
+    rhythm: 'Achtelnoten',
+    startBpm: 50,
+    targetBpm: 90,
+    groove: 'rock-eighth',
+    events: note(
+      [
+        ['E', 5],
+        ['E', 6],
+        ['E', 7],
+        ['E', 8],
+        ['A', 5],
+        ['A', 6],
+        ['A', 7],
+        ['A', 8],
+        ['D', 5],
+        ['D', 6],
+        ['D', 7],
+        ['D', 8],
+        ['G', 5],
+        ['G', 6],
+        ['G', 7],
+        ['G', 8],
+      ],
+      '8',
+    ),
+  },
+  {
+    id: 'B20',
+    number: 20,
+    title: 'Dämpfen lernen',
+    instructions:
+      'Ein Ton, eine Pause, ein Ton, eine Pause. Die Pause muss wirklich still sein – dämpfe mit der Greifhand.',
+    target: 'In der Pause ist nichts zu hören. Keine Saite summt nach.',
+    rhythm: 'Viertelnoten',
+    startBpm: 60,
+    targetBpm: 110,
+    groove: 'sparse',
+    events: [
+      ...note([['A', 5]], 'q'),
+      { rest: true, duration: 'q' },
+      ...note([['A', 5]], 'q'),
+      { rest: true, duration: 'q' },
+      ...note([['D', 7]], 'q'),
+      { rest: true, duration: 'q' },
+      ...note([['D', 7]], 'q'),
+      { rest: true, duration: 'q' },
+    ],
+  },
+  {
+    id: 'B21',
+    number: 21,
+    title: 'Tonleiter in Vierergruppen',
+    instructions:
+      'Von jeder Stufe aus vier Töne aufwärts, dann eine Stufe weiter. Das bringt die Tonleiter in die Finger, nicht nur in den Kopf.',
+    target: 'Die Gruppen fließen ineinander, ohne Absatz dazwischen.',
+    rhythm: 'Achtelnoten',
+    startBpm: 50,
+    targetBpm: 85,
+    groove: 'pocket',
+    events: note(
+      [
+        ['A', 5],
+        ['A', 7],
+        ['A', 9],
+        ['A', 10],
+        ['A', 7],
+        ['A', 9],
+        ['A', 10],
+        ['D', 7],
+        ['A', 9],
+        ['A', 10],
+        ['D', 7],
+        ['D', 9],
+        ['A', 10],
+        ['D', 7],
+        ['D', 9],
+        ['D', 11],
+      ],
+      '8',
+    ),
+  },
+  {
+    id: 'B22',
+    number: 22,
+    title: 'Oktaven über das Griffbrett',
+    instructions:
+      'Dieselbe Oktavform in vier Lagen. Spiel sie an Bund 3, 5, 7 und 10 und hör, dass es immer dieselbe Form ist.',
+    target: 'Der Lagenwechsel passiert lautlos und im Tempo.',
+    rhythm: 'Viertelnoten',
+    startBpm: 55,
+    targetBpm: 100,
+    groove: 'four',
+    events: note(
+      [
+        ['A', 3],
+        ['D', 5],
+        ['A', 5],
+        ['D', 7],
+        ['A', 7],
+        ['D', 9],
+        ['A', 10],
+        ['D', 12],
+      ],
+      'q',
+    ),
+  },
+  {
+    id: 'B23',
+    number: 23,
+    title: 'Grundton auf jeder Saite',
+    instructions:
+      'Denselben Ton auf allen vier Saiten suchen, von der tiefsten zur höchsten. Das ist die Grundlage fürs Griffbrettwissen.',
+    target: 'Du findest denselben Ton in vier Lagen, ohne zu zählen.',
+    rhythm: 'Viertelnoten',
+    startBpm: 50,
+    targetBpm: 90,
+    groove: 'four',
+    events: note(
+      [
+        ['E', 10],
+        ['A', 5],
+        ['E', 10],
+        ['A', 5],
+        ['D', 12],
+        ['G', 7],
+        ['D', 12],
+        ['G', 7],
+      ],
+      'q',
+    ),
+  },
+  {
+    id: 'B24',
+    number: 24,
+    title: 'Zwei Takte Shuffle',
+    instructions:
+      'Grundton und Quinte im Shuffle-Gefühl. Stell den Swing-Regler der Drum-Maschine auf 67 Prozent.',
+    target: 'Deine Achtel liegen im selben Dreiergefühl wie das Schlagzeug.',
+    rhythm: 'Achtelnoten',
+    startBpm: 60,
+    targetBpm: 100,
+    groove: 'shuffle',
+    events: note(
+      [
+        ['A', 5],
+        ['D', 7],
+        ['A', 5],
+        ['D', 7],
+        ['A', 5],
+        ['D', 7],
+        ['A', 5],
+        ['D', 7],
+        ['A', 10],
+        ['D', 12],
+        ['A', 10],
+        ['D', 12],
+        ['A', 10],
+        ['D', 12],
+        ['A', 10],
+        ['D', 12],
+      ],
+      '8',
+    ),
+  },
+];

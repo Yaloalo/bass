@@ -3,6 +3,13 @@ import { chromium, expect } from '@playwright/test';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { extname, resolve } from 'node:path';
+import { checkWorkstation } from './qa-workstation.mjs';
+import { checkRhythm } from './qa-rhythm.mjs';
+import { checkPiano } from './qa-piano.mjs';
+import { checkChords } from './qa-chords.mjs';
+import { checkEar } from './qa-ear.mjs';
+import { checkCircle } from './qa-circle.mjs';
+import { checkTuner } from './qa-tuner.mjs';
 const server = createServer(async (req, res) => {
   try {
     // Match Pages' extension-less HTML redirect as well as its SPA fallback.
@@ -82,36 +89,42 @@ try {
     await freshPage.waitForFunction(() => !!navigator.serviceWorker.controller);
     await fresh.setOffline(true);
     await freshPage.goto('http://127.0.0.1:4175/scales/lydian');
-    await expect(freshPage.locator('h1')).toHaveText('D Lydian');
+    await expect(freshPage.locator('h1')).toHaveText('D Lydisch');
     await expect(freshPage.locator('.notation-scroll svg')).toHaveCount(2);
     await expect(freshPage.locator('.error-text')).toHaveCount(0);
     await fresh.close();
   });
-  await check('root transposition and persisted favorites/progress', async () => {
+  await check('root transposition without study-status or favorite controls', async () => {
     await go('/scales/major');
     await expect(page.locator('.notation-scroll svg')).toHaveCount(2);
-    await page.getByLabel('Global root').selectOption('Eb');
-    await expect(page.locator('h1')).toContainText('E♭ Major');
-    await expect(page.locator('.notes-formula')).toContainText('E♭ · F · G · A♭ · B♭ · C · D · E♭');
-    await page.getByRole('button', { name: 'Add favorite', exact: true }).click();
-    await page.getByLabel('Study status').selectOption('Learning');
-    await page.locator('.sidebar-links').getByRole('link', { name: 'Dorian', exact: true }).click();
-    await expect(page.locator('h1')).toHaveText('E♭ Dorian');
+    await page.getByLabel('Globaler Grundton').selectOption('Eb');
+    await expect(page.locator('h1')).toContainText('Es Dur');
+    await expect(page.locator('.notes-formula')).toContainText('Es · F · G · As · B · C · D · Es');
+    await expect(page.getByRole('button', { name: 'Als Favorit merken', exact: true })).toHaveCount(
+      0,
+    );
+    await expect(page.getByLabel('Lernstatus')).toHaveCount(0);
+    await page
+      .locator('.sidebar-links')
+      .getByRole('link', { name: 'Dorisch', exact: true })
+      .click();
+    await expect(page.locator('h1')).toHaveText('Es Dorisch');
+    // Nothing about you is stored, so a reload starts from the defaults again.
     await page.reload();
-    await expect(page.getByLabel('Global root')).toHaveValue('Eb');
+    await expect(page.getByLabel('Globaler Grundton')).toHaveValue('D');
+    // Nothing is written to the browser at all.
+    const stored = await page.evaluate(() => Object.keys(localStorage));
+    if (stored.length) throw new Error(`the app stored ${stored.join(', ')}`);
     await go('/scales/major');
-    await expect(page.getByLabel('Study status')).toHaveValue('Learning');
-    await expect(
-      page.getByRole('button', { name: 'Remove favorite', exact: true }),
-    ).toHaveAttribute('aria-pressed', 'true');
-    await page.getByLabel('Global root').selectOption('D');
   });
   await check('fingering and TAB exact sequence, note click, scale comparison', async () => {
     await go('/scales/major');
     await expect(page.locator('.notation-scroll svg')).toHaveCount(2);
     await expect(page.locator('.degree-marker:not(.empty)')).toHaveCount(8);
-    await page.getByRole('button', { name: 'F#, degree 3, A string fret 9', exact: true }).click();
-    await expect(page.locator('.position-info')).toContainText('Major third of D');
+    await page
+      .getByRole('button', { name: 'Fis, Große Terz, A-Saite Bund 9', exact: true })
+      .click();
+    await expect(page.locator('.position-info')).toContainText('Große Terz über D');
     const nums = await page
       .locator('.score-grid .panel')
       .nth(1)
@@ -119,117 +132,175 @@ try {
       .allTextContents();
     if (nums.filter((t) => /^\d+$/.test(t)).join(',') !== '5,7,9,5,7,9,6,7')
       throw Error('TAB differs: ' + nums);
-    await page.getByLabel('Compare Major with').selectOption('mixolydian');
+    await page.getByLabel('Dur vergleichen mit').selectOption('mixolydian');
     await expect(page.locator('.different')).toHaveCount(2);
-    await page.getByRole('button', { name: 'Play scale', exact: true }).click();
-    await expect(page.getByRole('button', { name: 'Stop', exact: true })).toBeVisible();
-    await page.getByRole('button', { name: 'Stop', exact: true }).click();
+    await page.getByRole('button', { name: 'Tonleiter abspielen', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Stopp', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Stopp', exact: true }).click();
   });
   await check('keyboard search opens and navigates to exercise 14', async () => {
     await page.keyboard.press('Control+k');
-    await page.getByLabel('Search scales, exercises and theory').fill('exercise 14');
-    await expect(page.locator('.search-result')).toHaveCount(2);
+    await page.getByLabel('Tonleitern, Übungen und Theorie suchen').fill('exercise 14');
+    await expect(page.locator('.search-result')).toHaveCount(3);
     await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/exercises\/physical\/14$/);
     await expect(page.locator('.search-dialog')).toHaveCount(0);
   });
   await check('timer start pause reset and actual completion using virtual clock', async () => {
     await page.clock.install();
-    const timer = page.getByRole('region', { name: 'Exercise timer' });
+    const timer = page.getByRole('region', { name: 'Übetimer' });
     await timer.getByRole('button', { name: 'Start', exact: true }).click();
     await page.clock.fastForward(3200);
     await expect(timer.getByRole('timer')).toHaveText('04:57');
     await timer.getByRole('button', { name: 'Pause', exact: true }).click();
     await page.clock.fastForward(5000);
     await expect(timer.getByRole('timer')).toHaveText('04:57');
-    await timer.getByRole('button', { name: 'Reset timer' }).click();
+    await timer.getByRole('button', { name: 'Timer zurücksetzen' }).click();
     await expect(timer.getByRole('timer')).toHaveText('05:00');
     await timer.focus();
     await page.keyboard.press('Space');
     await page.clock.fastForward(300100);
-    await expect(timer.getByRole('status')).toContainText('Five minutes complete');
-    await page.getByLabel('Practice note', { exact: true }).fill('Clean, relaxed shift.');
-    await page.getByRole('button', { name: 'Save completed block' }).click();
-    await expect(page.getByRole('button', { name: 'Session saved' })).toBeVisible();
-    await page.getByLabel('Comfortable BPM').fill('92');
-    await page.reload();
-    await expect(page.getByLabel('Comfortable BPM')).toHaveValue('92');
+    await expect(timer.getByRole('status')).toContainText('Block abgeschlossen');
+    // No personal tempo is kept any more; the block length is what is adjustable.
+    await expect(page.getByLabel('Sicheres Tempo')).toHaveCount(0);
+    // Any number of minutes, not a fixed list.
+    await page.getByLabel('Blocklänge in Minuten').fill('7');
+    await expect(timer.getByRole('timer')).toHaveText('07:00');
+    await expect(timer).toContainText('7-MINUTEN-BLOCK');
+    await page.getByLabel('Blocklänge in Minuten').fill('12');
+    await expect(timer.getByRole('timer')).toHaveText('12:00');
+    await page.getByLabel('Blocklänge in Minuten').fill('5');
+    await expect(timer.getByRole('timer')).toHaveText('05:00');
   });
   await check(
     'program skip does not complete; finished timer marks only current block',
     async () => {
-      await go('/programs/salsa-latin');
+      await go('/programs/vier-finger');
       await page.clock.install();
-      await page.getByRole('button', { name: 'Next', exact: true }).click();
-      await expect(page.locator('.session-count')).toContainText('0 of 6');
-      await expect(page.locator('.program-current-header')).toContainText('P8');
+      await page.getByRole('button', { name: 'Weiter', exact: true }).click();
+      await expect(page.locator('.session-count')).toContainText('0 von 6');
+      await expect(page.locator('.program-current-header')).toContainText('P2');
       await page
-        .getByRole('region', { name: 'Exercise timer' })
+        .getByRole('region', { name: 'Übetimer' })
         .getByRole('button', { name: 'Start', exact: true })
         .click();
       await page.clock.fastForward(300100);
-      await expect(page.locator('.session-count')).toContainText('1 of 6');
-      await expect(page.locator('.program-current-header')).toContainText('P8');
+      await expect(page.locator('.session-count')).toContainText('1 von 6');
+      await expect(page.locator('.program-current-header')).toContainText('P2');
     },
   );
   await check('metronome starts and stops, tempo direct entry', async () => {
-    await page.getByLabel('Metronome BPM').fill('110');
-    await page.getByRole('button', { name: 'Start metronome' }).click();
-    await expect(page.getByRole('button', { name: 'Stop metronome' })).toBeVisible();
-    await page.getByRole('button', { name: 'Stop metronome' }).click();
-    await page.getByRole('button', { name: 'Increase tempo by 5' }).click();
-    await expect(page.getByLabel('Metronome BPM')).toHaveValue('115');
+    await page.getByLabel('Tempo in BPM').fill('110');
+    await page.getByRole('button', { name: 'Metronom starten' }).click();
+    await expect(page.getByRole('button', { name: 'Metronom stoppen' })).toBeVisible();
+    await page.getByRole('button', { name: 'Metronom stoppen' }).click();
+    await page.getByRole('button', { name: 'Tempo um 5 erhöhen' }).click();
+    await expect(page.getByLabel('Tempo in BPM')).toHaveValue('115');
   });
   await check('builder updates note layers and remains deterministic', async () => {
     await go('/basslines');
     const before = await page.locator('.available-note').count();
-    await page.getByLabel('Seventh', { exact: true }).check();
+    await page.getByLabel('Septime', { exact: true }).check();
     await expect(page.locator('.available-note')).toHaveCount(before + 1);
-    await page.getByLabel('Chromatic approach', { exact: true }).check();
+    await page.getByLabel('Chromatische Annäherung', { exact: true }).check();
     await expect(page.locator('.passing-note')).toHaveCount(1);
     await page.locator('.builder-chords button').nth(1).click();
-    await expect(page.locator('.available-notes')).toContainText('BAR 2');
+    await expect(page.locator('.available-notes')).toContainText('TAKT 2');
   });
   await check('fretboard notes, intervals and trainer give valid feedback', async () => {
     await go('/fretboard');
-    await page.getByLabel('Global root').selectOption('D');
-    await page.getByRole('button', { name: 'Study mode', exact: true }).click();
-    await page.getByLabel('Study task').selectOption('Find the note');
+    await page.getByLabel('Globaler Grundton').selectOption('D');
+    await page.getByRole('button', { name: 'Lernmodus', exact: true }).click();
+    await page.getByLabel('Lernaufgabe').selectOption('Find the note');
     const prompt = await page.locator('.trainer-prompt h2').textContent();
-    const wanted = prompt
-      .replace('Find ', '')
-      .replace('.', '')
-      .replaceAll('♯', '#')
-      .replaceAll('♭', 'b');
-    const pitches = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-    const flats = { Db: 'C#', Eb: 'D#', Gb: 'F#', Ab: 'G#', Bb: 'A#' };
-    const pc = pitches.indexOf(flats[wanted] ?? wanted);
+    // The prompt names the note in German syllables: "Finde Fis." / "Finde Es."
+    const wanted = prompt.replace('Finde ', '').replace('.', '').trim();
+    const german = {
+      C: 0,
+      Cis: 1,
+      Des: 1,
+      D: 2,
+      Dis: 3,
+      Es: 3,
+      E: 4,
+      F: 5,
+      Fis: 6,
+      Ges: 6,
+      G: 7,
+      Gis: 8,
+      As: 8,
+      A: 9,
+      Ais: 10,
+      B: 10,
+      H: 11,
+    };
+    const pc = german[wanted];
+    if (pc === undefined) throw Error('Unknown German note name in prompt: ' + prompt);
     const fret = (pc - 4 + 12) % 12;
-    await page.getByRole('button', { name: `E string fret ${fret}`, exact: true }).click();
-    await expect(page.locator('.trainer-feedback [role=status]')).toContainText('Correct');
-    await page.getByRole('button', { name: 'Next question' }).click();
-    await expect(page.locator('.trainer-feedback [role=status]')).not.toContainText('Correct');
+    await page.getByRole('button', { name: `E-Saite Bund ${fret}`, exact: true }).click();
+    await expect(page.locator('.trainer-feedback [role=status]')).toContainText('Richtig');
+    await page.getByRole('button', { name: 'Nächste Frage' }).click();
+    await expect(page.locator('.trainer-feedback [role=status]')).not.toContainText('Richtig');
   });
   await check('mobile menu, chapter selector and search at 390 px', async () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await go('/scales/dorian');
-    await page.getByRole('button', { name: 'Toggle navigation' }).click();
     await page
-      .getByRole('navigation', { name: 'Main chapters' })
-      .getByRole('link', { name: 'Programs', exact: true })
+      .getByRole('navigation', { name: 'Hauptbereiche' })
+      .getByRole('link', { name: 'BASS', exact: true })
       .click();
+    await expect(page).toHaveURL(/\/bass$/);
+    await page.getByRole('link', { name: 'Übeprogramme' }).first().click();
     await expect(page).toHaveURL(/\/programs$/);
-    await page.getByLabel('Chapter page').selectOption('/programs/clean-restart');
-    await expect(page.locator('h1')).toHaveText('Clean restart');
-    await page.getByRole('button', { name: 'Search the reference…' }).click();
-    await page.getByLabel('Search scales, exercises and theory').fill('salsa');
+    await page.getByLabel('Kapitelseite').selectOption('/programs/erste-toene');
+    await expect(page.locator('h1')).toHaveText('Die ersten Töne');
+    await page.getByRole('button', { name: 'Workstation durchsuchen' }).click();
+    await page.getByLabel('Tonleitern, Übungen und Theorie suchen').fill('quintenzirkel');
     await expect(page.locator('.search-result').first()).toBeVisible();
     await page.keyboard.press('Escape');
   });
   await check('all routes render with no missing pages or notation errors', async () => {
     const book = JSON.parse(await readFile('src/data/book.json', 'utf8'));
+    // The programmes and the beginner exercises are the app's own, not the book's.
+    // The programmes and the beginner exercises are the app's own, not the book's.
+    const programs = [
+      'erste-toene',
+      'finger-setzen',
+      'wechselschlag',
+      'daempfen',
+      'vier-finger',
+      'saitenwechsel',
+      'lagen',
+      'spinne',
+      'ausdauer',
+      'technik-check',
+      'erste-tonleiter',
+      'dur-und-moll',
+      'pentatonik',
+      'dreiklaenge',
+      'septakkorde',
+      'intervalle',
+      'terzen',
+      'stimmfuehrung',
+      'annaeherung',
+      'harmonie-check',
+      'puls-halten',
+      'achtel',
+      'offbeat',
+      'wechsel',
+      'shuffle',
+      'groove-bauen',
+      'latin',
+      'griffbrett-oktaven',
+      'griffbrett-toene',
+      'groove-check',
+    ].map((id) => ({ id }));
+    const basics = Array.from({ length: 24 }, (_, index) => `/exercises/basics/${index + 1}`);
     const routes = [
       '/',
+      '/musiktheorie',
+      '/bass',
+      '/piano',
       '/fretboard',
       '/scales',
       '/scales/ionian',
@@ -246,9 +317,13 @@ try {
       '/exercises/physical',
       '/exercises/musical',
       '/programs',
-      '/programs/balanced',
+      '/programs/erste-tonleiter',
       '/theory',
       '/pdf',
+      '/tools',
+      '/drums',
+      '/tools/drums',
+      '/tools/metronome',
       ...book.scales.map((s) => '/scales/' + s.id),
       ...[
         'major',
@@ -260,9 +335,10 @@ try {
         'minor-7',
         'minor-7b5',
         'diminished-7',
-      ].map((id) => '/arpeggios/' + id),
+      ].map((id) => '/chords/' + id),
       ...book.exercises.map((e) => `/exercises/${e.category}/${e.number}`),
-      ...book.programs.map((p) => '/programs/' + p.id),
+      ...basics,
+      ...programs.map((p) => '/programs/' + p.id),
       ...[
         'fretboard',
         'intervals',
@@ -279,7 +355,7 @@ try {
     for (const path of routes) {
       await go(path);
       await page.waitForTimeout(30);
-      await expect(page.locator('h1')).not.toContainText('not found');
+      await expect(page.locator('h1')).not.toContainText('nicht gefunden');
       await expect(page.locator('.error-text')).toHaveCount(0);
     }
     report.push(`${routes.length} routes checked`);
@@ -293,17 +369,25 @@ try {
       [375, 667],
       [390, 844],
       [430, 932],
+      [768, 1024],
+      [900, 900],
+      [1024, 768],
     ]) {
       await page.setViewportSize({ width, height });
       for (const path of [
         '/',
+        '/musiktheorie',
+        '/bass',
+        '/piano',
         '/scales/dorian',
         '/fretboard',
         '/exercises/musical/20',
-        '/programs/salsa-latin',
+        '/programs/vier-finger',
         '/theory/key-signatures',
         '/improvisation/play',
         '/basslines',
+        '/tools/drums',
+        '/tools/metronome',
       ]) {
         await go(path);
         if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth))
@@ -313,8 +397,8 @@ try {
   });
   await check('PDF local asset and manual offline caching', async () => {
     await go('/pdf');
-    await page.getByRole('button', { name: 'Save PDF for offline use' }).click();
-    await expect(page.getByRole('button', { name: 'PDF saved offline' })).toBeDisabled();
+    await page.getByRole('button', { name: 'PDF offline speichern' }).click();
+    await expect(page.getByRole('button', { name: 'PDF offline gespeichert' })).toBeDisabled();
     const response = await page.request.get(
       'http://127.0.0.1:4175/bass_complete_reference_practice_improv_v5-1.pdf',
     );
@@ -325,14 +409,17 @@ try {
     await context.setOffline(true);
     for (const path of [
       '/scales/harmonic-minor',
-      '/arpeggios/diminished-7',
+      '/piano',
+      '/chords/diminished-7',
       '/exercises/musical/20',
-      '/programs/salsa-latin',
+      '/programs/vier-finger',
       '/theory/key-signatures',
+      '/tools/drums',
+      '/tools/metronome',
     ]) {
       await go(path);
-      await expect(page.locator('h1')).not.toContainText('not found');
-      if (path.startsWith('/scales') || path.startsWith('/arpeggios'))
+      await expect(page.locator('h1')).not.toContainText('nicht gefunden');
+      if (path.startsWith('/scales'))
         await expect(page.locator('.notation-scroll svg')).toHaveCount(2);
     }
     const ok = await page.evaluate(async () => {
@@ -342,6 +429,13 @@ try {
     if (!ok) throw Error('Offline PDF unavailable');
     await context.setOffline(false);
   });
+  await checkWorkstation(browser, check, errors);
+  await checkPiano(browser, check, errors);
+  await checkEar(browser, check, errors);
+  await checkCircle(browser, check, errors);
+  await checkTuner(browser, check, errors);
+  await checkChords(browser, check, errors);
+  await checkRhythm(browser, check, errors);
   if (errors.length) throw Error('Console errors: ' + JSON.stringify(errors));
   await mkdir(tmpdir() + '/bass-qa', { recursive: true });
   await writeFile(

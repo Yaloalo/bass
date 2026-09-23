@@ -1,0 +1,294 @@
+:root {
+  color-scheme: light;
+  --danger: #b4392c;
+  --danger-light: #fbeae7;
+}
+.theme-toggle {
+  flex-shrink: 0;
+  min-height: 40px;
+  gap: 6px;
+}
+.theme-toggle > span {
+  font-size: 11px;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --danger: #f0a094;
+  --danger-light: #3d211c;
+  --ink: #e1e9ef;
+  --accent: #79cddd;
+  --accent-light: #193a44;
+  --chord: #efbc71;
+  --chord-light: #42341f;
+  --muted: #a6b7c3;
+  --line: #344653;
+  --surface: #1b2934;
+  --green: #8bd2ad;
+  --surface-raised: #233440;
+  --surface-subtle: #17242e;
+  --accent-border: #477888;
+  --tool-surface-soft: #17242e;
+  --tool-grid-off: #253744;
+  --pad-off: #253744;
+  --tool-active-ink: #102a34;
+  --rail-bg: #1b2934;
+  --scope-ink: #9db0bd;
+  background: #111b24;
+  color: var(--ink);
+}
+
+/* Existing pages use a mix of shared tokens and fixed paper colors. These
+   overrides keep the established surface, teal and amber roles in both themes. */
+:where(:root[data-theme='dark']) :is(button, input, select, textarea) {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--line);
+}
+:root[data-theme='dark'] :is(input, textarea)::placeholder {
+  color: var(--muted);
+  opacity: 0.85;
+}
+:where(:root[data-theme='dark']) button:hover {
+  background: var(--surface-raised);
+  border-color: #637d8e;
+}
+:root[data-theme='dark'] :is(.primary, .primary:hover) {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #102a34;
+}
+:root[data-theme='dark'] .primary:hover {
+  background: #9edee9;
+}
+:root[data-theme='dark']
+  :is(
+    .app-header,
+    .mega-menu,
+    .panel,
+    .quick-card,
+    .formula-strip,
+    .timer,
+    .exercise-card,
+    .program-card,
+    .search-dialog,
+    .book-cover,
+    .skip-link
+  ) {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--line);
+}
+:root[data-theme='dark'] :is(.mega-menu, .search-dialog) {
+  box-shadow: 0 20px 60px #0006;
+}
+:root[data-theme='dark'] .search-dialog::backdrop {
+  background: #050c13b3;
+}
+:root[data-theme='dark']
+  :is(.chapter-sidebar, .search-trigger, .segmented, th, .trainer-controls, .play-formula) {
+  background: var(--surface-subtle);
+}
+:root[data-theme='dark']
+  :is(
+    .sidebar-links a,
+    .sidebar-foot,
+    .sidebar-foot strong,
+    .search-trigger,
+    .segmented button,
+    .reference-details dd,
+    .source-note,
+    .score-note,
+    .home-footer,
+    .exercise-card-meta,
+    .exercise-card-footer,
+    .program-sequence small,
+    .program-sequence em,
+    .play-reminders,
+    .available-note.passing-note small,
+    .pdf-file-info,
+    .book-cover-bottom,
+    .fretboard-caption,
+    .position-info,
+    .fret-number,
+    .string-name
+  ) {
+  color: var(--muted);
+}
+:root[data-theme='dark']
+  :is(
+    .root-control select,
+    .sidebar-links a.active,
+    .sidebar-links a:hover,
+    .search-result.selected,
+    .exercise-id,
+    .builder-chords button.active,
+    .suggested-scale .pill
+  ) {
+  background: var(--accent-light);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+:root[data-theme='dark'] :is(.segmented button.selected, .item-link:hover, tbody tr:hover) {
+  background: var(--surface-raised);
+  color: var(--ink);
+}
+:root[data-theme='dark'] .segmented button.selected {
+  color: var(--accent);
+}
+:root[data-theme='dark']
+  :is(
+    .notice,
+    .practice-feature,
+    .quick-practice,
+    .daily-plan-intro,
+    .rhythm-grid > div.hit,
+    .available-note.passing-note
+  ) {
+  background: var(--accent-light);
+  border-color: var(--accent-border);
+  color: var(--ink);
+}
+:root[data-theme='dark']
+  :is(
+    .topbar,
+    .panel-heading,
+    .formula-strip > div,
+    .position-info,
+    .item-link,
+    th,
+    td,
+    .exercise-card-footer,
+    .program-sequence li button,
+    .construction-flow,
+    .impro-checklist li,
+    .book-cover-top,
+    kbd
+  ) {
+  border-color: var(--line);
+}
+:root[data-theme='dark'] .nav-chapter > button {
+  background: transparent;
+  color: var(--muted);
+}
+:root[data-theme='dark'] .program-sequence li button {
+  background: var(--surface);
+}
+:root[data-theme='dark'] .program-sequence li.current button {
+  background: var(--accent-light);
+}
+:root[data-theme='dark'] .block-number {
+  background: var(--surface);
+  border-color: var(--accent-border);
+  color: var(--muted);
+}
+:root[data-theme='dark'] .program-sequence li.current .block-number {
+  background: var(--accent);
+  color: #102a34;
+}
+:root[data-theme='dark'] .program-sequence li.done .block-number {
+  background: #203c32;
+  border-color: #588971;
+  color: var(--green);
+}
+:root[data-theme='dark'] :is(.timer-track, .mini-rule) {
+  background: var(--line);
+}
+:root[data-theme='dark'] :is(.available-note, .compare-degrees .different) {
+  background: var(--chord-light);
+  border-color: #8b704b;
+  color: var(--chord);
+  outline-color: #8b704b;
+}
+:root[data-theme='dark'] .available-note small {
+  color: var(--chord);
+}
+:root[data-theme='dark'] .note-hierarchy {
+  background: var(--surface-raised);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+:root[data-theme='dark'] .error-text {
+  color: #ffa6a6;
+}
+
+/* Keep strings, note roles and selection distinct at low screen brightness. */
+:root[data-theme='dark'] .fret-cell {
+  background: transparent;
+  border-color: #526775;
+}
+:root[data-theme='dark'] .fret-cell::before {
+  background: #718692;
+}
+:root[data-theme='dark'] .fret-cell.open {
+  background: var(--surface-subtle);
+  border-right-color: #95aab7;
+}
+:root[data-theme='dark'] :is(.fret-cell:hover, .fret-cell.picked) {
+  background: var(--accent-light);
+}
+:root[data-theme='dark'] .degree-marker {
+  background: #274551;
+  border-color: #6996a6;
+  color: #d4edf3;
+  box-shadow: 0 0 0 3px var(--surface);
+}
+:root[data-theme='dark'] .degree-marker.root {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #102a34;
+  box-shadow:
+    0 0 0 3px var(--surface),
+    0 0 0 4px var(--accent-border);
+}
+:root[data-theme='dark'] .degree-marker.chord {
+  background: var(--chord-light);
+  border-color: #ac8652;
+  color: #f3ce92;
+}
+:root[data-theme='dark'] .degree-marker.marked {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #111b24;
+}
+:root[data-theme='dark'] .fret-dot {
+  color: #758d9e;
+}
+
+/* VexFlow's staff and TAB are ink on paper. Preserve a defined paper surface
+   for every symbol (including internally colored glyphs and fret knockouts). */
+:root[data-theme='dark'] .notation-scroll {
+  color-scheme: light;
+  background: #f3f5f4;
+  border: 1px solid #c5cdcf;
+  border-radius: 4px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+:root[data-theme='dark'] .book-cover {
+  border-left-color: #4d6575;
+  box-shadow:
+    5px 6px 0 #2c404e,
+    6px 7px 0 #506777;
+}
+:root[data-theme='dark'] .utility-bar {
+  background: #101a23;
+  box-shadow: 0 -1px 0 var(--line);
+}
+:root[data-theme='dark'] .metronome .metro-toggle {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #102a34;
+}
+
+@media (max-width: 1050px) {
+  .theme-toggle > span {
+    display: none;
+  }
+  :root[data-theme='dark'] .nav-chapter {
+    background: var(--surface-raised);
+  }
+  :root[data-theme='dark'] .nav-chapter.active {
+    background: var(--accent-light);
+  }
+}

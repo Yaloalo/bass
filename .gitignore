@@ -7,6 +7,12 @@ dist/
 *.tsbuildinfo
 test-results/
 playwright-report/
+.qa-shots/
+
+# Screenshots taken while working on the UI. The folder and its README stay,
+# the images never get committed.
+screenshots/*
+!screenshots/README.md
 
 # Local tools, private configuration, and credential files
 .codex/

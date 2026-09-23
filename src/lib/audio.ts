@@ -37,10 +37,15 @@ export function stopPlayback() {
   });
   playing = [];
 }
-export async function playEvents(events: MusicEvent[], bpm: number) {
+/**
+ * `startAt` is a time on the shared AudioContext clock, which the drum transport uses
+ * too — passing the next downbeat is what makes the example land with the groove
+ * instead of wherever the button happened to be pressed.
+ */
+export async function playEvents(events: MusicEvent[], bpm: number, startAt?: number) {
   stopPlayback();
   const ctx = await audioContext();
-  let t = ctx.currentTime + 0.04;
+  let t = Math.max(ctx.currentTime + 0.04, startAt ?? 0);
   events.forEach((event) => {
     const beat =
       event.duration === '8'

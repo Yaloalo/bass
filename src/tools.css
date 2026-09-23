@@ -1,0 +1,626 @@
+.tools-page {
+  max-width: 1280px;
+}
+.tools-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 22px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 10px;
+}
+.tools-tabs a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 18px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.tools-tabs a.selected {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+.tools-tabs > span {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 11px;
+}
+.tools-page button,
+.tools-page select,
+.tools-page input:not([type='checkbox']) {
+  min-height: 44px;
+}
+.tools-page input[type='range'] {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.rhythm-main {
+  margin-bottom: 20px;
+  padding: 24px;
+}
+.rhythm-panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+.rhythm-panel-title .eyebrow {
+  display: block;
+  margin-bottom: 5px;
+}
+.rhythm-panel-title h2 {
+  font-size: 23px;
+}
+.rhythm-transport {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.rhythm-start {
+  min-width: 145px;
+  min-height: 50px !important;
+  font-size: 15px;
+}
+.rhythm-tempo {
+  display: flex;
+  align-items: end;
+  gap: 6px;
+}
+.rhythm-tempo label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.rhythm-tempo label > span,
+.tool-field > span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+.rhythm-tempo input {
+  width: 80px;
+  font-size: 20px;
+  font-weight: 650;
+  text-align: center;
+  padding: 5px;
+}
+.rhythm-tempo button {
+  padding: 10px;
+}
+.tool-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tool-field > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.tool-field output {
+  font-variant-numeric: tabular-nums;
+}
+.rhythm-volume {
+  flex: 1;
+  min-width: 110px;
+  max-width: 175px;
+}
+.rhythm-volume input {
+  width: 100%;
+}
+.rhythm-readout {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  background: var(--tool-surface-soft, #f3f8f9);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin-top: 20px;
+}
+.rhythm-readout.is-gap {
+  background: var(--chord-light);
+}
+.rhythm-beats {
+  display: flex;
+  gap: 8px;
+}
+.rhythm-beats span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+.rhythm-beats span.current {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--tool-active-ink, white);
+}
+.is-gap .rhythm-beats span.current {
+  background: var(--chord);
+  border-color: var(--chord);
+}
+.rhythm-status {
+  font-size: 12px;
+  color: var(--muted);
+}
+.rhythm-preset-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: 20px;
+}
+.rhythm-preset-row select {
+  min-width: 225px;
+}
+.drum-hint {
+  margin: 16px 0 0;
+  font-size: 13px;
+  max-width: 430px;
+}
+.sequencer-panel {
+  padding-bottom: 0;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.sequencer-toolbar {
+  display: flex;
+  gap: 20px;
+  align-items: end;
+  padding: 20px 24px 0;
+  flex-wrap: wrap;
+}
+.swing-control {
+  min-width: 160px;
+  max-width: 240px;
+  flex: 1;
+}
+.sequencer-help {
+  font-size: 12px;
+  margin: 16px 24px;
+}
+.sequencer-help > span {
+  display: none;
+}
+.sequence-bar {
+  padding: 0 18px 14px;
+}
+.sequence-bar h3 {
+  margin: 12px 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.sequencer-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding-bottom: 8px;
+}
+.drum-grid {
+  border-collapse: separate;
+  border-spacing: 3px 5px;
+  table-layout: fixed;
+  width: 100%;
+  min-width: max-content;
+}
+.drum-grid th,
+.drum-grid td {
+  padding: 0;
+  border: 0;
+}
+.drum-grid thead th {
+  height: 27px;
+  font-size: 11px;
+  font-weight: 550;
+  text-align: center;
+  background: transparent;
+  color: var(--muted);
+}
+.drum-grid tr > th:first-child {
+  position: sticky;
+  left: 0;
+  width: 90px;
+  min-width: 90px;
+  padding-right: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: left;
+  background: var(--surface);
+  z-index: 1;
+}
+.drum-grid td {
+  min-width: 44px;
+  width: 44px;
+}
+.drum-grid .beat-start {
+  border-left: 2px solid var(--line);
+  padding-left: 5px;
+}
+.drum-step {
+  min-width: 44px;
+  width: 100%;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--line);
+  background: var(--tool-grid-off, #f2f5f7);
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: 18px;
+}
+.drum-step.state-1 {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.drum-step.state-2 {
+  background: var(--chord-light);
+  border-color: var(--chord);
+  color: var(--chord);
+}
+.drum-step.playhead {
+  box-shadow: inset 0 -3px 0 var(--accent);
+}
+.drum-grid th.playhead {
+  color: var(--accent);
+  font-weight: 800;
+}
+.drum-step:hover {
+  border-color: var(--accent);
+}
+.pattern-save-row {
+  padding: 16px 24px 0;
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pattern-save-row .tool-field {
+  flex: 1;
+  min-width: 180px;
+  max-width: 330px;
+}
+.pattern-message {
+  margin: 12px 24px 20px;
+  font-size: 12px;
+  min-height: 20px;
+}
+.tool-details {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  margin-bottom: 20px;
+}
+.tool-details summary {
+  min-height: 54px;
+  padding: 17px 24px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.tool-details summary:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.tool-details-content {
+  border-top: 1px solid var(--line);
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+.tool-details h3 {
+  font-size: 14px;
+}
+.tool-details p {
+  font-size: 12px;
+}
+.mixer-row {
+  display: grid;
+  grid-template-columns: 80px minmax(70px, 1fr) 44px 44px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 7px;
+}
+.mixer-row > span {
+  font-size: 12px;
+}
+.mixer-row input {
+  width: 100%;
+}
+.mixer-row button {
+  width: 44px;
+  padding: 4px;
+}
+.mixer-row button[aria-pressed='true'] {
+  background: var(--accent-light);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.tool-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.sound-select-row {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.metronome-settings {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 22px 0 14px;
+}
+.tool-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.tool-checkbox input {
+  flex-shrink: 0;
+}
+.tool-footnote {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 12px 0 0;
+}
+.gap-panel > p,
+.gap-controls {
+  margin-left: 24px;
+  margin-right: 24px;
+}
+.gap-panel > p:first-of-type {
+  margin-top: 20px;
+}
+.gap-panel > p:last-of-type {
+  margin-bottom: 24px;
+}
+.gap-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.gap-controls select {
+  min-width: 100px;
+}
+.gap-repeat {
+  font-size: 12px;
+  color: var(--muted);
+  padding-top: 22px;
+}
+.tool-notice {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 12px;
+}
+.tool-storage-warning {
+  border: 1px solid var(--chord);
+  padding: 12px 16px;
+  border-radius: 5px;
+  background: var(--chord-light);
+}
+.metronome .metronome-label {
+  min-height: 44px;
+}
+.footer-audio-error {
+  position: absolute;
+  right: 10px;
+  bottom: 100%;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  max-width: 320px;
+  font-size: 12px;
+}
+@media (max-width: 1000px) {
+  .tools-tabs > span {
+    display: none;
+  }
+  .sequencer-help > span {
+    display: inline;
+  }
+}
+@media (max-width: 600px) {
+  .rhythm-main {
+    padding: 18px 16px;
+  }
+  .rhythm-panel-title h2 {
+    font-size: 21px;
+  }
+  .rhythm-panel-title .pill {
+    white-space: nowrap;
+  }
+  .rhythm-transport {
+    gap: 12px;
+  }
+  .rhythm-start {
+    flex-basis: 100%;
+  }
+  .rhythm-tempo {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .rhythm-tempo input {
+    width: 88px;
+  }
+  .rhythm-transport > .tool-field {
+    flex: 1;
+    max-width: none;
+  }
+  .rhythm-readout {
+    gap: 12px;
+    padding: 12px;
+  }
+  .rhythm-beats {
+    gap: 6px;
+  }
+  .rhythm-beats span {
+    width: 28px;
+    height: 28px;
+  }
+  .rhythm-preset-row {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0;
+  }
+  .rhythm-preset-row select {
+    min-width: 0;
+    width: 100%;
+  }
+  .drum-hint {
+    margin-top: 12px;
+  }
+  .sequencer-toolbar {
+    padding: 16px 16px 0;
+    gap: 12px;
+  }
+  .sequencer-toolbar > .tool-field {
+    flex: 1;
+  }
+  .swing-control {
+    flex-basis: 100% !important;
+    max-width: none;
+  }
+  .sequencer-help {
+    margin: 12px 16px;
+  }
+  .sequence-bar {
+    padding: 0 8px 10px;
+  }
+  .drum-grid tr > th:first-child {
+    min-width: 76px;
+    width: 76px;
+    font-size: 10px;
+  }
+  .pattern-save-row {
+    padding: 16px 16px 0;
+  }
+  .pattern-save-row .tool-field {
+    max-width: none;
+    flex-basis: 100%;
+  }
+  .pattern-message {
+    margin: 12px 16px 18px;
+  }
+  .tool-details summary {
+    padding: 17px 16px;
+  }
+  .tool-details-content {
+    padding: 18px 16px;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .mixer-row {
+    grid-template-columns: 70px minmax(40px, 1fr) 44px 44px;
+    gap: 6px;
+  }
+  .metronome-settings {
+    gap: 12px;
+  }
+  .metronome-settings > .tool-field {
+    flex: 1;
+    min-width: 100px;
+  }
+  .metronome-settings > .tool-field:nth-child(3) {
+    flex-basis: 100%;
+  }
+  .gap-panel .panel-heading {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .gap-panel > p,
+  .gap-controls {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+  .gap-controls {
+    gap: 12px;
+  }
+  .gap-controls .tool-field {
+    flex: 1;
+  }
+  .gap-repeat {
+    width: 100%;
+    padding: 0;
+  }
+}
+
+/* Per-voice sound presets sit above the sliders they rewrite. */
+.voice-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.voice-presets button {
+  padding: 5px 11px;
+  font-size: 0.8rem;
+  border-radius: 999px;
+}
+
+/* Tempo trainer: one row under the transport, in both tools. */
+.tempo-trainer {
+  display: flex;
+  align-items: center;
+  gap: 8px 12px;
+  flex-wrap: wrap;
+  flex-basis: 100%;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.tempo-trainer-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tempo-trainer select {
+  min-height: 36px;
+  font-size: 12.5px;
+}
+.tempo-trainer-target {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.tempo-trainer-target input {
+  width: 70px;
+  min-height: 36px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.tempo-trainer-note {
+  flex: 1 1 260px;
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}

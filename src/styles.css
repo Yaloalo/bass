@@ -15,6 +15,15 @@
   --surface: #fff;
   --green: #327a5b;
   --header: 124px;
+  --surface-raised: #fff;
+  --surface-subtle: #f4f8f9;
+  --accent-border: #bcdde4;
+  --tool-surface-soft: #f3f8f9;
+  --tool-grid-off: #f2f5f7;
+  --pad-off: #f2f5f7;
+  --tool-active-ink: #fff;
+  --rail-bg: #fff;
+  --scope-ink: #4b5a66;
 }
 * {
   box-sizing: border-box;
@@ -193,10 +202,6 @@ kbd {
   font-size: 11px;
   color: var(--muted);
 }
-.starred {
-  color: var(--chord);
-  background: var(--chord-light);
-}
 .skip-link {
   position: fixed;
   top: -80px;
@@ -319,6 +324,7 @@ kbd {
   align-items: stretch;
   padding: 0 25px;
   gap: 12px;
+  overflow-x: auto;
 }
 .home-link {
   display: flex;
@@ -334,6 +340,7 @@ kbd {
 }
 .nav-chapter {
   display: flex;
+  flex-shrink: 0;
   align-items: stretch;
   position: relative;
   border-bottom: 2px solid transparent;
@@ -429,7 +436,9 @@ kbd {
 }
 .home-layout > main {
   max-width: 1800px;
-  margin: auto;
+  /* Horizontal only: `margin: auto` on a flex child also centres vertically, which
+     left a dead band above short pages such as the three area overviews. */
+  margin-inline: auto;
   padding-top: 38px;
 }
 .chapter-sidebar {
@@ -532,15 +541,6 @@ kbd {
 .heading-actions {
   padding-top: 23px;
   flex-shrink: 0;
-}
-.reference-actions {
-  display: flex;
-  gap: 8px;
-}
-.reference-actions select {
-  font-size: 12px;
-  min-width: 105px;
-  background: #fff;
 }
 .panel {
   background: white;
@@ -812,8 +812,11 @@ kbd {
 }
 .score-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* Notation and TAB each need the full width; side by side they were clipped. */
+  grid-template-columns: 1fr;
   gap: 22px;
+  /* Without this a folded panel keeps the row's height and leaves an empty box. */
+  align-items: start;
 }
 .score-grid .panel {
   min-width: 0;
@@ -863,6 +866,7 @@ kbd {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 22px;
+  align-items: start;
 }
 .three-col {
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1262,6 +1266,16 @@ kbd {
   margin-top: 6px;
 }
 .table-scroll {
+  /* Edge shadows that appear only when the table really overflows: the `local` layers
+     scroll with the content and cover the fixed `scroll` shadows when there is nothing
+     to reveal. Otherwise every table would look clipped. */
+  background:
+    linear-gradient(to right, var(--surface), transparent) left / 26px 100% no-repeat local,
+    linear-gradient(to left, var(--surface), transparent) right / 26px 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgb(29 39 51 / 0.16), transparent) left / 13px 100%
+      no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgb(29 39 51 / 0.16), transparent) right / 13px 100%
+      no-repeat scroll;
   overflow: auto;
 }
 table {
@@ -1647,11 +1661,13 @@ td:first-child {
     font-size: 14px;
   }
   .mobile-toggle {
-    display: flex;
+    display: none;
   }
   .top-nav {
-    display: none;
+    display: flex;
     height: auto;
+    padding: 4px 10px;
+    gap: 3px;
   }
   .top-nav.expanded {
     display: grid;
@@ -1677,11 +1693,11 @@ td:first-child {
   }
   .nav-chapter > a {
     flex: 1;
-    font-size: 13px;
-    padding-left: 12px;
+    font-size: 11px;
+    padding: 0 7px;
   }
   .nav-chapter > button {
-    padding: 0 12px;
+    padding: 0 8px;
   }
   .mega-menu {
     position: fixed;
@@ -1842,9 +1858,6 @@ td:first-child {
   .page-heading > .heading-actions .button {
     padding: 10px 14px;
     font-size: 12px;
-  }
-  .reference-actions {
-    margin-bottom: 3px;
   }
   .quick-grid {
     gap: 11px;
@@ -2313,27 +2326,6 @@ td:first-child {
 .practice-rail .panel-heading {
   padding: 16px 20px;
 }
-.exercise-instructions {
-  padding: 22px 24px;
-}
-.exercise-instructions > div + div {
-  margin-top: 20px;
-}
-.exercise-instructions .eyebrow {
-  margin-bottom: 7px;
-  font-size: 9px;
-}
-.exercise-instructions p {
-  font-size: 13px;
-  margin-bottom: 0;
-}
-.exercise-instructions .transposition-note {
-  font-size: 11px;
-  background: #f6f8f9;
-  border-left: 2px solid #b8c9d1;
-  padding: 10px 12px;
-  margin-top: 15px;
-}
 .tempo-panel {
   padding: 20px;
   display: flex;
@@ -2448,20 +2440,6 @@ td:first-child {
 .program-card p {
   font-size: 10px;
   margin-bottom: 19px;
-}
-.program-block-preview {
-  display: flex;
-  gap: 5px;
-  height: 5px;
-  margin-bottom: 21px;
-}
-.program-block-preview > span {
-  flex: 1;
-  border-radius: 1px;
-  background: #bad6df;
-}
-.program-block-preview > span.physical {
-  background: #506a78;
 }
 .program-card-bottom {
   display: flex;
@@ -2692,7 +2670,7 @@ td:first-child {
     margin: 0;
   }
   .practice-rail > .panel:last-child {
-    display: none;
+    grid-column: 1 / -1;
   }
   .program-layout {
     grid-template-columns: 1fr;
@@ -2794,12 +2772,6 @@ td:first-child {
   }
   .tempo-panel > small {
     grid-column: 1/-1;
-  }
-  .exercise-instructions {
-    padding: 20px 18px;
-  }
-  .exercise-instructions p {
-    font-size: 12px;
   }
   .program-grid h2 {
     min-height: 0;
@@ -3593,4 +3565,290 @@ td:first-child {
     min-height: 40px;
     min-width: 40px;
   }
+}
+
+.area-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.area-grid .quick-card {
+  min-width: 0;
+  /* Few, large cards: an area holds three or four entries, so they carry the page. */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 196px;
+  padding: 26px 28px;
+}
+.area-grid .quick-card p {
+  flex: 1;
+  font-size: 13px;
+  max-width: 38ch;
+}
+.area-grid .quick-card h2 {
+  font-size: 21px;
+  margin: 18px 0 10px;
+}
+.area-grid .quick-card p {
+  line-height: 1.6;
+}
+@media (max-width: 900px) {
+  .area-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .area-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .top-nav .home-link {
+    display: none;
+  }
+  .top-nav .nav-chapter {
+    flex: 1;
+    min-width: 0;
+  }
+  .top-nav .nav-chapter > a {
+    padding: 0 5px;
+  }
+  .top-nav .nav-chapter > button {
+    min-width: 30px;
+    padding: 0 5px;
+  }
+}
+
+/* Contextual theory: collapsed by default so a practice page stays a practice page. */
+.konzept {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  margin: 0 0 18px;
+}
+.konzept > summary {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 12px 18px;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  color: var(--accent);
+}
+.konzept > summary::marker,
+.konzept > summary::-webkit-details-marker {
+  color: var(--muted);
+}
+.konzept > summary:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+.konzept-body {
+  border-top: 1px solid var(--line);
+  padding: 16px 18px;
+}
+.konzept-body > :first-child {
+  margin-top: 0;
+}
+.konzept-body > :last-child {
+  margin-bottom: 0;
+}
+.konzept-body p {
+  font-size: 13px;
+  max-width: 72ch;
+}
+
+/* WCAG 2.5.5: anything a thumb has to hit gets a real target on touch widths.
+   Several of these were 14-29px tall because they are styled as text links. */
+@media (pointer: coarse), (max-width: 850px) {
+  .mega-groups a,
+  .mega-title a,
+  .sidebar-links a,
+  .text-link,
+  .chapter-title,
+  .home-link,
+  .nav-chapter > a {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  .nav-chapter > button {
+    min-width: 44px;
+    padding: 0 12px;
+  }
+  .metronome-label {
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+  }
+  .metronome input {
+    min-height: 40px;
+  }
+  .metronome button {
+    min-height: 40px;
+  }
+  .topbar .icon-button,
+  .topbar .search-trigger,
+  .theme-toggle,
+  .brand {
+    min-height: 44px;
+  }
+  .segmented button,
+  .playback button,
+  .playback select,
+  .mobile-chapter select,
+  .filter-search input,
+  .page-pagination a {
+    min-height: 44px;
+  }
+  .page-pagination a {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  /* The label already carries the hit area; make the box itself easy to aim at too. */
+  .tool-checkbox input[type='checkbox'] {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+.area-continue {
+  margin-top: 26px;
+}
+
+/* Start page: one decision, three targets, nothing else competing for attention. */
+.home-choice {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-block: clamp(24px, 6vh, 64px);
+}
+.home-choice-intro {
+  margin-bottom: clamp(24px, 4vh, 44px);
+}
+.home-choice-intro h1 {
+  font-size: clamp(30px, 4vw, 46px);
+  margin: 6px 0 0;
+}
+.home-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.home-choice-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: clamp(220px, 34vh, 320px);
+  padding: 30px 32px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.home-choice-card > svg:first-child {
+  color: var(--accent);
+}
+.home-choice-card strong {
+  font-size: clamp(20px, 2.1vw, 27px);
+  letter-spacing: 0.5px;
+}
+.home-choice-card span {
+  flex: 1;
+  font-size: 14px;
+  color: var(--muted);
+  max-width: 30ch;
+}
+.home-choice-card > svg:last-child {
+  color: var(--accent);
+}
+.home-choice-card:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+.home-choice-card:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+@media (max-width: 850px) {
+  .home-choice-grid {
+    grid-template-columns: 1fr;
+  }
+  .home-choice-card {
+    min-height: 0;
+    padding: 22px 24px;
+  }
+}
+
+/* Foldable panels: the chevron rotates, the heading stays a heading. */
+.section-panel {
+  padding: 0;
+  overflow: visible;
+}
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 54px;
+  padding: 14px 22px;
+  cursor: pointer;
+  list-style: none;
+}
+.section-heading::-webkit-details-marker {
+  display: none;
+}
+.section-heading > svg {
+  color: var(--muted);
+  flex-shrink: 0;
+  transform: rotate(-90deg);
+  transition: transform 0.15s ease;
+}
+.section-panel[open] > .section-heading > svg {
+  transform: rotate(0deg);
+}
+.section-heading h2 {
+  margin: 0;
+  font-size: 15px;
+}
+.section-aside {
+  margin-left: auto;
+  font-size: 10px;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.section-heading:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: -3px;
+}
+.section-body {
+  border-top: 1px solid var(--line);
+  padding: 20px 22px;
+}
+.section-body > :first-child {
+  margin-top: 0;
+}
+.section-body > :last-child {
+  margin-bottom: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .section-heading > svg {
+    transition: none;
+  }
+}
+@media (max-width: 600px) {
+  .section-heading {
+    padding: 12px 16px;
+  }
+  .section-body {
+    padding: 16px;
+  }
+}
+
+.library-method {
+  margin: 20px 0 0;
+  font-size: 13px;
+  color: var(--muted);
 }

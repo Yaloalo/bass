@@ -1,8 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
-import { isNote, writtenPitch, pretty } from '../lib/music';
+import { isNote, writtenPitch } from '../lib/music';
+import { germanNoteName } from '../lib/i18n';
 import type { MusicEvent } from '../lib/music';
-import { Panel } from './UI';
-export function Score({ events, meter = false }: { events: MusicEvent[]; meter?: boolean }) {
+import { Section } from './UI';
+export function Score({
+  events,
+  meter = false,
+  defaultOpen = true,
+}: {
+  events: MusicEvent[];
+  meter?: boolean;
+  /** Folded away where the notation is a reference rather than the point of the page. */
+  defaultOpen?: boolean;
+}) {
   const staff = useRef<HTMLDivElement>(null),
     tab = useRef<HTMLDivElement>(null);
   const [error, setError] = useState('');
@@ -107,13 +117,14 @@ export function Score({ events, meter = false }: { events: MusicEvent[]; meter?:
                 voice.draw(context, stave);
                 if (meter) {
                   context.setFont('Arial', 11, '');
-                  context.fillText(`BAR ${index + 1}`, 16, y - 5);
+                  context.fillText(`TAKT ${index + 1}`, 16, y - 5);
                 }
               });
               container.querySelector('svg')?.setAttribute('aria-hidden', 'true');
             });
           } catch (e) {
-            setError(e instanceof Error ? e.message : 'Unable to render notation');
+            console.error('VexFlow konnte die Notation nicht zeichnen:', e);
+            setError('Die Notation konnte nicht gezeichnet werden. Lade die Seite neu.');
           }
         };
         render();
@@ -122,7 +133,7 @@ export function Score({ events, meter = false }: { events: MusicEvent[]; meter?:
       })
       .catch(() =>
         setError(
-          'Notation could not load. Reload this page when connected to finish caching the app.',
+          'Notation konnte nicht geladen werden. Lade die Seite mit Internetverbindung erneut.',
         ),
       );
     return () => {
@@ -133,30 +144,30 @@ export function Score({ events, meter = false }: { events: MusicEvent[]; meter?:
   const text = events
     .map((n) =>
       isNote(n)
-        ? `${pretty(n.name ?? writtenPitch(n).name)}: ${n.string} string fret ${n.fret}, ${n.duration === '8' ? 'eighth' : 'quarter'} note`
-        : 'rest',
+        ? `${germanNoteName(n.name ?? writtenPitch(n).name)}: ${n.string}-Saite Bund ${n.fret}, ${({ w: 'Ganze', h: 'Halbe', q: 'Viertel', '8': 'Achtel', '16': 'Sechzehntel' } as Record<string, string>)[n.duration] ?? n.duration}`
+        : 'Pause',
     )
     .join('; ');
   return (
     <>
       <div className="score-grid">
-        <Panel title="Standard notation" aside={<span className="small-label">BASS CLEF</span>}>
+        <Section title="Notation" aside="Bassschlüssel" defaultOpen={defaultOpen}>
           <div
             className="notation-scroll"
             ref={staff}
             role="img"
-            aria-label={`Standard notation: ${text}`}
+            aria-label={`Notation: ${text}`}
           />
-          <p className="score-note">Written one octave above sounding pitch.</p>
-        </Panel>
-        <Panel title="Bass TAB" aside={<span className="small-label">E · A · D · G</span>}>
+          <p className="score-note">Eine Oktave über der klingenden Tonhöhe notiert.</p>
+        </Section>
+        <Section title="Bass TAB" aside="E · A · D · G" defaultOpen={defaultOpen}>
           <div className="notation-scroll" ref={tab} role="img" aria-label={`Bass TAB: ${text}`} />
           <p className="score-note">
             {meter
-              ? 'Read durations and rests from the staff; TAB spacing follows the same rhythm.'
-              : 'Same ascending route as the fretboard, from left to right.'}
+              ? 'Notenwerte und Pausen stehen in der Notation; TAB folgt demselben Rhythmus.'
+              : 'Derselbe Fingersatz wie auf dem Griffbrett, von links nach rechts.'}
           </p>
-        </Panel>
+        </Section>
       </div>
       {error && (
         <p className="error-text" role="alert">
