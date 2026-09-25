@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, Link, Navigate } from 'react-router-dom';
-import { StoreProvider } from './lib/store';
+import { StoreProvider, useStore } from './lib/store';
+import { instrumentProfile } from './lib/instrument';
 import { RhythmProvider } from './lib/rhythm-store';
 import { Navigation, ChapterSidebar } from './components/Navigation';
 import { Home } from './pages/Home';
@@ -23,6 +24,7 @@ import { PageHeading } from './components/UI';
 import { ToolsPage } from './pages/Tools';
 import { Drums } from './pages/Drums';
 import { TheoryMemory } from './pages/TheoryMemory';
+import { GuitarChords } from './pages/GuitarChords';
 function ScrollReset() {
   const { pathname, hash } = useLocation();
   useEffect(() => {
@@ -33,6 +35,8 @@ function ScrollReset() {
 }
 function Layout() {
   const { pathname } = useLocation();
+  const { instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   // Full-width pages: tools and area hubs, where a chapter
   // list in the margin only invites you to click out of the session you just started.
   const fullWidth =
@@ -43,7 +47,9 @@ function Layout() {
     // the margin only invites you to leave the session you just started.
     /^\/programs\/.+/.test(pathname) ||
     pathname === '/grundlagen' ||
-    ['/piano', '/auswendig-lernen', '/musiktheorie', '/bass'].includes(pathname);
+    ['/piano', '/auswendig-lernen', '/gitarrenakkorde', '/musiktheorie', '/bass'].includes(
+      pathname,
+    );
   return (
     <>
       <Navigation />
@@ -71,6 +77,7 @@ function Layout() {
             <Route path="/arpeggios/:id" element={<ArpeggioRedirect />} />
             <Route path="/fretboard" element={<FretboardPage />} />
             <Route path="/stimmgeraet" element={<Tuner />} />
+            <Route path="/gitarrenakkorde" element={<GuitarChords />} />
             <Route path="/exercises" element={<ExerciseLibrary />} />
             <Route path="/exercises/:category" element={<ExerciseLibrary />} />
             <Route path="/exercises/:category/:number" element={<ExercisePage />} />
@@ -91,7 +98,7 @@ function Layout() {
               path="*"
               element={
                 <PageHeading
-                  eyebrow="BASS WORKSTATION"
+                  eyebrow={`${profile.nameUpper} WORKSTATION`}
                   title="Seite nicht gefunden"
                   description="Wähle einen Bereich aus der Navigation."
                   actions={<Link to="/">Zur Startseite</Link>}

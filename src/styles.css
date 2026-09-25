@@ -233,6 +233,19 @@ kbd {
   align-items: center;
   gap: 13px;
 }
+.instrument-brand-toggle {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
+}
+.instrument-brand-toggle:hover {
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+}
 .brand > div {
   font-size: 20px;
   font-weight: 750;
@@ -253,6 +266,14 @@ kbd {
   padding-left: 20px;
   margin-left: 10px;
   color: var(--muted);
+}
+.brand > small > b {
+  display: block;
+  margin-top: 4px;
+  color: var(--accent);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
 }
 .brand-mark {
   width: 33px;
@@ -277,6 +298,24 @@ kbd {
 }
 .brand-mark i:nth-child(4) {
   height: 18px;
+}
+.brand-mark.guitar {
+  width: 42px;
+  gap: 4px;
+}
+.brand-mark.guitar i:nth-child(5) {
+  height: 20px;
+}
+.brand-mark.guitar i:nth-child(6) {
+  height: 16px;
+}
+.instrument-switch-mobile {
+  display: none;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
 }
 .topbar-actions {
   display: flex;
@@ -661,6 +700,7 @@ kbd {
   padding-bottom: 7px;
 }
 .fretboard {
+  position: relative;
   display: grid;
   width: 100%;
   isolation: isolate;
@@ -758,6 +798,48 @@ kbd {
   color: white;
   border: 2px solid var(--ink);
 }
+.degree-marker.both {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  flex-direction: column;
+  gap: 1px;
+}
+.degree-marker.both b {
+  font-size: 10px;
+  line-height: 1;
+}
+.degree-marker.both small {
+  font-size: 8px;
+  font-weight: 650;
+  line-height: 1;
+  opacity: 0.82;
+}
+.degree-marker.overlay {
+  border: 2px solid rgb(255 255 255 / 0.88);
+  color: white;
+  font-weight: 750;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.72);
+  box-shadow:
+    0 0 0 2px #fff,
+    0 1px 5px rgb(19 35 44 / 0.3);
+}
+.degree-marker.overlay-root {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.fretboard-guide-paths {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.fretboard-guide-paths > path {
+  filter: drop-shadow(0 1px 1px rgb(255 255 255 / 0.9));
+}
 .fret-dot {
   height: 25px;
   text-align: center;
@@ -799,6 +881,24 @@ kbd {
 .legend i.chord {
   background: var(--chord-light);
   border-color: var(--chord);
+}
+.overlay-legend {
+  row-gap: 8px;
+}
+.overlay-legend > span {
+  color: var(--muted);
+}
+.overlay-legend > span:has(i) {
+  color: var(--ink);
+}
+.overlay-legend b {
+  display: inline-grid;
+  place-items: center;
+  min-width: 15px;
+  height: 15px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  font-size: 8px;
 }
 .position-info {
   min-height: 43px;
@@ -2090,7 +2190,10 @@ td:first-child {
     display: none;
   }
   .brand-mark {
-    display: flex;
+    display: none;
+  }
+  .instrument-switch-mobile {
+    display: inline;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -2102,11 +2205,232 @@ td:first-child {
 }
 .fretboard-toolbar {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 18px;
   flex-wrap: wrap;
   margin: 0 0 22px;
+}
+.fretboard-toolbar > .segmented {
+  flex: 0 0 auto;
+}
+.fretboard-toolbar > .field-row {
+  min-height: 40px;
+  flex: 1 1 420px;
+  justify-content: flex-end;
+}
+.fretboard-chord-controls {
+  margin: -4px 0 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.fretboard-chord-add,
+.fretboard-key-chords-head,
+.fretboard-chord-selection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+}
+.fretboard-chord-add > div:first-child,
+.fretboard-key-chords-head > div:first-child {
+  display: grid;
+  gap: 4px;
+  margin-right: auto;
+}
+.fretboard-chord-add .eyebrow,
+.fretboard-key-chords-head .eyebrow {
+  margin: 0;
+  color: var(--accent);
+}
+.fretboard-chord-add label,
+.fretboard-chord-picker {
+  display: grid;
+  gap: 5px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.fretboard-chord-add select {
+  min-width: 82px;
+}
+.fretboard-chord-picker {
+  width: min(290px, 100%);
+}
+.fretboard-key-chords {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-subtle, #fafcfd);
+}
+.fretboard-key-chords-head {
+  padding-bottom: 12px;
+}
+.fretboard-key-chords-head small {
+  color: var(--muted);
+  font-size: 10px;
+}
+.fretboard-key-chord-group + .fretboard-key-chord-group {
+  border-top: 1px solid var(--line);
+}
+.fretboard-key-chord-group > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 18px 9px;
+}
+.fretboard-key-chord-group > header > strong {
+  font-size: 11px;
+}
+.fretboard-key-chord-group > header > button {
+  min-height: 30px;
+  padding: 3px 9px;
+  font-size: 10px;
+}
+.fretboard-key-chord-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 7px;
+  padding: 0 18px 16px;
+}
+.fretboard-key-chord-grid button {
+  position: relative;
+  display: grid;
+  grid-template-columns: 10px 1fr;
+  align-items: center;
+  gap: 2px 7px;
+  min-height: 78px;
+  padding: 8px;
+  text-align: left;
+}
+.fretboard-key-chord-grid button i {
+  grid-row: 1 / 4;
+  width: 9px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+}
+.fretboard-key-chord-grid button span {
+  font-size: 9px;
+  color: var(--muted);
+}
+.fretboard-key-chord-grid button strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+}
+.fretboard-key-chord-grid button small {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.35;
+}
+.fretboard-key-chord-grid button.active {
+  border-color: var(--accent-border);
+  background: var(--surface);
+}
+.fretboard-key-chords-empty {
+  margin: 0;
+  padding: 0 18px 16px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.fretboard-chord-selection {
+  min-height: 58px;
+  flex-wrap: wrap;
+}
+.fretboard-chord-selection > span {
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.fretboard-chord-selection > div {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.fretboard-selected-chord {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 58px;
+  padding: 7px 9px;
+  border: 1px solid color-mix(in srgb, var(--chord-color) 48%, var(--line));
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--chord-color) 9%, var(--surface));
+}
+.fretboard-selected-chord.guide-active {
+  box-shadow: inset 0 0 0 1px var(--chord-color);
+}
+.fretboard-selected-chord > i {
+  width: 8px;
+  height: 35px;
+  border-radius: 999px;
+  background: var(--chord-color);
+}
+.fretboard-selected-chord-content {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+  text-align: left;
+}
+.fretboard-selected-chord-content > span:first-child {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.fretboard-selected-chord small,
+.fretboard-selected-chord-notes,
+.fretboard-selected-chord-formula {
+  color: var(--muted);
+}
+.fretboard-selected-chord-notes,
+.fretboard-selected-chord-formula {
+  font-size: 9px;
+  line-height: 1.25;
+}
+.fretboard-selected-chord-notes b,
+.fretboard-selected-chord-formula b {
+  margin-right: 3px;
+  color: var(--ink);
+  font-size: 8px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.fretboard-selected-chord svg {
+  color: var(--muted);
+}
+.fretboard-selected-chord-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.fretboard-selected-chord-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 30px;
+  padding: 3px 7px;
+  font-size: 9px;
+}
+.fretboard-selected-chord-actions button.active {
+  border-color: var(--chord-color);
+  background: var(--chord-color);
+  color: white;
+}
+.fretboard-selected-chord-actions button.active svg {
+  color: currentColor;
+}
+.fretboard-chord-selection .text-button {
+  min-height: 31px;
+  padding: 3px 9px;
+  border-color: transparent;
+  color: var(--muted);
+  font-size: 11px;
 }
 .field-row {
   display: flex;
@@ -2124,6 +2448,115 @@ td:first-child {
 }
 .field-row select {
   font-size: 12px;
+}
+.fretboard-picker-field {
+  display: grid;
+  width: min(245px, 100%);
+  gap: 5px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.fretboard-label-controls {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.fretboard-label-controls > span {
+  margin-right: 4px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.fretboard-label-controls button {
+  min-height: 34px;
+  padding: 4px 10px;
+  font-size: 11px;
+}
+.fretboard-label-controls button.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--tool-active-ink, white);
+}
+.arpeggio-selection-summary {
+  display: grid;
+  grid-template-columns: minmax(190px, 1.2fr) 1fr 1fr auto;
+  gap: 10px;
+  margin: -4px 0 22px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-subtle, #fafcfd);
+}
+.arpeggio-selection-summary > button {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+.arpeggio-selection-summary > button.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--tool-active-ink, white);
+}
+.arpeggio-selection-summary > div {
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 4px 12px;
+  border-left: 1px solid var(--line);
+}
+.arpeggio-selection-summary > div:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.arpeggio-selection-summary span:not(.eyebrow) {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.arpeggio-selection-summary .eyebrow {
+  margin: 0;
+  color: var(--accent);
+}
+.arpeggio-selection-title {
+  grid-template-columns: auto 1fr;
+}
+.arpeggio-selection-title .eyebrow {
+  grid-column: 1 / -1;
+}
+.arpeggio-selection-title > strong {
+  font-size: 18px;
+}
+.arpeggio-selection-title > small {
+  align-self: center;
+  color: var(--muted);
+}
+.fretboard-guide-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: -2px -2px 14px;
+  padding: 9px 11px;
+  border-left: 4px solid var(--guide-color);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--guide-color) 9%, var(--surface));
+  font-size: 11px;
+}
+.fretboard-guide-status > svg,
+.fretboard-guide-status > strong {
+  color: var(--guide-color);
+}
+.fretboard-guide-status > span {
+  flex: 1;
+  color: var(--muted);
+}
+.fretboard-guide-status > button {
+  min-height: 29px;
+  padding: 3px 8px;
+  font-size: 10px;
 }
 .trainer-controls {
   display: flex;
@@ -2197,6 +2630,42 @@ td:first-child {
   .field-row {
     gap: 9px;
   }
+  .fretboard-picker-field {
+    width: 100%;
+  }
+  .fretboard-label-controls {
+    width: 100%;
+  }
+  .fretboard-label-controls button {
+    flex: 1;
+  }
+  .arpeggio-selection-summary {
+    grid-template-columns: 1fr 1fr;
+    padding: 12px;
+  }
+  .arpeggio-selection-summary > div {
+    padding: 5px 8px;
+  }
+  .arpeggio-selection-summary > div:first-child {
+    grid-column: 1 / -1;
+    padding: 0 0 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .arpeggio-selection-summary > div:nth-child(2) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .arpeggio-selection-summary > button {
+    grid-column: 1 / -1;
+    justify-content: center;
+  }
+  .fretboard-guide-status {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .fretboard-guide-status > span {
+    min-width: calc(100% - 80px);
+  }
   .trainer-controls {
     padding: 16px;
     gap: 12px;
@@ -2222,9 +2691,48 @@ td:first-child {
     font-size: 11px;
     min-width: 112px;
   }
-  .fretboard-toolbar + .panel > .panel-heading {
+  .fretboard-toolbar + .panel > .panel-heading,
+  .fretboard-chord-controls + .panel > .panel-heading {
     align-items: flex-start;
     flex-wrap: wrap;
+  }
+  .fretboard-chord-add,
+  .fretboard-key-chords-head,
+  .fretboard-chord-selection {
+    align-items: stretch;
+    padding: 14px;
+  }
+  .fretboard-chord-add,
+  .fretboard-key-chords-head {
+    flex-direction: column;
+  }
+  .fretboard-chord-add > div:first-child,
+  .fretboard-key-chords-head > div:first-child {
+    margin-right: 0;
+  }
+  .fretboard-chord-add label {
+    width: 100%;
+  }
+  .fretboard-chord-add select,
+  .fretboard-chord-picker {
+    width: 100%;
+  }
+  .fretboard-key-chords-head .segmented {
+    width: 100%;
+  }
+  .fretboard-key-chords-head .segmented button {
+    flex: 1;
+  }
+  .fretboard-key-chord-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0 14px 14px;
+  }
+  .fretboard-key-chord-group > header {
+    padding: 8px 14px 9px;
+  }
+  .fretboard-chord-selection > span,
+  .fretboard-chord-selection > div {
+    width: 100%;
   }
   .trainer-answers {
     padding: 20px 18px 0;

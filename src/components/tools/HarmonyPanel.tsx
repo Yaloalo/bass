@@ -109,7 +109,7 @@ export function HarmonyPanel() {
   const [presetSearch, setPresetSearch] = useState('');
   const presetPicker = useRef<HTMLDetailsElement>(null);
   const presetSearchInput = useRef<HTMLInputElement>(null);
-  const { root: globalRoot } = useStore();
+  const { root: globalRoot, instrument } = useStore();
   const label = useNoteLabel();
   const status = useRhythmStatus();
   const playing = status.running && status.mode === 'drums';
@@ -156,8 +156,10 @@ export function HarmonyPanel() {
           <span className="eyebrow">Harmonie</span>
           <h2>Akkorde zum Mitspielen</h2>
           <p>
-            Eine Akkordfolge läuft im selben Takt wie der Groove. Die Fläche liegt bewusst hoch –
-            der Bass bleibt dein Register.
+            Eine Akkordfolge läuft im selben Takt wie der Groove.{' '}
+            {instrument === 'bass'
+              ? 'Die Fläche liegt bewusst hoch – der Bass bleibt dein Register.'
+              : 'Die Fläche bleibt kompakt – ergänze darunter Grundtöne oder darüber Guide Tones.'}
           </p>
         </div>
       </div>

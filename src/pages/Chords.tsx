@@ -31,12 +31,14 @@ import { PianoPreview } from '../components/PianoPreview';
 import { Score } from '../components/Score';
 import { Playback } from '../components/Playback';
 import '../chords.css';
+import { instrumentProfile } from '../lib/instrument';
 
 /* ------------------------------------------------------------------ index */
 
 export function ChordIndex() {
   usePageTitle('Akkorde');
-  const { root } = useStore();
+  const { root, instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   const label = useNoteLabel();
   const [query, setQuery] = useState('');
   const [family, setFamily] = useState<ChordFamily | 'alle'>('alle');
@@ -68,9 +70,9 @@ export function ChordIndex() {
           13 sind dieselben Töne wie 2, 4 und 6, nur eine Oktave höher gedacht.
         </p>
         <p>
-          Wichtig für Bassist:innen: Ein Symbol sagt, welche Töne <i>gemeint</i> sind, nicht welche
-          gespielt werden. Bei erweiterten Akkorden lässt man regelmäßig Quinte und None weg. Jede
-          Akkordseite zeigt beides getrennt an.
+          Wichtig auf {profile.name === 'Bass' ? 'dem Bass' : 'der Gitarre'}: Ein Symbol sagt,
+          welche Töne <i>gemeint</i> sind, nicht welche gespielt werden. Bei erweiterten Akkorden
+          lässt man regelmäßig Quinte und None weg. Jede Akkordseite zeigt beides getrennt an.
         </p>
       </Konzept>
       <div className="chord-filters">
@@ -163,7 +165,8 @@ export function ChordPage() {
 }
 
 function ChordDetail({ chord }: { chord: ChordDefinition }) {
-  const { root: selectedRoot } = useStore();
+  const { root: selectedRoot, instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   const label = useNoteLabel();
   const root = readableRoot(selectedRoot, [...chord.formula]);
   const [labels, setLabels] = useState('Degrees');
@@ -281,7 +284,9 @@ function ChordDetail({ chord }: { chord: ChordDefinition }) {
           />
           {chord.noteDe && <Notice>{chord.noteDe}</Notice>}
         </Section>
-        <Section title="Was Bassist:innen tatsächlich spielen">
+        <Section
+          title={`Praktische Tonauswahl auf ${profile.name === 'Bass' ? 'dem Bass' : 'der Gitarre'}`}
+        >
           <p className="voicing-line">
             {voicing.map((degree) => label.note(spellDegree(root, degree))).join('  ·  ')}
           </p>

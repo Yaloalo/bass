@@ -9,16 +9,19 @@ import { ExerciseView } from './Exercises';
 import { practiceExerciseTitle } from '../lib/practice';
 import { usePracticeSetup } from '../lib/use-practice-setup';
 import '../practice.css';
+import { instrumentProfile } from '../lib/instrument';
 /** The drum preset a programme opens with, named for the card. */
 const grooveName = (program: PracticeProgram) =>
   drumPresets.find((preset) => preset.id === programGroove(program))?.pattern.name;
 
 export function ProgramLibrary() {
+  const { instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   usePageTitle('Übeprogramme');
   return (
     <>
       <PageHeading
-        eyebrow="BASS / STRUKTURIERT ÜBEN"
+        eyebrow={`${profile.nameUpper} / STRUKTURIERT ÜBEN`}
         title="Dreißig Minuten sinnvoll üben"
         description="Dreißig Programme in drei Bereichen. Jedes besteht aus sechs Fünf-Minuten-Blöcken und ist von leicht nach schwer einsortiert – fang oben an."
       />
@@ -94,7 +97,8 @@ export function ProgramRunner({
     ),
     [done, setDone] = useState<number[]>([]),
     [startFirstBlock, setStartFirstBlock] = useState(autoStart);
-  const { root } = useStore();
+  const { root, instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   const blockCount = program.blocks.length;
   const changeBlock = (index: number) => {
     // Only the initial session launch starts a timer automatically.
@@ -109,7 +113,7 @@ export function ProgramRunner({
     <>
       {showHeading && (
         <PageHeading
-          eyebrow={`BASS / ${blockCount * 5} MINUTEN`}
+          eyebrow={`${profile.nameUpper} / ${blockCount * 5} MINUTEN`}
           title={program.name}
           actions={
             <Link className="text-link" to="/programs">

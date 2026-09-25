@@ -8,19 +8,22 @@ export function TheoryNoteStaff({
   selected,
   noteLabel,
   onToggle,
+  clef = 'bass',
 }: {
   choices: readonly string[];
   selected: ReadonlySet<number>;
   noteLabel: (name: string) => string;
   onToggle: (pitch: number) => void;
+  clef?: 'bass' | 'treble';
 }) {
   const rows = [choices.slice(0, 6), choices.slice(6, 12)];
+  const clefName = clef === 'bass' ? 'Bassschlüssel' : 'Violinschlüssel';
   return (
-    <div className="memory-staves" aria-label="Töne im Bassschlüssel auswählen">
+    <div className="memory-staves" aria-label={`Töne im ${clefName} auswählen`}>
       {rows.map((notes, row) => (
         <div className="memory-staff" key={row}>
           <span className="memory-clef" aria-hidden="true">
-            𝄢
+            {clef === 'bass' ? '𝄢' : '𝄞'}
           </span>
           <div className="memory-staff-notes">
             {notes.map((note) => {
@@ -48,7 +51,7 @@ export function TheoryNoteStaff({
           </div>
         </div>
       ))}
-      <p>Bassschlüssel · dieselben zwölf Tonklassen in zwei übersichtlichen Zeilen</p>
+      <p>{clefName} · dieselben zwölf Tonklassen in zwei übersichtlichen Zeilen</p>
     </div>
   );
 }

@@ -17,6 +17,7 @@ import {
 import type { MemoryTopic, RootScope } from '../lib/theory-memory';
 import { usePiano } from '../lib/use-piano';
 import { useNoteLabel, useStore } from '../lib/store';
+import { instrumentProfile } from '../lib/instrument';
 import '../memory.css';
 
 type AnswerSurface = 'Notennamen' | 'Klaviatur' | 'Notenblatt';
@@ -54,7 +55,8 @@ const jazzBasicChordIds = [
 
 export function TheoryMemory() {
   usePageTitle('Auswendig lernen');
-  const { root: globalRoot, scaleId: storedScaleId } = useStore();
+  const { root: globalRoot, scaleId: storedScaleId, instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   const globalScaleId = scales.some((scale) => scale.id === storedScaleId)
     ? storedScaleId
     : scales[0].id;
@@ -417,6 +419,7 @@ export function TheoryMemory() {
             selected={selected}
             noteLabel={displayNote}
             onToggle={toggle}
+            clef={profile.notationClef}
           />
         )}
 

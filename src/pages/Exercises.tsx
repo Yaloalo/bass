@@ -24,9 +24,11 @@ import { Playback } from '../components/Playback';
 import { Accompaniment } from '../components/Accompaniment';
 import type { AccompanimentMode } from '../components/Accompaniment';
 import { Timer } from '../components/Timer';
+import { instrumentProfile } from '../lib/instrument';
 export function ExerciseLibrary() {
   const { category } = useParams();
-  const { root: selectedRoot } = useStore();
+  const { root: selectedRoot, instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   const [query, setQuery] = useState(''),
     [filter, setFilter] = useState('All');
   const heading = (id?: string) =>
@@ -41,7 +43,7 @@ export function ExerciseLibrary() {
   return (
     <>
       <PageHeading
-        eyebrow="BASS / ÜBUNGSBIBLIOTHEK"
+        eyebrow={`${profile.nameUpper} / ÜBUNGSBIBLIOTHEK`}
         title={category ? `${heading(category)}-Übungen` : `${exercises.length} gezielte Übungen`}
         description="Eigenständige Fünf-Minuten-Blöcke. Fang bei den Grundlagen an, wenn du neu bist."
       />
@@ -318,14 +320,15 @@ export function ExerciseView({
 }
 
 function ExerciseDetail({ exercise }: { exercise: Exercise }) {
-  const { root: selectedRoot } = useStore();
+  const { root: selectedRoot, instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   const index = exercises.indexOf(exercise);
   const next = exercises[(index + 1) % exercises.length];
   const previous = exercises[(index + exercises.length - 1) % exercises.length];
   return (
     <>
       <PageHeading
-        eyebrow={`BASS / ${
+        eyebrow={`${profile.nameUpper} / ${
           exerciseCategories.find((item) => item.id === exercise.category)?.eyebrow ?? 'ÜBUNG'
         } / ÜBUNG ${exercise.id}`}
         title={`${exercise.id} · ${practiceExerciseTitle(exercise, selectedRoot)}`}

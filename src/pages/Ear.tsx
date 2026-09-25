@@ -15,7 +15,8 @@ import type { EarMode, EarQuestion } from '../lib/ear';
 import { usePiano } from '../lib/use-piano';
 import { allPositions, chromaticDegreesFor, mod, noteName, pitchClass, tuning } from '../lib/music';
 import { germanNoteName } from '../lib/i18n';
-import { useLocal } from '../lib/store';
+import { useLocal, useStore } from '../lib/store';
+import { instrumentProfile } from '../lib/instrument';
 import '../piano.css';
 import '../ear.css';
 
@@ -39,6 +40,8 @@ function questionBoard(question: EarQuestion) {
 }
 
 export function EarTraining() {
+  const { instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   usePageTitle('Gehörbildung');
   const piano = usePiano(60);
   const [mode, setMode] = useLocal<string>('ear-mode', 'Intervalle');
@@ -255,8 +258,8 @@ export function EarTraining() {
           />
           <div className="ear-board">
             <span className="small-label">
-              AUF DEM BASS · GRUNDTON {germanNoteName(noteName(mod(question.root), true))} · BUND
-              0–12
+              AUF {profile.name === 'Bass' ? 'DEM BASS' : 'DER GITARRE'} · GRUNDTON{' '}
+              {germanNoteName(noteName(mod(question.root), true))} · BUND 0–12
             </span>
             <Fretboard
               key={`${question.root}-${question.answer}`}

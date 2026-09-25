@@ -1,10 +1,10 @@
 import { germanNoteName, textDe } from '../lib/i18n';
-import { useMemo, useState } from 'react';
-import { useStore } from '../lib/store';
+import { useEffect, useMemo, useState } from 'react';
+import { useNoteLabel, useStore } from '../lib/store';
 import { scales } from '../data/catalog';
 import { chords } from '../data/chords';
 import { buildChordRoute } from '../lib/route';
-import type { ChordDefinition } from '../lib/chord-types';
+import { chordFamilies, type ChordDefinition } from '../lib/chord-types';
 
 /** The fretboard consumes scales; a chord supplies the same three fields. */
 const chordAsScale = (chord: ChordDefinition) => ({
@@ -17,7 +17,6 @@ import {
   chromaticDegreesFor,
   transposeRoute,
   isNote,
-  strings,
   tuning,
   mod,
   pitchClass,
@@ -25,22 +24,41 @@ import {
   pretty,
   intervalNames,
   degreeSemitones,
+  spellDegree,
   readableRoot,
 } from '../lib/music';
-import { Fretboard } from '../components/Fretboard';
+import { instrumentProfile } from '../lib/instrument';
+import { Fretboard, type FretboardPick } from '../components/Fretboard';
+import { FretboardChordControls } from '../components/FretboardChordControls';
+import { ChordPicker } from '../components/ChordPicker';
 import {
-  PageHeading,
-  Panel,
-  Segmented,
-  Notice,
-  usePageTitle,
-  Icon,
-  Konzept,
-} from '../components/UI';
+  fretboardChordEvents,
+  fretboardChordSelectionId,
+  makeFretboardChordOverlays,
+  type FretboardChordSelection,
+} from '../lib/fretboard-chords';
+import { PageHeading, Panel, Segmented, usePageTitle, Icon } from '../components/UI';
 import { Score } from '../components/Score';
 import { Playback } from '../components/Playback';
+import {
+  chordGuideEntries,
+  fretboardGuidePath,
+  type FretboardGuideEntry,
+  type FretboardGuidePath,
+} from '../lib/fretboard-guide';
+
+interface GuideSpec {
+  source: string;
+  label: string;
+  rootPitch: number;
+  color: string;
+  entries: FretboardGuideEntry[];
+}
+
 export function FretboardPage() {
-  const { root: selectedRoot, scaleId, setScaleId } = useStore();
+  const { root: selectedRoot, scaleId, setScaleId, instrument } = useStore();
+  const noteLabel = useNoteLabel();
+  const profile = instrumentProfile(instrument);
   usePageTitle('Interaktives Griffbrett');
   const [mode, setMode] = useState('Notes'),
     [rangeName, setRangeName] = useState('0–24'),
@@ -48,8 +66,19 @@ export function FretboardPage() {
     [arpId, setArpId] = useState('major'),
     [noteFilter, setNoteFilter] = useState('All notes'),
     [selectedNote, setSelectedNote] = useState('C'),
-    [labels, setLabels] = useState('Degrees'),
-    [trainer, setTrainer] = useState(false);
+    [showNoteLabels, setShowNoteLabels] = useState(true),
+    [showDegreeLabels, setShowDegreeLabels] = useState(true),
+    [trainer, setTrainer] = useState(false),
+    [selectedChords, setSelectedChords] = useState<FretboardChordSelection[]>(() => [
+      {
+        id: fretboardChordSelectionId(selectedRoot, 'major'),
+        root: selectedRoot,
+        chordId: 'major',
+      },
+    ]);
+  const [guideSources, setGuideSources] = useState<string[]>([]);
+  const [guidePaths, setGuidePaths] = useState<FretboardGuidePath[]>([]);
+  const [guideMessage, setGuideMessage] = useState('Wähle einen Grundton auf dem Griffbrett.');
   const ranges: Record<string, [number, number]> = {
     '0–12': [0, 12],
     '0–24': [0, 24],
@@ -57,16 +86,145 @@ export function FretboardPage() {
     '12–24': [12, 24],
   };
   const range = ranges[rangeName];
+  const selectedScale = scales.find((s) => s.id === scaleId) ?? scales[0];
   const item =
     mode === 'Arpeggio'
       ? chordAsScale(chords.find((c) => c.id === arpId) ?? chords[0])
-      : scales.find((s) => s.id === scaleId)!;
+      : selectedScale;
+  const selectedArpeggio = chords.find((chord) => chord.id === arpId) ?? chords[0];
   const root = readableRoot(
     selectedRoot,
     mode === 'Scale' || mode === 'Arpeggio' ? item.degreeLabels : chromaticDegreesFor(selectedRoot),
   );
+  const arpeggioPickerItems = useMemo(
+    () =>
+      chords
+        .filter((chord) => !chord.voicingFamily)
+        .map((chord) => ({
+          id: chord.id,
+          symbol: noteLabel.chord(root, chord.symbol),
+          name: chord.nameDe,
+          detail: chord.formula
+            .map((degree) => noteLabel.note(spellDegree(root, degree)))
+            .join(' · '),
+          family: chord.family,
+          keywords: chord.aliases,
+        })),
+    [root, noteLabel],
+  );
   const route = useMemo(() => transposeRoute(item.fingering, root), [item, root]);
+  const chordOverlays = useMemo(
+    () => makeFretboardChordOverlays(selectedChords, noteLabel.chord, noteLabel.note),
+    [selectedChords, noteLabel],
+  );
+  const guideSpecs = useMemo<GuideSpec[]>(() => {
+    const specs: GuideSpec[] = [];
+    if (guideSources.includes('arpeggio')) {
+      specs.push({
+        source: 'arpeggio',
+        label: noteLabel.chord(root, selectedArpeggio.symbol),
+        rootPitch: pitchClass(root),
+        color: '#4bb8d0',
+        entries: chordGuideEntries(root, selectedArpeggio),
+      });
+    }
+    for (const source of guideSources.filter((item) => item.startsWith('chord:'))) {
+      const selectionId = source.slice('chord:'.length);
+      const selection = selectedChords.find((item) => item.id === selectionId);
+      const index = selectedChords.findIndex((item) => item.id === selectionId);
+      const chord = selection ? chords.find((item) => item.id === selection.chordId) : undefined;
+      if (!selection || !chord || index < 0) continue;
+      specs.push({
+        source,
+        label: noteLabel.chord(selection.root, chord.symbol),
+        rootPitch: pitchClass(selection.root),
+        color: chordOverlays[index]?.color ?? '#147d92',
+        entries: chordGuideEntries(selection.root, chord),
+      });
+    }
+    return specs;
+  }, [guideSources, selectedArpeggio, root, selectedChords, chordOverlays, noteLabel]);
+
+  const resetGuidePaths = (message = 'Wähle einen Grundton auf dem Griffbrett.') => {
+    setGuidePaths([]);
+    setGuideMessage(message);
+  };
+  const stopGuide = () => {
+    setGuideSources([]);
+    resetGuidePaths();
+  };
+  const toggleGuide = (source: string) => {
+    const active = guideSources.includes(source);
+    if (source === 'arpeggio') {
+      setGuideSources(active ? [] : ['arpeggio']);
+      setGuidePaths([]);
+      if (!active) setView('All positions');
+    } else {
+      setGuideSources((current) =>
+        active
+          ? current.filter((item) => item !== source)
+          : [...current.filter((item) => item !== 'arpeggio'), source],
+      );
+      if (active) setGuidePaths((current) => current.filter((path) => path.id !== source));
+    }
+    setGuideMessage('Wähle einen farbigen Grundton auf dem Griffbrett.');
+  };
+  const handleGuidePick = (picked: FretboardPick) => {
+    if (!guideSpecs.length) return;
+    const matching = guideSpecs.filter((spec) => spec.rootPitch === mod(picked.midi));
+    if (!matching.length) {
+      setGuideMessage(
+        `Wähle einen Grundton von ${guideSpecs.map((spec) => spec.label).join(' oder ')}.`,
+      );
+      return;
+    }
+    const paths = matching.map((spec) =>
+      fretboardGuidePath(
+        spec.source,
+        spec.label,
+        profile,
+        range,
+        picked.midi,
+        spec.entries,
+        {
+          positionId: picked.positionId,
+          fret: picked.fret,
+          stringLabel: picked.stringLabel,
+          label: `${noteLabel.note(picked.name ?? root)} · Grundton`,
+        },
+        spec.color,
+        noteLabel.note,
+      ),
+    );
+    setGuidePaths((current) => [
+      ...current.filter((path) => !matching.some((spec) => spec.source === path.id)),
+      ...paths,
+    ]);
+    const complete = paths.filter(
+      (path, index) => path.points.length === matching[index].entries.length,
+    );
+    setGuideMessage(
+      complete.length === paths.length
+        ? `${paths.map((path) => path.label).join(' · ')} vollständig eingezeichnet.`
+        : 'Die erreichbare Tonfolge ist eingezeichnet; ändere Lage oder Bundbereich für den Rest.',
+    );
+  };
+  const changeSelectedChords = (next: FretboardChordSelection[]) => {
+    const valid = new Set(next.map((item) => `chord:${item.id}`));
+    setGuideSources((current) =>
+      current.filter((source) => !source.startsWith('chord:') || valid.has(source)),
+    );
+    setGuidePaths((current) =>
+      current.filter((path) => !path.id.startsWith('chord:') || valid.has(path.id)),
+    );
+    setSelectedChords(next);
+  };
+  useEffect(() => {
+    if (guideSources.length) resetGuidePaths('Wähle einen Grundton auf dem Griffbrett.');
+  }, [selectedRoot, instrument, rangeName, arpId]);
   const events = useMemo(() => {
+    if (mode === 'Chords')
+      return fretboardChordEvents(selectedChords, selectedRoot, range[0], range[1]);
     if (mode === 'Scale' || mode === 'Arpeggio')
       return view === 'Fingering' ? route : allPositions(root, item.degreeLabels, ...range);
     let all = allPositions(root, chromaticDegreesFor(root), ...range);
@@ -80,8 +238,33 @@ export function FretboardPage() {
         all = all.filter((n) => mod(tuning[n.string] + n.fret) === pitchClass(selectedNote));
     }
     return all;
-  }, [mode, view, route, root, item, rangeName, noteFilter, selectedNote]);
+  }, [
+    mode,
+    view,
+    route,
+    root,
+    item,
+    rangeName,
+    noteFilter,
+    selectedNote,
+    selectedChords,
+    selectedRoot,
+  ]);
   const activeFingering = (mode === 'Scale' || mode === 'Arpeggio') && view === 'Fingering';
+  const fretboardLabels: 'Degrees' | 'Notes' | 'Both' = showNoteLabels
+    ? showDegreeLabels
+      ? 'Both'
+      : 'Notes'
+    : 'Degrees';
+  const toggleLabels = (kind: 'notes' | 'degrees') => {
+    if (kind === 'notes') {
+      if (showNoteLabels && !showDegreeLabels) return;
+      setShowNoteLabels((visible) => !visible);
+      return;
+    }
+    if (showDegreeLabels && !showNoteLabels) return;
+    setShowDegreeLabels((visible) => !visible);
+  };
   const visibleRange: [number, number] = activeFingering
     ? [
         Math.max(0, Math.min(...route.filter(isNote).map((n) => n.fret)) - 1),
@@ -91,44 +274,31 @@ export function FretboardPage() {
   return (
     <>
       <PageHeading
-        eyebrow="BASS / DAS GRIFFBRETT"
+        eyebrow={`${profile.nameUpper} / DAS GRIFFBRETT`}
         title="Interaktives Griffbrett"
-        description="Jeder Ton, jedes Intervall, jede Lage. Lerne das Griffbrett kennen."
+        description={`Jeder Ton, jedes Intervall, jede Lage. Lerne das ${profile.name}-Griffbrett kennen.`}
         actions={
-          <button className={trainer ? 'primary' : ''} onClick={() => setTrainer((v) => !v)}>
-            <Icon name="grid" />
-            {trainer ? 'Lernmodus schließen' : 'Lernmodus'}
-          </button>
+          mode !== 'Chords' && (
+            <button className={trainer ? 'primary' : ''} onClick={() => setTrainer((v) => !v)}>
+              <Icon name="grid" />
+              {trainer ? 'Lernmodus schließen' : 'Lernmodus'}
+            </button>
+          )
         }
       />
-      <Konzept title="Was ein Intervall ist – und warum es auf dem Bass eine Form hat">
-        <p>
-          Ein Intervall ist der Abstand zwischen zwei Tönen, gemessen in Halbtonschritten: ein Bund
-          ist ein Halbtonschritt, zwei Bünde sind ein Ganztonschritt. Weil der Bass in Quarten
-          gestimmt ist, hat jedes Intervall auf dem Griffbrett eine feste <b>Form</b>, die sich
-          verschieben lässt, ohne sich zu verändern.
-        </p>
-        <p>
-          Drei Formen tragen fast alles: Die <b>Oktave</b> liegt zwei Saiten höher und zwei Bünde
-          weiter. Die <b>Quinte</b> liegt eine Saite höher und zwei Bünde weiter. Die <b>Quarte</b>
-          liegt einfach eine Saite höher im selben Bund. Wenn du diese drei kennst, findest du jeden
-          Grundton doppelt und jede Quinte blind.
-        </p>
-        <p>
-          Die Terz entscheidet über Dur und Moll: vier Halbtonschritte über dem Grundton ist sie
-          groß, drei Halbtonschritte klein. Stell oben auf <b>Intervalle</b> um, um die Abstände vom
-          gewählten Grundton aus direkt auf dem Griffbrett zu sehen.
-        </p>
-      </Konzept>
       <div className="fretboard-toolbar">
         <Segmented
           label="Griffbrettmodus"
           value={mode}
-          onChange={setMode}
-          options={['Notes', 'Intervals', 'Scale', 'Arpeggio']}
+          onChange={(next) => {
+            setMode(next);
+            stopGuide();
+            if (next === 'Chords') setTrainer(false);
+          }}
+          options={['Notes', 'Intervals', 'Scale', 'Arpeggio', 'Chords']}
         />
         <div className="field-row">
-          {mode === 'Scale' && (
+          {(mode === 'Scale' || mode === 'Chords') && (
             <label>
               Tonleiter
               <select value={scaleId} onChange={(e) => setScaleId(e.target.value)}>
@@ -141,20 +311,21 @@ export function FretboardPage() {
             </label>
           )}
           {mode === 'Arpeggio' && (
-            <label>
-              Arpeggio
-              <select value={arpId} onChange={(e) => setArpId(e.target.value)}>
-                {chords
-                  .filter((c) => !c.voicingFamily)
-                  .map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.nameDe}
-                    </option>
-                  ))}
-              </select>
-            </label>
+            <div className="fretboard-picker-field">
+              <span>Arpeggio</span>
+              <ChordPicker
+                label="Arpeggio auswählen"
+                value={arpId}
+                items={arpeggioPickerItems}
+                groups={chordFamilies.map((family) => ({ id: family.id, name: family.name }))}
+                onPick={(id) => {
+                  setArpId(id);
+                  resetGuidePaths();
+                }}
+              />
+            </div>
           )}
-          {mode === 'Notes' ? (
+          {mode === 'Notes' && (
             <>
               <label>
                 Anzeigen
@@ -183,23 +354,89 @@ export function FretboardPage() {
                 </label>
               )}
             </>
-          ) : (
-            <Segmented
-              label="Griffbrettbeschriftung"
-              value={labels}
-              onChange={setLabels}
-              options={['Degrees', 'Notes']}
-            />
+          )}
+          {!trainer && (
+            <div
+              className="fretboard-label-controls"
+              role="group"
+              aria-label="Griffbrettbeschriftung"
+            >
+              <span>Beschriftung</span>
+              <button
+                type="button"
+                className={showNoteLabels ? 'active' : ''}
+                aria-pressed={showNoteLabels}
+                onClick={() => toggleLabels('notes')}
+              >
+                Noten
+              </button>
+              <button
+                type="button"
+                className={showDegreeLabels ? 'active' : ''}
+                aria-pressed={showDegreeLabels}
+                onClick={() => toggleLabels('degrees')}
+              >
+                Stufen / Nummern
+              </button>
+            </div>
           )}
         </div>
       </div>
+      {mode === 'Arpeggio' && (
+        <div className="arpeggio-selection-summary" aria-live="polite">
+          <div className="arpeggio-selection-title">
+            <span className="eyebrow">AUSGEWÄHLTES ARPEGGIO</span>
+            <strong>{noteLabel.chord(root, selectedArpeggio.symbol)}</strong>
+            <small>{selectedArpeggio.nameDe}</small>
+          </div>
+          <div>
+            <span>Stufen</span>
+            <strong>{selectedArpeggio.formula.map(pretty).join(' · ')}</strong>
+          </div>
+          <div>
+            <span>Noten</span>
+            <strong>
+              {selectedArpeggio.formula
+                .map((degree) => noteLabel.note(spellDegree(root, degree)))
+                .join(' · ')}
+            </strong>
+          </div>
+          <button
+            type="button"
+            className={guideSources.includes('arpeggio') ? 'active' : ''}
+            aria-pressed={guideSources.includes('arpeggio')}
+            onClick={() => toggleGuide('arpeggio')}
+          >
+            <Icon name="arrow" size={15} />
+            {guideSources.includes('arpeggio') ? 'Pfeile ausblenden' : 'Tonfolge mit Pfeilen'}
+          </button>
+        </div>
+      )}
+      {mode === 'Chords' && (
+        <FretboardChordControls
+          root={readableRoot(selectedRoot, item.degreeLabels)}
+          scale={selectedScale}
+          selected={selectedChords}
+          onChange={changeSelectedChords}
+          guideChordIds={guideSources
+            .filter((source) => source.startsWith('chord:'))
+            .map((source) => source.slice(6))}
+          onToggleGuide={(id) => toggleGuide(`chord:${id}`)}
+        />
+      )}
       <Panel
         title={
           trainer
             ? 'Griffbrett lernen'
             : mode === 'Notes'
               ? 'Alle Töne im Blick'
-              : `${germanNoteName(root)} ${mode === 'Intervals' ? 'Intervalle' : item.name}`
+              : mode === 'Chords'
+                ? selectedChords.length === 0
+                  ? 'Akkord wählen'
+                  : selectedChords.length === 1
+                    ? 'Akkordtöne auf dem ganzen Griffbrett'
+                    : `${selectedChords.length} Akkorde vergleichen`
+                : `${germanNoteName(root)} ${mode === 'Intervals' ? 'Intervalle' : item.name}`
         }
         aside={
           <div className="field-row">
@@ -227,15 +464,34 @@ export function FretboardPage() {
         {trainer ? (
           <Trainer key={root + rangeName + scaleId} root={root} range={range} scaleId={scaleId} />
         ) : (
-          <Fretboard
-            key={root + mode + view}
-            events={events}
-            range={visibleRange}
-            root={root}
-            labels={mode === 'Notes' ? 'Notes' : (labels as 'Degrees' | 'Notes')}
-            title={textDe(mode)}
-            route={activeFingering}
-          />
+          <>
+            {guideSpecs.length > 0 && (
+              <div
+                className="fretboard-guide-status"
+                style={{ '--guide-color': guideSpecs[0].color } as React.CSSProperties}
+                role="status"
+              >
+                <Icon name="arrow" size={16} />
+                <strong>{guideSpecs.map((spec) => spec.label).join(' · ')}</strong>
+                <span>{guideMessage}</span>
+                <button type="button" onClick={stopGuide}>
+                  Beenden
+                </button>
+              </div>
+            )}
+            <Fretboard
+              key={root + mode + view}
+              events={events}
+              range={visibleRange}
+              root={root}
+              labels={fretboardLabels}
+              title={textDe(mode)}
+              route={activeFingering}
+              overlays={mode === 'Chords' ? chordOverlays : undefined}
+              onPick={handleGuidePick}
+              guidePaths={guidePaths}
+            />
+          </>
         )}
       </Panel>
       {activeFingering && !trainer && (
@@ -245,32 +501,6 @@ export function FretboardPage() {
             <Playback events={route} scale />
           </div>
         </>
-      )}
-      <div className="three-col">
-        <Panel title="Orientierung">
-          <p>
-            G ist die höchste Saite und steht oben. E ist die tiefste. Bund 0 bedeutet leere Saite;
-            jeder Bund erhöht den Ton um einen Halbton.
-          </p>
-        </Panel>
-        <Panel title="Oktaven finden">
-          <p>
-            Gehe zwei Saiten Richtung G und zwei Bünde höher. Oder zwölf Bünde auf derselben Saite.
-            Der Notenname bleibt gleich.
-          </p>
-        </Panel>
-        <Panel title="Alle Positionen oder ein Fingersatz?">
-          <p>
-            „Alle Positionen“ zeigt den gesamten Tonvorrat. „Fingersatz“ zeigt genau den Weg aus der
-            zugehörigen Notation und TAB.
-          </p>
-        </Panel>
-      </div>
-      {mode === 'Intervals' && (
-        <Notice>
-          Der Tritonus heißt je nach Funktion ♯4 oder ♭5. Diese chromatische Karte nutzt ♭5;
-          Tonleiterseiten verwenden die genaue Stufenschreibweise.
-        </Notice>
       )}
     </>
   );
@@ -284,6 +514,8 @@ function Trainer({
   range: [number, number];
   scaleId: string;
 }) {
+  const { instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   const [kind, setKind] = useState('Find the note'),
     [stringConstraint, setStringConstraint] = useState('Any string'),
     [round, setRound] = useState(0),
@@ -291,30 +523,50 @@ function Trainer({
     [correct, setCorrect] = useState(false);
   const scale = scales.find((s) => s.id === scaleId)!;
   const question = useMemo(() => {
-    const all = allPositions(
-      root,
-      kind === 'Find scale degree' ? scale.degreeLabels : chromaticDegreesFor(root),
-      ...range,
-    ).filter((n) => stringConstraint === 'Any string' || n.string === stringConstraint);
-    const n =
-      all[Math.floor(Math.random() * all.length)] ??
-      allPositions(root, chromaticDegreesFor(root), ...range)[0];
-    const pc = mod(tuning[n.string] + n.fret),
+    const degrees = kind === 'Find scale degree' ? scale.degreeLabels : chromaticDegreesFor(root);
+    const candidates = profile.stringsHighToLow.flatMap((string) =>
+      Array.from({ length: range[1] - range[0] + 1 }, (_, offset) => {
+        const fret = range[0] + offset;
+        const midi = string.midi + fret;
+        const degree = degrees.find(
+          (candidate) => mod(degreeSemitones(candidate)) === mod(midi - pitchClass(root)),
+        );
+        if (!degree) return [];
+        return [
+          {
+            string: string.exerciseString ?? ('E' as const),
+            stringId: string.id,
+            stringLabel: string.spokenLabel,
+            positionId: `${string.exerciseString ?? string.id}:${fret}`,
+            fret,
+            duration: 'q',
+            degree,
+            name: spellDegree(root, degree),
+            midi,
+          },
+        ];
+      }).flat(),
+    );
+    const filtered = candidates.filter(
+      (candidate) => stringConstraint === 'Any string' || candidate.stringId === stringConstraint,
+    );
+    const n = filtered[Math.floor(Math.random() * filtered.length)] ?? candidates[0];
+    const pc = mod(n.midi),
       interval = mod(pc - pitchClass(root));
     const answers = [pc, mod(pc + 1), mod(pc + 5), mod(pc + 9)].sort(() => Math.random() - 0.5);
     return { n, pc, interval, answers };
-  }, [root, range[0], range[1], kind, round, stringConstraint, scale]);
+  }, [root, range[0], range[1], kind, round, stringConstraint, scale, profile]);
   const next = () => {
     setRound((n) => n + 1);
     setFeedback('');
     setCorrect(false);
   };
-  const answer = (pc: number, string?: string) => {
+  const answer = (pc: number, stringId?: string) => {
     const yes =
       pc === question.pc &&
       (kind === 'Identify the note' ||
         stringConstraint === 'Any string' ||
-        string === stringConstraint);
+        stringId === stringConstraint);
     setCorrect(yes);
     setFeedback(
       yes
@@ -364,8 +616,10 @@ function Trainer({
             }}
           >
             <option value="Any string">Jede Saite</option>
-            {strings.map((s) => (
-              <option key={s}>{s}</option>
+            {profile.stringsHighToLow.map((string) => (
+              <option key={string.id} value={string.id}>
+                {string.spokenLabel}
+              </option>
             ))}
           </select>
         </label>
@@ -386,18 +640,27 @@ function Trainer({
                 ? `Finde Stufe ${pretty(question.n.degree!)}.`
                 : `Finde ${germanNoteName(noteName(question.pc, root.includes('b')))}.`}
         </h2>
-        {stringConstraint !== 'Any string' && <p>Auf der {stringConstraint}-Saite.</p>}
+        {stringConstraint !== 'Any string' && (
+          <p>
+            Auf der{' '}
+            {profile.stringsHighToLow.find((string) => string.id === stringConstraint)?.spokenLabel}
+            -Saite.
+          </p>
+        )}
       </div>
       <Fretboard
         events={[]}
         range={range}
         root={root}
         conceal
-        marked={
-          kind === 'Identify the note' ? `${question.n.string}:${question.n.fret}` : undefined
-        }
+        marked={kind === 'Identify the note' ? question.n.positionId : undefined}
         onPick={(n) => {
-          if (kind !== 'Identify the note') answer(mod(tuning[n.string] + n.fret), n.string);
+          if (kind !== 'Identify the note') {
+            const string = profile.stringsHighToLow.find(
+              (candidate) => candidate.spokenLabel === n.stringLabel,
+            );
+            answer(mod(n.midi), string?.id);
+          }
         }}
       />
       {kind === 'Identify the note' && (

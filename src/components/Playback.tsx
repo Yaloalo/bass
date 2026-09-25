@@ -17,7 +17,7 @@ export function Playback({
   /** Offers a loop switch, so the example can run under you while you play along. */
   loopable?: boolean;
 }) {
-  const { bpm } = useStore();
+  const { bpm, instrument } = useStore();
   const { nextDownbeat } = useRhythm();
   const [direction, setDirection] = useState('Ascending');
   const [playing, setPlaying] = useState(false);
@@ -38,7 +38,7 @@ export function Playback({
     stopPlayback();
     setPlaying(false);
     clearTimeout(timeout.current);
-  }, [events]);
+  }, [events, instrument]);
   const toggle = async () => {
     if (playing) {
       looping.current = false;
@@ -59,7 +59,7 @@ export function Playback({
       // app's current tempo.
       looping.current = loop;
       const run = async () => {
-        const time = await playEvents(route, bpm, nextDownbeat());
+        const time = await playEvents(route, bpm, nextDownbeat(), instrument === 'guitar' ? 12 : 0);
         setPlaying(true);
         // Chaining on the schedule keeps each repeat aligned with the transport.
         timeout.current = setTimeout(

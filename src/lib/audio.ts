@@ -42,7 +42,12 @@ export function stopPlayback() {
  * too — passing the next downbeat is what makes the example land with the groove
  * instead of wherever the button happened to be pressed.
  */
-export async function playEvents(events: MusicEvent[], bpm: number, startAt?: number) {
+export async function playEvents(
+  events: MusicEvent[],
+  bpm: number,
+  startAt?: number,
+  midiTranspose = 0,
+) {
   stopPlayback();
   const ctx = await audioContext();
   let t = Math.max(ctx.currentTime + 0.04, startAt ?? 0);
@@ -58,7 +63,8 @@ export async function playEvents(events: MusicEvent[], bpm: number, startAt?: nu
               ? 4
               : 1;
     const length = (60 / bpm) * beat;
-    if (isNote(event)) playing.push(tone(ctx, soundingMidi(event), t, length * 0.87));
+    if (isNote(event))
+      playing.push(tone(ctx, soundingMidi(event) + midiTranspose, t, length * 0.87));
     t += length;
   });
   return (t - ctx.currentTime) * 1000;

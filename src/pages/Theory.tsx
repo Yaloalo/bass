@@ -33,8 +33,10 @@ import {
 } from '../components/UI';
 import { Fretboard } from '../components/Fretboard';
 import { Score } from '../components/Score';
+import { instrumentProfile } from '../lib/instrument';
 export function Chords() {
-  const { root } = useStore();
+  const { root, instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   usePageTitle('Akkorde & Formeln');
   return (
     <>
@@ -45,7 +47,7 @@ export function Chords() {
       />
       <Panel title={`Akkordaufbau ab ${germanNoteName(root)}`}>
         <ReferenceTable
-          headers={['Akkord', 'Symbol', 'Formel', 'Noten', 'Für den Bass']}
+          headers={['Akkord', 'Symbol', 'Formel', 'Noten', `${profile.name}-Praxis`]}
           rows={chords
             .filter((c) => ['triad', 'suspended', 'seventh'].includes(c.family))
             .map((c) => [
@@ -167,7 +169,24 @@ const intervalRows: [number, string[]][] = [
 export function Theory() {
   const { id } = useParams();
   usePageTitle(textDe(theoryPages.find((x) => x[0] === id)?.[1] ?? 'Theorie kompakt'));
-  const { root } = useStore();
+  const { root, instrument } = useStore();
+  const profile = instrumentProfile(instrument);
+  const notationRows =
+    instrument === 'bass'
+      ? readingRows
+      : [
+          [
+            'Standardstimmung',
+            'E–A–D–G–H–E, von tief nach hoch. Die hohe E-Saite steht in TAB auf der obersten Linie.',
+          ],
+          ['Linien im Violinschlüssel', 'E–G–H–D–F, von der untersten Linie aufwärts.'],
+          ['Zwischenräume im Violinschlüssel', 'F–A–C–E, von unten aufwärts.'],
+          [
+            'Notierter Tonumfang',
+            'Leersaiten werden als E3, A3, D4, G4, H4, E5 notiert. Sie klingen eine Oktave tiefer.',
+          ],
+          ...readingRows.slice(4),
+        ];
   const [target, setTarget] = useState('Eb');
   const [signatureRoot, setSignatureRoot] = useState(root);
   useEffect(() => setSignatureRoot(root), [root]);
@@ -188,7 +207,7 @@ export function Theory() {
         <PageHeading
           eyebrow="MUSIKTHEORIE / NACHSCHLAGEN"
           title="Theorie kompakt"
-          description="Schnelle Antworten, während der Bass in deinen Händen bleibt."
+          description={`Schnelle Antworten, während ${profile.name === 'Bass' ? 'der Bass' : 'die Gitarre'} in deinen Händen bleibt.`}
         />
         <div className="two-col">
           {theoryPages.map(([key, title]) => (
@@ -205,7 +224,7 @@ export function Theory() {
                     'key-signatures': 'Vorzeichen, paralleles Moll und Akkorde',
                     harmony: 'Akkordfamilien in Dur und natürlichem Moll',
                     rhythm: 'Notenwerte, Pausen und Zählweise',
-                    notation: 'Bassschlüssel, Artikulation und TAB-Zeichen',
+                    notation: `${profile.notationClef === 'bass' ? 'Bassschlüssel' : 'Violinschlüssel'}, Artikulation und TAB-Zeichen`,
                     transposition: 'Griffe verschieben und Intervalle erhalten',
                   }[key]
                 }
@@ -404,8 +423,12 @@ export function Theory() {
       )}
       {id === 'notation' && (
         <>
-          <Panel title="Bassschlüssel lesen">
-            <ReferenceTable headers={['Begriff', 'Bedeutung']} rows={readingRows} />
+          <Panel
+            title={
+              profile.notationClef === 'bass' ? 'Bassschlüssel lesen' : 'Violinschlüssel lesen'
+            }
+          >
+            <ReferenceTable headers={['Begriff', 'Bedeutung']} rows={notationRows} />
           </Panel>
           <Panel title="Notation und TAB-Zeichen">
             <ReferenceTable headers={['Technik', 'Zeichen', 'Bedeutung']} rows={articulationRows} />
@@ -426,8 +449,8 @@ export function Theory() {
               </li>
               <li>Schreibe Stufen mit ihren passenden Stammtönen: F-Dur enthält B, nicht Ais.</li>
               <li>
-                Notiere den Bass eine Oktave über dem Klang; TAB zeigt weiterhin den gespielten
-                Bund.
+                Notiere {profile.name === 'Bass' ? 'den Bass' : 'die Gitarre'} eine Oktave über dem
+                Klang; TAB zeigt weiterhin den gespielten Bund.
               </li>
             </ol>
           </Panel>

@@ -53,6 +53,10 @@
   background: var(--surface-raised);
   border-color: #637d8e;
 }
+:root[data-theme='dark'] :is(.instrument-brand-toggle, .instrument-brand-toggle:hover) {
+  background: transparent;
+  border-color: transparent;
+}
 :root[data-theme='dark'] :is(.primary, .primary:hover) {
   background: var(--accent);
   border-color: var(--accent);
@@ -250,6 +254,16 @@
   background: var(--ink);
   border-color: var(--ink);
   color: #111b24;
+}
+:root[data-theme='dark'] .degree-marker.overlay {
+  border-color: rgb(255 255 255 / 0.72);
+  color: white;
+  box-shadow:
+    0 0 0 2px var(--surface),
+    0 1px 5px rgb(0 0 0 / 0.5);
+}
+:root[data-theme='dark'] .degree-marker.overlay-root {
+  outline-color: #e5f2f5;
 }
 :root[data-theme='dark'] .fret-dot {
   color: #758d9e;

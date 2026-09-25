@@ -16,6 +16,7 @@ import {
 } from '../components/UI';
 import { Fretboard } from '../components/Fretboard';
 import { Playback } from '../components/Playback';
+import { instrumentProfile } from '../lib/instrument';
 
 const checklist = [
   'Finde die Tonart oder das tonale Zentrum.',
@@ -31,11 +32,13 @@ const checklist = [
 ];
 
 export function Improvisation() {
+  const { instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   usePageTitle('Improvisation – Einstieg');
   return (
     <>
       <PageHeading
-        eyebrow="BASS / BEVOR DER TRACK LÄUFT"
+        eyebrow={`${profile.nameUpper} / BEVOR DER TRACK LÄUFT`}
         title="Kurzer Leitfaden zum Improvisieren"
         description="Finde die Harmonie. Wähle eine kleine Idee. Gib ihr Rhythmus und Raum."
         actions={
@@ -222,7 +225,8 @@ export function ScaleChooser() {
 }
 
 export function PlayAlong() {
-  const { root: selectedRoot } = useStore();
+  const { root: selectedRoot, instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   const [id, setId] = useState('dorian'),
     [labels, setLabels] = useState('Degrees');
   const scale = scaleById(id)!;
@@ -236,7 +240,7 @@ export function PlayAlong() {
   return (
     <>
       <PageHeading
-        eyebrow="BASS / FÜR DEN NOTENSTÄNDER"
+        eyebrow={`${profile.nameUpper} / FÜR DEN NOTENSTÄNDER`}
         title={`${germanNoteName(root)} ${scale.name}`}
         description="Halte die Zieltöne klar. Wiederhole ein kurzes Motiv. Lass Platz."
         actions={

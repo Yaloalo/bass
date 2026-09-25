@@ -12,6 +12,7 @@ import { Fretboard } from '../components/Fretboard';
 import { Score } from '../components/Score';
 import { Playback } from '../components/Playback';
 import { ExercisePattern } from './Exercises';
+import { instrumentProfile } from '../lib/instrument';
 /** The layer ids stay stable for buildBassline(); only the labels are translated. */
 const layerLabels: Record<string, string> = {
   Root: 'Grundton',
@@ -23,8 +24,9 @@ const layerLabels: Record<string, string> = {
 };
 
 export function Basslines() {
-  usePageTitle('Basslinien bauen');
-  const { root } = useStore();
+  const { root, instrument } = useStore();
+  const profile = instrumentProfile(instrument);
+  usePageTitle(`${profile.lineName} bauen`);
   const progressionRoots = ['1', '6', '4', '5'].map((degree) => spellDegree(root, degree));
   const progressionFormulas = [
     ['1', '3', '5'],
@@ -35,7 +37,7 @@ export function Basslines() {
   return (
     <>
       <PageHeading
-        eyebrow="BASS / LINIEN GESTALTEN"
+        eyebrow={`${profile.nameUpper} / LINIEN GESTALTEN`}
         title="Die Linie in Schichten bauen"
         description="Erst der Rhythmus, dann die Grundtöne, dann die Akkordtöne, zuletzt die Annäherungen. Jeder zusätzliche Ton braucht eine Aufgabe."
       />
@@ -106,7 +108,8 @@ export function Basslines() {
   );
 }
 function BasslineBuilder() {
-  const { root } = useStore();
+  const { root, instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   const [layers, setLayers] = useState<string[]>(['Root', 'Fifth', 'Third']),
     [bar, setBar] = useState(0);
   const line = useMemo(() => buildBassline(root, layers), [root, layers]);
@@ -114,7 +117,7 @@ function BasslineBuilder() {
   const all = useMemo(() => line.flatMap((b) => b.events), [line]);
   return (
     <Panel
-      title="Basslinien-Baukasten"
+      title={`${profile.lineName}n-Baukasten`}
       aside={<span className="small-label">ii–V–I · VIER TAKTE</span>}
     >
       <div className="builder-body">
@@ -198,12 +201,20 @@ function BasslineBuilder() {
   );
 }
 export function Latin({ improvisation = false }: { improvisation?: boolean }) {
-  usePageTitle(improvisation ? 'Salsa- und Latin-Improvisation' : 'Salsa- und Latin-Basslinien');
+  const { instrument } = useStore();
+  const profile = instrumentProfile(instrument);
+  usePageTitle(
+    improvisation ? 'Salsa- und Latin-Improvisation' : `Salsa- und Latin-${profile.lineName}n`,
+  );
   const example = exercises.find((e) => e.id === 'M19')!;
   return (
     <>
       <PageHeading
-        eyebrow={improvisation ? 'BASS / IMPROVISATION / LATIN' : 'BASS / BASSLINIEN / LATIN'}
+        eyebrow={
+          improvisation
+            ? `${profile.nameUpper} / IMPROVISATION / LATIN`
+            : `${profile.nameUpper} / ${profile.lineName.toUpperCase()}N / LATIN`
+        }
         title="Salsa und Latin: zuerst der Groove"
         description="Halte die wiederkehrende Zelle, höre die Percussion und wisse, wohin der nächste Akkord geht."
       />
@@ -236,9 +247,9 @@ export function Latin({ improvisation = false }: { improvisation?: boolean }) {
       <div className="two-col">
         <Panel title="Erst hören, dann variieren">
           <p>
-            Achte darauf, wie sich Bass, Conga, Timbales, Klavier und Gesang den Raum teilen.
-            Wiederhole eine tragfähige Zelle. Verändere einen Schluss oder eine Annäherung und lass
-            die rhythmische Identität dabei klar erkennbar.
+            Achte darauf, wie sich {profile.name}, Conga, Timbales, Klavier und Gesang den Raum
+            teilen. Wiederhole eine tragfähige Zelle. Verändere einen Schluss oder eine Annäherung
+            und lass die rhythmische Identität dabei klar erkennbar.
           </p>
           <Link className="text-link" to="/exercises/musical/20">
             M20 · Latin-Turnaround ii–V–I–VI →

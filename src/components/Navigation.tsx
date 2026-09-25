@@ -3,21 +3,24 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { scales, programs, exercises, exercisePath, theoryPages, search } from '../data/catalog';
 import { Icon, RootSelector, ScaleSelector } from './UI';
 import { ThemeToggle } from './ThemeToggle';
-import { areas, areaForPath, areaPath } from '../data/navigation';
+import { areas, areaForPath, areaPath, areaPresentation } from '../data/navigation';
 import type { AreaId } from '../data/navigation';
 import { textDe } from '../lib/i18n';
 import { chords } from '../data/chords';
 import { chordFamilies } from '../lib/chord-types';
 import { useRhythm } from '../lib/rhythm-store';
+import { useStore } from '../lib/store';
+import { instrumentProfile } from '../lib/instrument';
+import type { InstrumentId } from '../lib/instrument';
 export const chapters = areas.map((area) => area.title);
 interface MenuItem {
   title: string;
   path: string;
   group: string;
 }
-export function chapterItems(chapter: string): MenuItem[] {
+export function chapterItems(chapter: string, instrument: InstrumentId = 'bass'): MenuItem[] {
   const area = areas.find((a) => a.id === chapter);
-  if (area) return [...area.items];
+  if (area) return [...areaPresentation(area, instrument).items];
   if (chapter === 'practice')
     return [...areas.find((a) => a.id === 'bass')!.items.filter((i) => i.group === 'Üben')];
   if (chapter === 'tools')
@@ -72,7 +75,11 @@ export function chapterItems(chapter: string): MenuItem[] {
     }));
   if (chapter === 'basslines')
     return [
-      { title: 'Basslinie bauen', path: '/basslines', group: 'Gestalten' },
+      {
+        title: instrument === 'guitar' ? 'Gitarrenlinie bauen' : 'Basslinie bauen',
+        path: '/basslines',
+        group: 'Gestalten',
+      },
       { title: 'Salsa / Latin', path: '/basslines/latin', group: 'Anwendung' },
     ];
   if (chapter === 'improvisation')
@@ -89,9 +96,11 @@ export function chapterItems(chapter: string): MenuItem[] {
   return [];
 }
 export function ChapterSidebar() {
+  const { instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   const { pathname } = useLocation();
   const chapter = pathname.split('/')[1];
-  const items = chapterItems(chapter);
+  const items = chapterItems(chapter, instrument);
   const navigate = useNavigate();
   if (!items.length) return null;
   const groups = [...new Set(items.map((i) => i.group))];
@@ -109,7 +118,7 @@ export function ChapterSidebar() {
             theory: 'Musiktheorie',
             chords: 'Akkorde',
             harmony: 'Harmonie',
-            basslines: 'Basslinien',
+            basslines: instrument === 'guitar' ? 'Gitarrenlinien' : 'Basslinien',
             improvisation: 'Improvisieren',
           } as Record<string, string>
         )[chapter] ?? chapter}
@@ -151,9 +160,9 @@ export function ChapterSidebar() {
       </nav>
       <div className="sidebar-foot">
         <span className="mini-rule" />
-        STANDARD-VIERSAITER
+        {instrument === 'guitar' ? 'STANDARD-SECHSSAITER' : 'STANDARD-VIERSAITER'}
         <br />
-        <strong>E · A · D · G</strong>
+        <strong>{profile.tuningLabel}</strong>
         <span>Nachschlagen • Üben • Improvisieren</span>
       </div>
     </aside>
@@ -163,6 +172,8 @@ export function Navigation() {
   const [menu, setMenu] = useState(''),
     [searchOpen, setSearchOpen] = useState(false);
   const { pathname } = useLocation();
+  const { instrument, setInstrument } = useStore();
+  const profile = instrumentProfile(instrument);
   const { stop } = useRhythm();
   const header = useRef<HTMLElement>(null);
   const previousPath = useRef(pathname);
@@ -202,18 +213,30 @@ export function Navigation() {
       </a>
       <header className="app-header" ref={header}>
         <div className="topbar">
-          <Link to="/" className="brand" aria-label="Bass Workstation Startseite">
-            <span className="brand-mark">
-              <i />
-              <i />
-              <i />
-              <i />
+          <button
+            type="button"
+            className="brand instrument-brand-toggle"
+            aria-label={`${profile.name} ausgewählt. Zu ${instrument === 'bass' ? 'Gitarre' : 'Bass'} wechseln`}
+            title={`Zu ${instrument === 'bass' ? 'Gitarre' : 'Bass'} wechseln`}
+            onClick={() => setInstrument(instrument === 'bass' ? 'guitar' : 'bass')}
+          >
+            <span className={`brand-mark ${instrument}`} aria-hidden="true">
+              {profile.stringsHighToLow.map((string) => (
+                <i key={string.id} />
+              ))}
+            </span>
+            <span className="instrument-switch-mobile" aria-hidden="true">
+              {profile.nameUpper} ↔
             </span>
             <div>
-              BASS<span>REFERENCE</span>
+              {profile.nameUpper}
+              <span>REFERENCE</span>
             </div>
-            <small>DEIN BEGLEITER AUF VIER SAITEN</small>
-          </Link>
+            <small>
+              {profile.tagline}
+              <b>↔ INSTRUMENT WECHSELN</b>
+            </small>
+          </button>
           <div className="topbar-actions">
             <button
               aria-label="Workstation durchsuchen"
@@ -233,8 +256,9 @@ export function Navigation() {
           <NavLink to="/" end className="home-link" aria-label="Startseite">
             <Icon name="home" size={17} />
           </NavLink>
-          {areas.map(({ id, title: ch }) => {
-            const items = id === 'drums' ? [] : chapterItems(id);
+          {areas.map((sourceArea) => {
+            const { id, title: ch } = areaPresentation(sourceArea, instrument);
+            const items = id === 'drums' ? [] : chapterItems(id, instrument);
             return (
               <div key={id} className={`nav-chapter ${active === id ? 'active' : ''}`}>
                 <NavLink to={areaPath(id)} aria-current={active === id ? 'page' : undefined}>
@@ -260,12 +284,12 @@ export function Navigation() {
               METRONOM
             </NavLink>
           </div>
-          <span className="nav-edition">DEINE BASS WORKSTATION</span>
+          <span className="nav-edition">DEINE {profile.nameUpper} WORKSTATION</span>
         </nav>
         {menu && (
           <div className="mega-menu">
             <div className="mega-title">
-              <span className="eyebrow">{menu}</span>
+              <span className="eyebrow">{menu === 'bass' ? profile.nameUpper : menu}</span>
               <Link to={areaPath(menu as AreaId)} onClick={() => setMenu('')}>
                 Bereichsübersicht <Icon name="arrow" size={14} />
               </Link>
@@ -278,10 +302,10 @@ export function Navigation() {
               </button>
             </div>
             <div className="mega-groups">
-              {[...new Set(chapterItems(menu).map((i) => i.group))].map((g) => (
+              {[...new Set(chapterItems(menu, instrument).map((i) => i.group))].map((g) => (
                 <div key={g}>
                   <h3>{textDe(g)}</h3>
-                  {chapterItems(menu)
+                  {chapterItems(menu, instrument)
                     .filter((i) => i.group === g)
                     .map((i) => (
                       <Link

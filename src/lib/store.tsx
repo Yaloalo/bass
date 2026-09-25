@@ -2,6 +2,8 @@ import { createContext, useContext, useState, useMemo } from 'react';
 import type { ReactNode, Dispatch, SetStateAction } from 'react';
 import { roots, noteLabel, chordLabel, keyLabel } from './music';
 import type { NoteNameStyle } from './music';
+import { instrumentProfiles } from './instrument';
+import type { InstrumentId } from './instrument';
 /**
  * Session-only state. Nothing this app holds about you is written anywhere: the key,
  * the tempo, the drum patterns and every setting live for as long as the tab does and
@@ -12,6 +14,8 @@ export function useLocal<T>(_key: string, initial: T): [T, Dispatch<SetStateActi
   return useState<T>(initial);
 }
 interface Store {
+  instrument: InstrumentId;
+  setInstrument: (v: InstrumentId) => void;
   root: string;
   setRoot: (v: string) => void;
   scaleId: string;
@@ -23,6 +27,8 @@ interface Store {
 }
 const Context = createContext<Store | null>(null);
 export function StoreProvider({ children }: { children: ReactNode }) {
+  const [savedInstrument, setInstrument] = useLocal<InstrumentId>('instrument', 'bass');
+  const instrument: InstrumentId = savedInstrument === 'guitar' ? 'guitar' : 'bass';
   const [savedRoot, setRoot] = useLocal('root', 'D');
   const root = roots.includes(savedRoot) ? savedRoot : 'D';
   const [savedScaleId, setScaleId] = useLocal('scale', 'major');
@@ -35,6 +41,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ? Math.max(30, Math.min(240, Math.round(savedBpm)))
       : 80;
   const store: Store = {
+    instrument,
+    setInstrument: (value) => setInstrument(value in instrumentProfiles ? value : 'bass'),
     root,
     setRoot,
     scaleId,

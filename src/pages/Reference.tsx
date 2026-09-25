@@ -28,6 +28,7 @@ import { Fretboard } from '../components/Fretboard';
 import { PianoPreview } from '../components/PianoPreview';
 import { Score } from '../components/Score';
 import { Playback } from '../components/Playback';
+import { instrumentProfile } from '../lib/instrument';
 export function ReferenceIndex() {
   const data = scales;
   usePageTitle('Tonleiter-Atlas');
@@ -92,7 +93,8 @@ export function ReferenceIndex() {
 }
 export function ReferencePage() {
   const { id = 'major' } = useParams();
-  const { root: selectedRoot } = useStore();
+  const { root: selectedRoot, instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   const scale = scaleById(id);
   const item = scale;
   const root = readableRoot(selectedRoot, item?.degreeLabels ?? ['1']);
@@ -283,7 +285,7 @@ export function ReferencePage() {
                 nächstgelegene Terz oder Septime anzusteuern.
               </p>
               <Link className="text-link" to="/basslines">
-                Diese Töne in einer Basslinie nutzen <Icon name="arrow" />
+                Diese Töne in einer {profile.lineName} nutzen <Icon name="arrow" />
               </Link>
             </>
           )}
@@ -300,8 +302,8 @@ export function ReferencePage() {
         </Link>
       </div>
       <p className="source-note">
-        Nach dem Bass-Referenzbuch · {scale ? 'Tonleiter-Atlas' : 'Akkordton-Atlas'} ·{' '}
-        {mod(degreeSemitones('8')) === 0 ? 'Standardstimmung für Viersaiter' : ''}
+        {profile.name}-Referenz · {scale ? 'Tonleiter-Atlas' : 'Akkordton-Atlas'} ·{' '}
+        {mod(degreeSemitones('8')) === 0 ? `Standardstimmung · ${profile.tuningLabel}` : ''}
       </p>
     </>
   );

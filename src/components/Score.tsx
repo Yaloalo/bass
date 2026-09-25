@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { isNote, writtenPitch } from '../lib/music';
 import { germanNoteName } from '../lib/i18n';
 import type { MusicEvent } from '../lib/music';
+import { instrumentProfile } from '../lib/instrument';
+import { useStore } from '../lib/store';
 import { Section } from './UI';
 export function Score({
   events,
@@ -13,6 +15,8 @@ export function Score({
   /** Folded away where the notation is a reference rather than the point of the page. */
   defaultOpen?: boolean;
 }) {
+  const { instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   const staff = useRef<HTMLDivElement>(null),
     tab = useRef<HTMLDivElement>(null);
   const [error, setError] = useState('');
@@ -66,10 +70,10 @@ export function Score({
                   type === 0
                     ? new V.Stave(10, y, width - 20)
                     : new V.TabStave(10, y, width - 20, {
-                        num_lines: 4,
+                        num_lines: profile.stringsHighToLow.length,
                         spacing_between_lines_px: 16,
                       });
-                stave.addClef(type === 0 ? 'bass' : 'tab');
+                stave.addClef(type === 0 ? profile.notationClef : 'tab');
                 if (meter && type === 0) stave.addTimeSignature('4/4');
                 stave.setContext(context).draw();
                 const accidentalState = new Map<string, string>();
@@ -82,7 +86,13 @@ export function Score({
                     return new V.TabNote(
                       {
                         positions: [
-                          { str: { G: 1, D: 2, A: 3, E: 4 }[event.string], fret: event.fret },
+                          {
+                            str:
+                              profile.stringsHighToLow.findIndex(
+                                (string) => string.exerciseString === event.string,
+                              ) + 1,
+                            fret: event.fret,
+                          },
                         ],
                         duration: event.duration,
                       },
@@ -91,17 +101,18 @@ export function Score({
                   }
                   if (!isNote(event))
                     return new V.StaveNote({
-                      keys: ['d/3'],
+                      keys: [profile.notationClef === 'bass' ? 'd/3' : 'b/4'],
                       duration: event.duration + 'r',
-                      clef: 'bass',
+                      clef: profile.notationClef,
                     });
                   const p = writtenPitch(event);
+                  const octave = p.octave + (instrument === 'guitar' ? 1 : 0);
                   const note = new V.StaveNote({
-                    keys: [p.key],
+                    keys: [`${p.name.toLowerCase()}/${octave}`],
                     duration: event.duration,
-                    clef: 'bass',
+                    clef: profile.notationClef,
                   });
-                  const stateKey = p.name[0] + '/' + p.octave;
+                  const stateKey = p.name[0] + '/' + octave;
                   const previous = accidentalState.get(stateKey) ?? '';
                   if (previous !== p.accidental)
                     note.addModifier(new V.Accidental(p.accidental || 'n'), 0);
@@ -140,18 +151,22 @@ export function Score({
       disposed = true;
       observer?.disconnect();
     };
-  }, [events, meter]);
+  }, [events, instrument, meter, profile]);
   const text = events
     .map((n) =>
       isNote(n)
-        ? `${germanNoteName(n.name ?? writtenPitch(n).name)}: ${n.string}-Saite Bund ${n.fret}, ${({ w: 'Ganze', h: 'Halbe', q: 'Viertel', '8': 'Achtel', '16': 'Sechzehntel' } as Record<string, string>)[n.duration] ?? n.duration}`
+        ? `${germanNoteName(n.name ?? writtenPitch(n).name)}: ${profile.stringsHighToLow.find((string) => string.exerciseString === n.string)?.spokenLabel ?? n.string}-Saite Bund ${n.fret}, ${({ w: 'Ganze', h: 'Halbe', q: 'Viertel', '8': 'Achtel', '16': 'Sechzehntel' } as Record<string, string>)[n.duration] ?? n.duration}`
         : 'Pause',
     )
     .join('; ');
   return (
     <>
       <div className="score-grid">
-        <Section title="Notation" aside="Bassschlüssel" defaultOpen={defaultOpen}>
+        <Section
+          title="Notation"
+          aside={profile.notationClef === 'bass' ? 'Bassschlüssel' : 'Violinschlüssel'}
+          defaultOpen={defaultOpen}
+        >
           <div
             className="notation-scroll"
             ref={staff}
@@ -160,8 +175,17 @@ export function Score({
           />
           <p className="score-note">Eine Oktave über der klingenden Tonhöhe notiert.</p>
         </Section>
-        <Section title="Bass TAB" aside="E · A · D · G" defaultOpen={defaultOpen}>
-          <div className="notation-scroll" ref={tab} role="img" aria-label={`Bass TAB: ${text}`} />
+        <Section
+          title={`${profile.name} TAB`}
+          aside={profile.tuningLabel}
+          defaultOpen={defaultOpen}
+        >
+          <div
+            className="notation-scroll"
+            ref={tab}
+            role="img"
+            aria-label={`${profile.name} TAB: ${text}`}
+          />
           <p className="score-note">
             {meter
               ? 'Notenwerte und Pausen stehen in der Notation; TAB folgt demselben Rhythmus.'

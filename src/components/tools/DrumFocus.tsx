@@ -13,13 +13,16 @@ import { pretty } from '../../lib/music';
 import { meterById, stepLabel, stepsPerBar } from '../../lib/rhythm';
 import { useRhythm, useRhythmStatus } from '../../lib/rhythm-store';
 import { useNoteLabel, useStore } from '../../lib/store';
+import { instrumentProfile } from '../../lib/instrument';
 
 /** A reading-distance view for the player, separate from the editing workbench. */
 export function DrumFocus({ onClose }: { onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const { harmony, pattern, preferences, trainer, start, pause, resume, stop } = useRhythm();
   const status = useRhythmStatus();
-  const { bpm } = useStore();
+  const { bpm, instrument } = useStore();
+  const profile = instrumentProfile(instrument);
+  const instrumentNotes = profile.name === 'Bass' ? 'Bassnoten' : 'Gitarrentöne';
   const label = useNoteLabel();
   useEffect(() => {
     const element = dialog.current;
@@ -164,7 +167,7 @@ export function DrumFocus({ onClose }: { onClose: () => void }) {
 
         {trainer.mode !== 'free' && !countIn && !positionOnly && (
           <p className="drum-focus-task">
-            <span>AUFGABE</span> {modeInstruction(trainer)}
+            <span>AUFGABE</span> {modeInstruction(trainer, instrumentNotes)}
           </p>
         )}
 
@@ -208,7 +211,7 @@ export function DrumFocus({ onClose }: { onClose: () => void }) {
                 {dropout ? 'HARMONY DROPOUT' : 'ÜBUNGSREGEL'}
               </span>
               <strong className="drum-focus-hidden">HÖRE DIE FORM</strong>
-              <p>{modeInstruction(trainer)}</p>
+              <p>{modeInstruction(trainer, instrumentNotes)}</p>
             </>
           )}
         </section>

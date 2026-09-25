@@ -7,6 +7,8 @@ import type {
   TargetTone,
 } from '../../lib/improvisation-trainer';
 import { useRhythm } from '../../lib/rhythm-store';
+import { useStore } from '../../lib/store';
+import { instrumentProfile } from '../../lib/instrument';
 
 const modes: { id: ImprovisationMode; name: string }[] = [
   { id: 'free', name: 'Frei spielen' },
@@ -55,6 +57,8 @@ const aidLabels = {
 
 export function ImprovisationTrainer() {
   const { trainer, setTrainer } = useRhythm();
+  const { instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   const update = (patch: Partial<typeof trainer>) => setTrainer({ ...trainer, ...patch });
   const setDropout = (patch: Partial<typeof trainer.dropout>) =>
     update({ dropout: { ...trainer.dropout, ...patch } });
@@ -80,7 +84,9 @@ export function ImprovisationTrainer() {
           </select>
         </label>
       </div>
-      <p className="improv-instruction">{modeInstruction(trainer)}</p>
+      <p className="improv-instruction">
+        {modeInstruction(trainer, profile.name === 'Bass' ? 'Bassnoten' : 'Gitarrentöne')}
+      </p>
 
       <div className="improv-settings-grid">
         {trainer.mode === 'target' && (

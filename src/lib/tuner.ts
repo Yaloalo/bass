@@ -1,6 +1,9 @@
+import type { InstrumentId } from './instrument';
+
 /** Standard tuning and the two variants worth offering, lowest string first. */
 export interface TuningPreset {
   id: string;
+  instrument: InstrumentId;
   name: string;
   hint: string;
   /** MIDI notes of the open strings. */
@@ -9,24 +12,51 @@ export interface TuningPreset {
 
 export const tunings: TuningPreset[] = [
   {
-    id: 'standard4',
+    id: 'bass-standard4',
+    instrument: 'bass',
     name: 'Viersaiter · E A D G',
     hint: 'Die Standardstimmung. E1 ist 41,2 Hz.',
     strings: [28, 33, 38, 43],
   },
   {
-    id: 'standard5',
+    id: 'bass-standard5',
+    instrument: 'bass',
     name: 'Fünfsaiter · H E A D G',
     hint: 'Mit tiefer H-Saite bei 30,9 Hz.',
     strings: [23, 28, 33, 38, 43],
   },
   {
-    id: 'dropd',
+    id: 'bass-dropd',
+    instrument: 'bass',
     name: 'Drop D · D A D G',
     hint: 'Die E-Saite einen Ganzton tiefer.',
     strings: [26, 33, 38, 43],
   },
+  {
+    id: 'guitar-standard6',
+    instrument: 'guitar',
+    name: 'Standard · E A D G H E',
+    hint: 'Die Standardstimmung der sechssaitigen Gitarre.',
+    strings: [40, 45, 50, 55, 59, 64],
+  },
+  {
+    id: 'guitar-dropd',
+    instrument: 'guitar',
+    name: 'Drop D · D A D G H E',
+    hint: 'Die tiefe E-Saite einen Ganzton auf D herunterstimmen.',
+    strings: [38, 45, 50, 55, 59, 64],
+  },
+  {
+    id: 'guitar-dadgad',
+    instrument: 'guitar',
+    name: 'DADGAD · D A D G A D',
+    hint: 'Offene Stimmung für modale Begleitung und breite Voicings.',
+    strings: [38, 45, 50, 55, 57, 62],
+  },
 ];
+
+export const tuningsForInstrument = (instrument: InstrumentId) =>
+  tunings.filter((tuning) => tuning.instrument === instrument);
 
 export const midiToFrequency = (midi: number) => 440 * 2 ** ((midi - 69) / 12);
 

@@ -1,15 +1,22 @@
 import { Link } from 'react-router-dom';
-import { areas } from '../data/navigation';
+import { areas, areaPresentation } from '../data/navigation';
 import type { AreaId } from '../data/navigation';
 import { Icon, PageHeading, usePageTitle } from '../components/UI';
+import { useStore } from '../lib/store';
+import { instrumentProfile } from '../lib/instrument';
 
 export function Area({ id }: { id: AreaId }) {
-  const area = areas.find((item) => item.id === id)!;
+  const { instrument } = useStore();
+  const profile = instrumentProfile(instrument);
+  const area = areaPresentation(
+    areas.find((item) => item.id === id)!,
+    instrument,
+  );
   usePageTitle(area.title);
   return (
     <>
       <PageHeading
-        eyebrow="DEINE BASS-WERKSTATT"
+        eyebrow={`DEINE ${profile.nameUpper}-WERKSTATT`}
         title={area.title}
         description={area.description}
       />

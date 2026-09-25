@@ -6,6 +6,7 @@ import { roots } from '../lib/music';
 import { germanNoteName, textDe } from '../lib/i18n';
 import { scaleName } from '../lib/i18n';
 import { scales } from '../data/catalog';
+import { instrumentProfile } from '../lib/instrument';
 export function Icon({ name, size = 18 }: { name: string; size?: number }) {
   const paths: Record<string, ReactNode> = {
     search: (
@@ -270,9 +271,11 @@ export function ItemLink({
   );
 }
 export function usePageTitle(title: string) {
+  const { instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   useEffect(() => {
-    document.title = `${title} · Bass Reference`;
-  }, [title]);
+    document.title = `${title} · ${profile.name} Reference`;
+  }, [profile.name, title]);
 }
 export function Notice({ children }: { children: ReactNode }) {
   return <div className="notice">{children}</div>;

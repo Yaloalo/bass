@@ -121,6 +121,25 @@ export const areas = [
 
 export type AreaId = (typeof areas)[number]['id'];
 
+export function areaPresentation(area: (typeof areas)[number], instrument: InstrumentId) {
+  if (area.id !== 'bass' || instrument === 'bass') return area;
+  return {
+    ...area,
+    title: 'GITARRE',
+    description: 'Vom Griffbrett zu Akkorden, Begleitung und eigenen Gitarrenlinien.',
+    items: [
+      {
+        title: 'Akkorde & Griffe',
+        path: '/gitarrenakkorde',
+        group: 'Instrument',
+        icon: 'music',
+        description: 'Diatonische Akkorde jeder Tonart mit spielbaren E- und A-Formen.',
+      },
+      ...area.items,
+    ],
+  };
+}
+
 export function areaForPath(path: string): AreaId | undefined {
   const segment = path.split('/')[1];
   if (segment === 'drums') return 'drums';
@@ -133,6 +152,7 @@ export function areaForPath(path: string): AreaId | undefined {
       'programs',
       'basslines',
       'improvisation',
+      'gitarrenakkorde',
     ].includes(segment)
   )
     return 'bass';
@@ -157,3 +177,4 @@ export function areaForPath(path: string): AreaId | undefined {
 
 /** The drum area is a single tool, so its nav entry goes straight there. */
 export const areaPath = (id: AreaId) => (id === 'drums' ? '/drums' : '/' + id);
+import type { InstrumentId } from '../lib/instrument';

@@ -8,13 +8,14 @@ import {
   midiToFrequency,
   nearestString,
   readPitch,
-  tunings,
+  tuningsForInstrument,
 } from '../lib/tuner';
 import type { PitchReading } from '../lib/tuner';
 import { mod, noteName } from '../lib/music';
 import { germanNoteName } from '../lib/i18n';
 import { usePiano } from '../lib/use-piano';
-import { useLocal } from '../lib/store';
+import { useLocal, useStore } from '../lib/store';
+import { instrumentProfile } from '../lib/instrument';
 import '../tuner.css';
 
 type State = 'idle' | 'asking' | 'live' | 'denied' | 'unavailable';
@@ -30,8 +31,10 @@ const label = (midi: number) =>
 
 export function Tuner() {
   usePageTitle('Stimmgerät');
+  const { instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   const piano = usePiano(70);
-  const [tuningId, setTuningId] = useLocal<string>('tuner-tuning', 'standard4');
+  const [tuningId, setTuningId] = useLocal<string>('tuner-tuning', profile.defaultTuning);
   const [state, setState] = useState<State>('idle');
   const [reading, setReading] = useState<PitchReading | null>(null);
   const [error, setError] = useState('');
@@ -42,7 +45,8 @@ export function Tuner() {
   const smoothed = useRef<number | null>(null);
   const lastHeard = useRef(0);
 
-  const tuning = tunings.find((item) => item.id === tuningId) ?? tunings[0];
+  const availableTunings = tuningsForInstrument(instrument);
+  const tuning = availableTunings.find((item) => item.id === tuningId) ?? availableTunings[0];
   const target = reading ? tuning.strings[nearestString(reading.midi, tuning.strings)] : null;
   // Measure against the string, not against the nearest chromatic note: a string a
   // semitone flat should read as that string badly out, not as its neighbour in tune.
@@ -61,6 +65,10 @@ export function Tuner() {
   }, []);
 
   useEffect(() => stop, [stop]);
+  useEffect(() => {
+    stop();
+    setTuningId(profile.defaultTuning);
+  }, [instrument, profile.defaultTuning, setTuningId, stop]);
 
   const listen = async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
@@ -142,7 +150,7 @@ export function Tuner() {
   return (
     <div className="tuner-page">
       <PageHeading
-        eyebrow="BASS / INSTRUMENT"
+        eyebrow={`${profile.nameUpper} / INSTRUMENT`}
         title="Stimmgerät"
         description="Hört über das Mikrofon mit und zeigt, wie weit die Saite daneben liegt. Die Aufnahme bleibt auf diesem Gerät."
       />
@@ -156,7 +164,7 @@ export function Tuner() {
               value={tuning.id}
               onChange={(event) => setTuningId(event.target.value)}
             >
-              {tunings.map((item) => (
+              {availableTunings.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.name}
                 </option>
@@ -274,8 +282,9 @@ export function Tuner() {
             wird grün markiert.
           </li>
           <li>
-            Der Referenzton auf jeder Saite klingt zwei Oktaven höher als der Bass. Zum Stimmen nach
-            Gehör vergleichst du ihn mit dem Flageolett am zwölften Bund.
+            Der Referenzton auf jeder Saite klingt zwei Oktaven höher als{' '}
+            {profile.name === 'Bass' ? 'der Bass' : 'die Gitarre'}. Zum Stimmen nach Gehör
+            vergleichst du ihn mit dem Flageolett am zwölften Bund.
           </li>
         </ul>
       </Panel>

@@ -157,10 +157,13 @@ export function relevantToneIndices(
   return chord.formula.map((_, index) => index);
 }
 
-export const modeInstruction = (trainer: ImprovisationTrainer): string => {
+export const modeInstruction = (
+  trainer: ImprovisationTrainer,
+  instrumentNotes = 'Bassnoten',
+): string => {
   if (trainer.mode === 'rhythm')
     return {
-      'with-kick': 'Spiele Bassnoten nur gemeinsam mit den Kick-Hits.',
+      'with-kick': `Spiele ${instrumentNotes} nur gemeinsam mit den Kick-Hits.`,
       'between-kick': 'Spiele nur in den Lücken zwischen den Kick-Hits.',
       'copy-kick': 'Übernimm den Kick-Rhythmus; die Tonhöhe wählst du selbst.',
       'copy-snare': 'Übernimm den Snare-Rhythmus; die Tonhöhe wählst du selbst.',

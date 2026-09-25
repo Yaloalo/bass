@@ -29,6 +29,7 @@ import {
 import type { DiatonicPianoChord, PianoChordMatch } from '../lib/piano';
 import { usePiano } from '../lib/use-piano';
 import { useNoteLabel, useStore } from '../lib/store';
+import { instrumentProfile } from '../lib/instrument';
 import '../piano.css';
 
 const chordKey = (chord: DiatonicPianoChord) => `${chord.degree}-${chord.chord!.id}`;
@@ -36,7 +37,8 @@ const romans = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
 
 export function PianoPage() {
   usePageTitle('Interaktives Piano');
-  const { root: selectedRoot, setRoot, scaleId, setScaleId } = useStore();
+  const { root: selectedRoot, setRoot, scaleId, setScaleId, instrument } = useStore();
+  const profile = instrumentProfile(instrument);
   const label = useNoteLabel();
   const displayNote = (name: string) =>
     label.style === 'de' ? germanNoteName(name) : label.note(name);
@@ -263,10 +265,12 @@ export function PianoPage() {
           <button
             type="button"
             aria-expanded={showFretboard}
-            aria-controls="piano-bass-fretboard"
+            aria-controls="piano-fretboard"
             onClick={() => setShowFretboard((open) => !open)}
           >
-            {showFretboard ? 'Bass-Griffbrett ausblenden' : 'Bass-Griffbrett anzeigen'}
+            {showFretboard
+              ? `${profile.name}-Griffbrett ausblenden`
+              : `${profile.name}-Griffbrett anzeigen`}
           </button>
           <span>Die gewählten Tonhöhen auf allen Saiten · Bund 0–12</span>
         </div>
@@ -302,7 +306,11 @@ export function PianoPage() {
       </Panel>
 
       {showFretboard && (
-        <Panel id="piano-bass-fretboard" className="piano-bass-fretboard" title="Bass-Griffbrett">
+        <Panel
+          id="piano-fretboard"
+          className="piano-bass-fretboard"
+          title={`${profile.name}-Griffbrett`}
+        >
           <p className="piano-fretboard-hint">
             {selected.length
               ? 'Markiert sind alle Positionen deiner gewählten Töne. Tippe einen Bund an, um seine Note zu sehen.'
@@ -449,7 +457,8 @@ export function PianoPage() {
                 to={`/chords/${mainMatch.chord.id}`}
                 onClick={() => openChord(mainMatch)}
               >
-                Akkord verstehen und auf dem Bass üben <Icon name="arrow" />
+                Akkord verstehen und auf {profile.name === 'Bass' ? 'dem Bass' : 'der Gitarre'} üben{' '}
+                <Icon name="arrow" />
               </Link>
               {analysis.matches.length > 1 && (
                 <div className="piano-alternatives">
