@@ -1,17 +1,56 @@
 import { useEffect, useMemo, useState } from 'react';
-import { PageHeading, Panel, Segmented, usePageTitle } from '../components/UI';
+import { Icon, PageHeading, Panel, Segmented, usePageTitle } from '../components/UI';
 import { PianoKeyboard } from '../components/PianoKeyboard';
 import { TheoryNoteStaff } from '../components/TheoryNoteStaff';
+import { TheoryMemoryPool } from '../components/TheoryMemoryPool';
 import { scales } from '../data/catalog';
-import { germanNoteName, scaleName } from '../lib/i18n';
-import { mod, pitchClass, pretty } from '../lib/music';
-import { memoryAnswer, memoryNoteChoices, nextMemoryQuestion } from '../lib/theory-memory';
-import type { ChordLevel, MemoryTopic, RootScope, ScaleScope } from '../lib/theory-memory';
+import { chordFamilies } from '../lib/chord-types';
+import { germanNoteName, scaleName, textDe } from '../lib/i18n';
+import { mod, pitchClass, pretty, roots } from '../lib/music';
+import {
+  memoryAnswer,
+  memoryChordPool,
+  memoryNoteChoices,
+  memoryScalePool,
+  nextMemoryQuestion,
+} from '../lib/theory-memory';
+import type { MemoryTopic, RootScope } from '../lib/theory-memory';
 import { usePiano } from '../lib/use-piano';
 import { useNoteLabel, useStore } from '../lib/store';
 import '../memory.css';
 
 type AnswerSurface = 'Notennamen' | 'Klaviatur' | 'Notenblatt';
+
+const availableChords = memoryChordPool('all');
+const scalePoolItems = scales.map((scale) => ({
+  id: scale.id,
+  title: scaleName(scale.id),
+  detail: scale.degreeLabels.map(pretty).join(' · '),
+  group: scale.category,
+  keywords: `${scale.aliases?.join(' ') ?? ''} ${scale.applications}`,
+}));
+const scalePoolGroups = [...new Set(scales.map((scale) => scale.category))].map((category) => ({
+  id: category,
+  name: textDe(category),
+}));
+const chordPoolItems = availableChords.map((chord) => ({
+  id: chord.id,
+  title: chord.symbol || 'Dur',
+  detail: `${chord.nameDe} · ${chord.formula.map(pretty).join(' · ')}`,
+  group: chord.family,
+  keywords: chord.aliases.join(' '),
+}));
+const chordIdsInFamilies = (...families: string[]) =>
+  availableChords.filter((chord) => families.includes(chord.family)).map((chord) => chord.id);
+const jazzBasicChordIds = [
+  'major-7',
+  'minor-7',
+  'dominant-7',
+  'minor-7b5',
+  'diminished-7',
+  'six',
+  'minor-6',
+];
 
 export function TheoryMemory() {
   usePageTitle('Auswendig lernen');
@@ -26,20 +65,40 @@ export function TheoryMemory() {
   const topic: MemoryTopic = topicLabel === 'Akkorde' ? 'chords' : 'scales';
   const [surface, setSurface] = useState<AnswerSurface>('Notennamen');
   const [rootScope, setRootScope] = useState<RootScope>('current');
-  const [scaleScope, setScaleScope] = useState<ScaleScope>('current');
-  const [chordLevel, setChordLevel] = useState<ChordLevel>('basic');
+  const [rootSelection, setRootSelection] = useState<Set<string>>(() => new Set(roots));
+  const [scaleSelection, setScaleSelection] = useState<Set<string>>(
+    () => new Set(memoryScalePool('major', 'core').map((scale) => scale.id)),
+  );
+  const [chordSelection, setChordSelection] = useState<Set<string>>(
+    () => new Set(memoryChordPool('basic').map((chord) => chord.id)),
+  );
+  const [rootPanelOpen, setRootPanelOpen] = useState(false);
+  const [poolOpen, setPoolOpen] = useState(false);
+  const selectedRoots = useMemo(
+    () => roots.filter((root) => rootSelection.has(root)),
+    [rootSelection],
+  );
   const options = useMemo(
-    () => ({ topic, globalRoot, globalScaleId, rootScope, scaleScope, chordLevel }),
-    [topic, globalRoot, globalScaleId, rootScope, scaleScope, chordLevel],
+    () => ({
+      topic,
+      globalRoot,
+      rootScope,
+      rootSelection: selectedRoots,
+      scaleSelection: [...scaleSelection],
+      chordSelection: [...chordSelection],
+    }),
+    [topic, globalRoot, rootScope, selectedRoots, scaleSelection, chordSelection],
   );
   const [question, setQuestion] = useState(() => nextMemoryQuestion(options));
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [checked, setChecked] = useState(false);
+  const [solutionShown, setSolutionShown] = useState(false);
   const piano = usePiano(48);
 
   const resetAnswer = () => {
     setSelected(new Set());
     setChecked(false);
+    setSolutionShown(false);
     piano.stopAll();
   };
   const next = () => {
@@ -50,6 +109,7 @@ export function TheoryMemory() {
     setQuestion(nextMemoryQuestion(options));
     setSelected(new Set());
     setChecked(false);
+    setSolutionShown(false);
     piano.stopAll();
   }, [options]);
 
@@ -73,6 +133,43 @@ export function TheoryMemory() {
       return nextSelection;
     });
     setChecked(false);
+    setSolutionShown(false);
+  };
+  const toggleSolution = () => {
+    setChecked(false);
+    if (solutionShown) {
+      setSelected(new Set());
+      setSolutionShown(false);
+    } else {
+      setSelected(new Set(question.pitchClasses));
+      setSolutionShown(true);
+    }
+  };
+  const toggleRoot = (root: string) => {
+    setRootScope('selection');
+    setRootSelection((old) => {
+      const base = rootScope === 'current' ? new Set([globalRoot]) : old;
+      if (base.has(root) && base.size === 1) return base;
+      const nextSelection = new Set(base);
+      if (nextSelection.has(root)) nextSelection.delete(root);
+      else nextSelection.add(root);
+      return nextSelection;
+    });
+  };
+  const activePool = topic === 'scales' ? scaleSelection : chordSelection;
+  const togglePoolItem = (id: string) => {
+    const setSelection = topic === 'scales' ? setScaleSelection : setChordSelection;
+    setSelection((old) => {
+      if (old.has(id) && old.size === 1) return old;
+      const nextSelection = new Set(old);
+      if (nextSelection.has(id)) nextSelection.delete(id);
+      else nextSelection.add(id);
+      return nextSelection;
+    });
+  };
+  const setActivePool = (ids: string[]) => {
+    const setSelection = topic === 'scales' ? setScaleSelection : setChordSelection;
+    if (ids.length) setSelection(new Set(ids));
   };
   const title =
     question.topic === 'scales'
@@ -89,65 +186,60 @@ export function TheoryMemory() {
       <PageHeading
         eyebrow="MUSIKTHEORIE / ÜBEN"
         title="Auswendig lernen"
-        description="Baue Tonleitern und Akkorde selbst aus ihren Tönen – als Namen, auf der Klaviatur oder im Notensystem."
+        description="Baue Tonleitern und Akkorde selbst aus ihren Tönen – als Namen, auf der Klaviatur oder im Notenblatt."
       />
-
-      <Panel className="memory-context">
-        <div>
-          <span className="eyebrow">GLOBALER MUSIKKONTEXT</span>
-          <strong>
-            {displayNote(globalRoot)} · {scaleName(globalScaleId)}
-          </strong>
-          <p>Grundton und Tonleiter kannst du jederzeit oben rechts ändern.</p>
-        </div>
-        <div className="memory-topic-switch">
-          <Segmented
-            label="Lernbereich"
-            value={topicLabel}
-            onChange={setTopicLabel}
-            options={['Tonleitern', 'Akkorde']}
-          />
-        </div>
-      </Panel>
 
       <Panel className="memory-settings" title="Aufgabe einstellen">
         <div className="memory-settings-grid">
-          <label>
-            Grundtöne
-            <select
-              value={rootScope}
-              onChange={(event) => setRootScope(event.target.value as RootScope)}
+          <div className="memory-setting-group">
+            <span className="memory-field-label">Lernbereich</span>
+            <Segmented
+              label="Lernbereich"
+              value={topicLabel}
+              onChange={(value) => {
+                setTopicLabel(value);
+                setPoolOpen(false);
+                setRootPanelOpen(false);
+              }}
+              options={['Tonleitern', 'Akkorde']}
+            />
+          </div>
+          <div className="memory-setting-group">
+            <span className="memory-field-label">Grundtöne</span>
+            <button
+              type="button"
+              className="memory-pool-trigger"
+              aria-expanded={rootPanelOpen}
+              onClick={() => {
+                setRootPanelOpen((open) => !open);
+                setPoolOpen(false);
+              }}
             >
-              <option value="current">Nur globaler Grundton · {displayNote(globalRoot)}</option>
-              <option value="all">Zufällig durch alle Grundtöne</option>
-            </select>
-          </label>
-          {topic === 'scales' ? (
-            <label>
-              Tonleitern
-              <select
-                value={scaleScope}
-                onChange={(event) => setScaleScope(event.target.value as ScaleScope)}
-              >
-                <option value="current">Nur globale Tonleiter · {scaleName(globalScaleId)}</option>
-                <option value="core">Dur, Moll, Pentatonik und Blues</option>
-                <option value="all">Alle vorhandenen Tonleitern und Modi</option>
-              </select>
-            </label>
-          ) : (
-            <label>
-              Akkordstufe
-              <select
-                value={chordLevel}
-                onChange={(event) => setChordLevel(event.target.value as ChordLevel)}
-              >
-                <option value="basic">Einfach · nur Dur und Moll</option>
-                <option value="triads">Alle Dreiklänge und Vorhalte</option>
-                <option value="sevenths">Dreiklänge und grundlegende Septakkorde</option>
-                <option value="all">Alle festen Akkordtypen</option>
-              </select>
-            </label>
-          )}
+              <span>
+                {rootScope === 'current'
+                  ? `Nur ${displayNote(globalRoot)}`
+                  : `${selectedRoots.length} ausgewählt`}
+              </span>
+              <Icon name="chevron" size={15} />
+            </button>
+          </div>
+          <div className="memory-setting-group">
+            <span className="memory-field-label">
+              {topic === 'scales' ? 'Tonleitern' : 'Akkorde'}
+            </span>
+            <button
+              type="button"
+              className="memory-pool-trigger"
+              aria-expanded={poolOpen}
+              onClick={() => {
+                setPoolOpen((open) => !open);
+                setRootPanelOpen(false);
+              }}
+            >
+              <span>{activePool.size} ausgewählt</span>
+              <Icon name="chevron" size={15} />
+            </button>
+          </div>
           <label>
             Antwortfläche
             <select
@@ -160,6 +252,116 @@ export function TheoryMemory() {
             </select>
           </label>
         </div>
+        {rootPanelOpen && (
+          <section
+            className="memory-pool-panel memory-root-picker"
+            aria-label="Grundtöne auswählen"
+          >
+            <div className="memory-pool-head">
+              <div>
+                <strong>Grundtöne auswählen</strong>
+                <span>{rootScope === 'current' ? 1 : selectedRoots.length} von 12 aktiv</span>
+              </div>
+              <button
+                type="button"
+                aria-label="Grundtonauswahl schließen"
+                onClick={() => setRootPanelOpen(false)}
+              >
+                <Icon name="close" size={16} />
+              </button>
+            </div>
+            <div className="memory-root-picker-head">
+              <button
+                type="button"
+                onClick={() => {
+                  setRootScope('current');
+                  setRootSelection(new Set([globalRoot]));
+                }}
+              >
+                Nur globaler Grundton · {displayNote(globalRoot)}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setRootScope('selection');
+                  setRootSelection(new Set(roots));
+                }}
+              >
+                Alle auswählen
+              </button>
+            </div>
+            <div className="memory-root-options">
+              {roots.map((root) => (
+                <label key={root}>
+                  <input
+                    type="checkbox"
+                    checked={
+                      rootScope === 'current' ? root === globalRoot : rootSelection.has(root)
+                    }
+                    onChange={() => toggleRoot(root)}
+                  />
+                  <span>{displayNote(root)}</span>
+                </label>
+              ))}
+            </div>
+          </section>
+        )}
+        {poolOpen && (
+          <TheoryMemoryPool
+            label={topic === 'scales' ? 'Tonleitern' : 'Akkorde'}
+            items={topic === 'scales' ? scalePoolItems : chordPoolItems}
+            groups={
+              topic === 'scales'
+                ? scalePoolGroups
+                : chordFamilies.map((family) => ({ id: family.id, name: family.name }))
+            }
+            selected={activePool}
+            presets={
+              topic === 'scales'
+                ? [
+                    { label: `Nur ${scaleName(globalScaleId)}`, ids: [globalScaleId] },
+                    {
+                      label: 'Basis',
+                      ids: memoryScalePool(globalScaleId, 'core').map((scale) => scale.id),
+                    },
+                  ]
+                : [
+                    {
+                      label: 'Einfach',
+                      ids: memoryChordPool('basic').map((chord) => chord.id),
+                    },
+                    {
+                      label: 'Dreiklänge',
+                      ids: memoryChordPool('triads').map((chord) => chord.id),
+                    },
+                    {
+                      label: 'Dreiklänge + Septakkorde',
+                      ids: memoryChordPool('sevenths').map((chord) => chord.id),
+                    },
+                    { label: 'Jazz-Basis', ids: jazzBasicChordIds },
+                    {
+                      label: 'Sus & Add',
+                      ids: chordIdsInFamilies('suspended', 'added'),
+                    },
+                    {
+                      label: 'Septakkorde',
+                      ids: chordIdsInFamilies('seventh'),
+                    },
+                    {
+                      label: '9 · 11 · 13',
+                      ids: chordIdsInFamilies('ninth', 'eleventh', 'thirteenth'),
+                    },
+                    {
+                      label: 'Alterierte Dominanten',
+                      ids: chordIdsInFamilies('altered'),
+                    },
+                  ]
+            }
+            onToggle={togglePoolItem}
+            onSet={setActivePool}
+            onClose={() => setPoolOpen(false)}
+          />
+        )}
       </Panel>
 
       <Panel className="memory-question">
@@ -230,56 +432,42 @@ export function TheoryMemory() {
           </strong>
         </div>
 
-        {result && (
-          <div
-            className={`memory-feedback ${result.correct ? 'is-correct' : 'is-wrong'}`}
-            role="status"
-          >
-            <strong>{result.correct ? 'Richtig.' : 'Noch nicht ganz.'}</strong>
-            {result.correct ? (
-              <p>
-                {title}: {question.notes.map(displayNote).join(' · ')}
-              </p>
-            ) : (
-              <p>
-                {result.missing.length > 0 &&
-                  `Es fehlen: ${result.missing.map(labelPitch).join(' · ')}. `}
-                {result.wrong.length > 0 &&
-                  `Nicht enthalten: ${result.wrong.map(labelPitch).join(' · ')}.`}
-              </p>
-            )}
-            {!result.correct && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSelected(new Set(question.pitchClasses));
-                  setChecked(true);
-                }}
-              >
-                Lösung einsetzen
-              </button>
-            )}
-          </div>
-        )}
-
         {piano.audioError && (
           <p className="error-text" role="alert">
             {piano.audioError}
           </p>
         )}
         <div className="memory-actions">
-          <button type="button" className="primary" onClick={() => setChecked(true)}>
-            Auswahl prüfen
-          </button>
-          <button type="button" disabled={!selected.size} onClick={resetAnswer}>
-            Auswahl leeren
+          <button
+            type="button"
+            className={`primary memory-check ${result ? (result.correct ? 'is-correct' : 'is-wrong') : ''}`}
+            style={
+              result
+                ? {
+                    background: result.correct ? 'var(--green)' : '#b42318',
+                    borderColor: result.correct ? 'var(--green)' : '#b42318',
+                    color: 'white',
+                  }
+                : undefined
+            }
+            aria-live="polite"
+            disabled={!selected.size}
+            onClick={() => setChecked(true)}
+          >
+            {result ? (result.correct ? 'Richtig' : 'Nicht richtig') : 'Auswahl prüfen'}
           </button>
           <button type="button" onClick={next}>
             Neue Aufgabe
           </button>
+          <button type="button" onClick={toggleSolution}>
+            {solutionShown ? 'Lösung ausblenden' : 'Lösung anzeigen'}
+          </button>
+          <button type="button" disabled={!selected.size} onClick={resetAnswer}>
+            Auswahl leeren
+          </button>
         </div>
 
-        {checked && (
+        {solutionShown && (
           <div className="memory-formula">
             <span>FORMEL</span>
             <strong>{question.degrees.map(pretty).join(' · ')}</strong>

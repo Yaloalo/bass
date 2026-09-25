@@ -49,15 +49,15 @@ test('difficulty pools keep the simple level focused', () => {
   assert.equal(memoryScalePool('not-a-scale', 'current')[0].id, 'major');
 });
 
-test('current-context questions honor the global root and scale', () => {
+test('current-context questions honor the global root and selected scale', () => {
   const question = nextMemoryQuestion(
     {
       topic: 'scales',
       globalRoot: 'Eb',
-      globalScaleId: 'blues',
       rootScope: 'current',
-      scaleScope: 'current',
-      chordLevel: 'basic',
+      rootSelection: ['C', 'G'],
+      scaleSelection: ['blues'],
+      chordSelection: ['major', 'minor'],
     },
     '',
     () => 0,
@@ -66,4 +66,29 @@ test('current-context questions honor the global root and scale', () => {
   // avoids the Bbb produced by a literal b5), but it must retain the chosen pitch.
   assert.equal(pitchClass(question.root), pitchClass('Eb'));
   assert.equal(question.itemId, 'blues');
+});
+
+test('custom root selection limits random questions to the checked roots', () => {
+  const options = {
+    topic: 'chords' as const,
+    globalRoot: 'D',
+    rootScope: 'selection' as const,
+    rootSelection: ['C', 'F#'],
+    scaleSelection: ['major'],
+    chordSelection: ['minor'],
+  };
+  assert.equal(nextMemoryQuestion(options, '', () => 0).root, 'C');
+  assert.equal(pitchClass(nextMemoryQuestion(options, '', () => 0.99).root), pitchClass('F#'));
+});
+
+test('custom chord and scale selections are the exact question pools', () => {
+  const common = {
+    globalRoot: 'C',
+    rootScope: 'current' as const,
+    rootSelection: ['C'],
+    scaleSelection: ['dorian'],
+    chordSelection: ['sus4'],
+  };
+  assert.equal(nextMemoryQuestion({ ...common, topic: 'scales' }).itemId, 'dorian');
+  assert.equal(nextMemoryQuestion({ ...common, topic: 'chords' }).itemId, 'sus4');
 });

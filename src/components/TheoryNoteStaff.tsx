@@ -41,7 +41,7 @@ export function TheoryNoteStaff({
                     {pretty(note.slice(1))}
                   </span>
                   <span className="memory-notehead" aria-hidden="true" />
-                  <span className="visually-hidden">{noteLabel(note)}</span>
+                  <span className="sr-only">{noteLabel(note)}</span>
                 </button>
               );
             })}

@@ -4,7 +4,7 @@ import type { ChordDefinition } from './chord-types';
 import { mod, noteName, pitchClass, readableRoot, roots, spellDegree } from './music';
 
 export type MemoryTopic = 'scales' | 'chords';
-export type RootScope = 'current' | 'all';
+export type RootScope = 'current' | 'selection';
 export type ScaleScope = 'current' | 'core' | 'all';
 export type ChordLevel = 'basic' | 'triads' | 'sevenths' | 'all';
 
@@ -35,9 +35,7 @@ export function memoryChordPool(level: ChordLevel): ChordDefinition[] {
   const ids =
     level === 'basic' ? basicChordIds : level === 'triads' ? triadChordIds : seventhChordIds;
   if (level !== 'all') return ids.flatMap((id) => (chordById(id) ? [chordById(id)!] : []));
-  return chords.filter(
-    (chord) => !chord.voicingFamily && chord.formula.length >= 3 && chord.formula.length <= 6,
-  );
+  return chords.filter((chord) => !chord.voicingFamily);
 }
 
 export function memoryScalePool(globalScaleId: string, scope: ScaleScope) {
@@ -87,21 +85,32 @@ export function nextMemoryQuestion(
   options: {
     topic: MemoryTopic;
     globalRoot: string;
-    globalScaleId: string;
     rootScope: RootScope;
-    scaleScope: ScaleScope;
-    chordLevel: ChordLevel;
+    rootSelection: readonly string[];
+    scaleSelection: readonly string[];
+    chordSelection: readonly string[];
   },
   previousKey = '',
   random: () => number = Math.random,
 ): MemoryQuestion {
-  const rootPool = options.rootScope === 'current' ? [options.globalRoot] : roots;
+  const selectedRoots = options.rootSelection.filter((root) => roots.includes(root));
+  const rootPool =
+    options.rootScope === 'current'
+      ? [options.globalRoot]
+      : selectedRoots.length
+        ? selectedRoots
+        : [options.globalRoot];
   const itemPool =
     options.topic === 'scales'
-      ? memoryScalePool(options.globalScaleId, options.scaleScope)
-      : memoryChordPool(options.chordLevel);
+      ? scales.filter((scale) => options.scaleSelection.includes(scale.id))
+      : memoryChordPool('all').filter((chord) => options.chordSelection.includes(chord.id));
+  const safeItemPool = itemPool.length
+    ? itemPool
+    : options.topic === 'scales'
+      ? [scales[0]]
+      : [memoryChordPool('basic')[0]];
   const candidates = rootPool.flatMap((root) =>
-    itemPool.map((item) =>
+    safeItemPool.map((item) =>
       options.topic === 'scales'
         ? scaleMemoryQuestion(root, item.id)
         : chordMemoryQuestion(root, item.id),
