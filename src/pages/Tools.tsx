@@ -14,16 +14,13 @@ export function ToolsPage() {
       <PageHeading
         eyebrow="WERKZEUGE / RHYTHMUS"
         title="Metronom"
-        description="Puls setzen, Lücken lassen, spielen. Der Rhythmus läuft weiter, während du durch die Werkstatt navigierst."
+        description="Puls, Unterteilung und Akzente einstellen und direkt losspielen."
       />
       <nav className="tools-tabs" aria-label="Rhythmus-Werkzeuge">
         <Link to="/drums">Drum-Maschine</Link>
         <Link aria-current="page" className="selected" to="/tools/metronome">
           Metronom
         </Link>
-        <span>
-          <kbd>Leertaste</kbd> startet und stoppt, sobald du auf dieser Seite etwas angeklickt hast
-        </span>
       </nav>
       <MetronomeTool />
     </div>

@@ -7,10 +7,7 @@ import { Icon } from '../UI';
 import { TempoInput } from './TempoInput';
 import { HarmonyNow, HarmonyToggle } from './HarmonyPanel';
 
-/**
- * Space only reaches the transport once the user has focused something on this page.
- * On a freshly loaded page the focus is on the body, where Space must still scroll.
- */
+/** Global while this page is mounted, but never steals keys from an interactive control. */
 export function useTransportShortcuts(root: React.RefObject<HTMLElement | null>, mode: RhythmMode) {
   const { start, resume, stop, tap } = useRhythm();
   const { bpm, setBpm } = useStore();
@@ -25,7 +22,8 @@ export function useTransportShortcuts(root: React.RefObject<HTMLElement | null>,
       if (target?.closest('input, select, textarea, [contenteditable="true"], [role="grid"]'))
         return;
       const focused = document.activeElement;
-      if (!focused || focused === document.body || !root.current?.contains(focused)) return;
+      if (focused && focused !== document.body && root.current && !root.current.contains(focused))
+        return;
       if (event.code === 'Space') {
         // Preserve native activation on focused controls (preset, mute, help, etc.).
         if (target?.closest('button, a, summary, [role="button"], [role="switch"]')) return;
@@ -93,9 +91,6 @@ export function DrumTransport({ mode }: { mode: RhythmMode }) {
   const active = (status.running || status.starting) && status.mode === mode;
   const paused = status.paused && status.mode === mode;
   const drums = mode === 'drums';
-  const ramp = preferences.ramp;
-  const setRamp = (patch: Partial<typeof ramp>) =>
-    setPreferences({ ...preferences, ramp: { ...ramp, ...patch } });
   return (
     <div className="drum-transport" role="group" aria-label="Transport">
       <button
@@ -198,64 +193,6 @@ export function DrumTransport({ mode }: { mode: RhythmMode }) {
           }
         />
       </label>
-      <div className="tempo-trainer">
-        <label className="tempo-trainer-switch">
-          <input
-            type="checkbox"
-            role="switch"
-            checked={ramp.enabled}
-            onChange={(event) => setRamp({ enabled: event.target.checked })}
-          />
-          <span>Tempo-Trainer</span>
-        </label>
-        <label>
-          <span className="visually-hidden">Schritt in BPM</span>
-          <select
-            aria-label="Tempo-Schritt in BPM"
-            value={ramp.step}
-            onChange={(event) => setRamp({ step: Number(event.target.value) })}
-          >
-            {[-5, -2, 1, 2, 3, 4, 5, 10].map((value) => (
-              <option key={value} value={value}>
-                {value > 0 ? `+${value}` : value} BPM
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span className="visually-hidden">Takte zwischen den Schritten</span>
-          <select
-            aria-label="Takte je Tempo-Schritt"
-            value={ramp.every}
-            onChange={(event) => setRamp({ every: Number(event.target.value) })}
-          >
-            {[1, 2, 4, 8, 12, 16].map((value) => (
-              <option key={value} value={value}>
-                alle {value} {value === 1 ? 'Takt' : 'Takte'}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="tempo-trainer-target">
-          <span>bis</span>
-          <input
-            type="number"
-            aria-label="Ziel-Tempo in BPM"
-            min={30}
-            max={300}
-            value={ramp.target}
-            onChange={(event) => setRamp({ target: Number(event.target.value) })}
-          />
-          <span>BPM</span>
-        </label>
-        <p className="tempo-trainer-note" role="status">
-          {ramp.enabled
-            ? `${bpm} → ${ramp.target} BPM · ${ramp.step > 0 ? '+' : ''}${ramp.step} alle ${ramp.every} ${
-                ramp.every === 1 ? 'Takt' : 'Takte'
-              }. Ein eigener Tempowechsel schaltet ihn wieder ab.`
-            : 'Zieht das Tempo während des Spielens Schritt für Schritt hoch und hält beim Ziel an.'}
-        </p>
-      </div>
       {status.running && status.mode !== mode && (
         <p className="tool-notice" role="status">
           {status.mode === 'drums'

@@ -109,16 +109,17 @@ test('readings name the nearest note and the nearest string', () => {
   }
 });
 
-test('a stored tempo ramp is clamped into something playable', () => {
+test('legacy tempo-trainer settings stay disabled after the feature was removed', () => {
   assert.deepEqual(defaultPreferences.ramp, { enabled: false, step: 4, every: 4, target: 120 });
   const saved = normalizePreferences({
     ramp: { enabled: true, step: 900, every: 0, target: 5000 },
   }).ramp;
-  assert.deepEqual(saved, { enabled: true, step: 20, every: 1, target: 300 });
+  assert.deepEqual(saved, { enabled: false, step: 20, every: 1, target: 300 });
   // A step of zero would never reach the target, so it falls back to the default.
   assert.equal(normalizePreferences({ ramp: { step: 0 } }).ramp.step, 4);
   assert.equal(normalizePreferences({}).ramp.enabled, false);
   assert.equal(normalizePreferences({ ramp: { step: -5 } }).ramp.step, -5);
+  assert.equal(normalizePreferences({ metronome: { gap: true } }).metronome.gap, false);
 });
 
 test('stacking fifths really produces the pentatonic, the major scale and the twelve', () => {

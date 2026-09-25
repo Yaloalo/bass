@@ -15,7 +15,10 @@ export function GuitarChordDiagram({
   chord: ChordDefinition;
   onPlayNote?: (midi: number) => void;
 }) {
-  const frets = Array.from({ length: 5 }, (_, index) => shape.startFret + index);
+  const playedFrets = shape.frets.filter((fret): fret is number => fret !== null && fret > 0);
+  const finalFret = playedFrets.length ? Math.max(...playedFrets) : shape.startFret + 4;
+  const rowCount = Math.max(5, finalFret - shape.startFret + 1);
+  const frets = Array.from({ length: rowCount }, (_, index) => shape.startFret + index);
   const degreeAt = (midi: number) =>
     chord.formula.find((degree) => mod(degreeSemitones(degree)) === mod(midi - pitchClass(root)));
 
@@ -26,6 +29,7 @@ export function GuitarChordDiagram({
         {shape.frets.map((fret, index) => {
           const string = guitarStringsLowToHigh[index];
           const degree = fret === 0 ? degreeAt(string.midi) : undefined;
+          const finger = shape.fingers[index];
           if (!degree) return <b key={string.id}>{fret === null ? '×' : '·'}</b>;
           return (
             <button
@@ -35,8 +39,10 @@ export function GuitarChordDiagram({
               onClick={() => onPlayNote?.(string.midi)}
               key={string.id}
             >
-              <strong>{pretty(degree)}</strong>
-              <small>{germanNoteName(spellDegree(root, degree))}</small>
+              <strong>{finger === 0 ? '○' : finger}</strong>
+              <small>
+                {pretty(degree)} · {germanNoteName(spellDegree(root, degree))}
+              </small>
             </button>
           );
         })}
@@ -52,6 +58,7 @@ export function GuitarChordDiagram({
             {shape.frets.map((playedFret, stringIndex) => {
               const midi = guitarStringsLowToHigh[stringIndex].midi + fret;
               const degree = playedFret === fret ? degreeAt(midi) : undefined;
+              const finger = shape.fingers[stringIndex];
               const isRoot = degree === '1';
               return (
                 <div className="guitar-chord-fret" key={guitarStringsLowToHigh[stringIndex].id}>
@@ -62,8 +69,10 @@ export function GuitarChordDiagram({
                       aria-label={`${germanNoteName(spellDegree(root, degree))}, Stufe ${pretty(degree)}, ${guitarStringsLowToHigh[stringIndex].spokenLabel}-Saite Bund ${fret} spielen`}
                       onClick={() => onPlayNote?.(midi)}
                     >
-                      <strong>{pretty(degree)}</strong>
-                      <small>{germanNoteName(spellDegree(root, degree))}</small>
+                      <strong>{finger}</strong>
+                      <small>
+                        {pretty(degree)} · {germanNoteName(spellDegree(root, degree))}
+                      </small>
                     </button>
                   )}
                 </div>
@@ -85,6 +94,10 @@ export function GuitarChordDiagram({
           {shape.barreFret ? ` · verschiebbare Lage ab Bund ${shape.barreFret}` : ' · offene Form'}
         </span>
       </figcaption>
+      <p className="guitar-finger-key">
+        <b>Greifhand:</b> 1 Zeigefinger · 2 Mittelfinger · 3 Ringfinger · 4 kleiner Finger · ○ leer
+        · × nicht spielen
+      </p>
     </figure>
   );
 }

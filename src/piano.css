@@ -433,6 +433,54 @@
   }
 }
 
+@media (orientation: landscape) and (max-height: 600px) and (max-width: 1000px) {
+  .piano-page .page-heading {
+    display: none;
+  }
+  .piano-context {
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 14px;
+  }
+  .piano-context-summary p,
+  .piano-context-summary .eyebrow,
+  .piano-chord-pick-note,
+  .piano-keyboard-help {
+    display: none;
+  }
+  .piano-context-summary h2 {
+    margin: 0;
+    font-size: 18px;
+  }
+  .piano-context-controls {
+    display: flex;
+    width: auto;
+    gap: 8px;
+  }
+  .piano-context-controls label:last-child {
+    flex: initial;
+  }
+  .piano-context-controls select {
+    min-height: 38px;
+  }
+  .piano-toolbar {
+    padding: 8px 14px;
+  }
+  .piano-keyboard {
+    height: 178px;
+  }
+  .piano-key.is-white {
+    height: 175px;
+  }
+  .piano-key.is-black {
+    height: 106px;
+  }
+  .piano-legend,
+  .piano-fretboard-toggle {
+    padding-block: 6px;
+  }
+}
+
 .piano-key-alias {
   display: block;
   font-style: normal;

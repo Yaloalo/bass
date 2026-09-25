@@ -25,9 +25,9 @@ export function Score({
     let observer: ResizeObserver | undefined;
     import('vexflow')
       .then((V) => {
-        if (disposed || !staff.current || !tab.current) return;
+        if (disposed || !staff.current || (instrument === 'guitar' && !tab.current)) return;
         const render = () => {
-          if (disposed || !staff.current || !tab.current) return;
+          if (disposed || !staff.current || (instrument === 'guitar' && !tab.current)) return;
           try {
             setError('');
             const bars: MusicEvent[][] = [];
@@ -52,7 +52,14 @@ export function Score({
               }
             }
             if (group.length) bars.push(group);
-            [staff.current, tab.current].forEach((container, type) => {
+            const targets =
+              instrument === 'guitar'
+                ? [
+                    { container: tab.current!, type: 1 },
+                    { container: staff.current!, type: 0 },
+                  ]
+                : [{ container: staff.current!, type: 0 }];
+            targets.forEach(({ container, type }) => {
               container.replaceChildren();
               const available = Math.max(350, container.clientWidth);
               const width = Math.max(
@@ -88,8 +95,10 @@ export function Score({
                         positions: [
                           {
                             str:
-                              profile.stringsHighToLow.findIndex(
-                                (string) => string.exerciseString === event.string,
+                              profile.stringsHighToLow.findIndex((string) =>
+                                event.stringId
+                                  ? string.id === event.stringId
+                                  : string.exerciseString === event.string,
                               ) + 1,
                             fret: event.fret,
                           },
@@ -161,7 +170,22 @@ export function Score({
     .join('; ');
   return (
     <>
-      <div className="score-grid">
+      <div className={`score-grid ${instrument === 'guitar' ? 'guitar-score-grid' : ''}`}>
+        {instrument === 'guitar' && (
+          <Section title="Gitarren-TAB" aside={profile.tuningLabel} defaultOpen={defaultOpen}>
+            <div
+              className="notation-scroll"
+              ref={tab}
+              role="img"
+              aria-label={`Gitarren-TAB: ${text}`}
+            />
+            <p className="score-note">
+              {meter
+                ? 'Notenwerte und Pausen stehen zusätzlich in der Notation; TAB folgt demselben Rhythmus.'
+                : 'Derselbe Fingersatz wie auf dem Griffbrett, von links nach rechts.'}
+            </p>
+          </Section>
+        )}
         <Section
           title="Notation"
           aside={profile.notationClef === 'bass' ? 'Bassschlüssel' : 'Violinschlüssel'}
@@ -174,23 +198,6 @@ export function Score({
             aria-label={`Notation: ${text}`}
           />
           <p className="score-note">Eine Oktave über der klingenden Tonhöhe notiert.</p>
-        </Section>
-        <Section
-          title={`${profile.name} TAB`}
-          aside={profile.tuningLabel}
-          defaultOpen={defaultOpen}
-        >
-          <div
-            className="notation-scroll"
-            ref={tab}
-            role="img"
-            aria-label={`${profile.name} TAB: ${text}`}
-          />
-          <p className="score-note">
-            {meter
-              ? 'Notenwerte und Pausen stehen in der Notation; TAB folgt demselben Rhythmus.'
-              : 'Derselbe Fingersatz wie auf dem Griffbrett, von links nach rechts.'}
-          </p>
         </Section>
       </div>
       {error && (

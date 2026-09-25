@@ -3,7 +3,13 @@ import { germanNoteName } from './i18n';
 export type BassString = 'E' | 'A' | 'D' | 'G';
 export interface FingeringNote {
   string: BassString;
+  /** Physical string id for instruments with duplicate string names, e.g. both guitar E strings. */
+  stringId?: string;
   fret: number;
+  /** Optional left-hand finger: 0 means an open string. */
+  finger?: number;
+  /** Exact sounding pitch where the four-string compatibility field is not sufficient. */
+  midi?: number;
   degree?: string;
   duration: string;
   name?: string;
@@ -221,7 +227,7 @@ export const keyLabel = (root: string, minor: boolean, style: NoteNameStyle = 'd
   const label = noteLabel(root, style);
   return minor ? label[0].toLowerCase() + label.slice(1) + '-Moll' : label + '-Dur';
 };
-export const soundingMidi = (note: FingeringNote) => tuning[note.string] + note.fret;
+export const soundingMidi = (note: FingeringNote) => note.midi ?? tuning[note.string] + note.fret;
 export function writtenPitch(note: FingeringNote): {
   key: string;
   accidental: string;

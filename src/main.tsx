@@ -4,6 +4,7 @@ import App from './App';
 import { initializeTheme } from './lib/theme';
 import './styles.css';
 import './theme.css';
+import './guitar.css';
 initializeTheme();
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

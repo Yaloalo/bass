@@ -172,6 +172,7 @@ export function Navigation() {
   const [menu, setMenu] = useState(''),
     [searchOpen, setSearchOpen] = useState(false);
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { instrument, setInstrument } = useStore();
   const profile = instrumentProfile(instrument);
   const { stop } = useRhythm();
@@ -218,7 +219,11 @@ export function Navigation() {
             className="brand instrument-brand-toggle"
             aria-label={`${profile.name} ausgewählt. Zu ${instrument === 'bass' ? 'Gitarre' : 'Bass'} wechseln`}
             title={`Zu ${instrument === 'bass' ? 'Gitarre' : 'Bass'} wechseln`}
-            onClick={() => setInstrument(instrument === 'bass' ? 'guitar' : 'bass')}
+            onClick={() => {
+              const next = instrument === 'bass' ? 'guitar' : 'bass';
+              setInstrument(next);
+              if (pathname === '/gitarrenakkorde' && next === 'bass') navigate('/bass');
+            }}
           >
             <span className={`brand-mark ${instrument}`} aria-hidden="true">
               {profile.stringsHighToLow.map((string) => (

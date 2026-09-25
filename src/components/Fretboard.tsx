@@ -26,7 +26,7 @@ interface Props {
   events: MusicEvent[];
   range: [number, number];
   root: string;
-  labels?: 'Degrees' | 'Notes' | 'Both';
+  labels?: 'Degrees' | 'Notes' | 'Both' | 'Fingers';
   title?: string;
   onPick?: (note: FretboardPick) => void;
   conceal?: boolean;
@@ -60,7 +60,7 @@ export function Fretboard({
   const notes = events.filter(isNote);
   const frets = Array.from({ length: range[1] - range[0] + 1 }, (_, i) => range[0] + i);
   const wide = frets.length > 14;
-  const map = new Map(notes.map((n) => [`${n.string}:${n.fret}`, n]));
+  const map = new Map(notes.map((n) => [`${n.stringId ?? n.string}:${n.fret}`, n]));
   const templates = new Map(
     notes.map((note) => [mod(tuning[note.string] + note.fret), note] as const),
   );
@@ -68,7 +68,9 @@ export function Fretboard({
     `${string.exerciseString ?? string.id}:${fret}`;
   const noteAt = (string: InstrumentString, fret: number): FretboardPick | undefined => {
     const midi = string.midi + fret;
-    const exact = string.exerciseString ? map.get(`${string.exerciseString}:${fret}`) : undefined;
+    const exact =
+      map.get(`${string.id}:${fret}`) ??
+      (string.exerciseString ? map.get(`${string.exerciseString}:${fret}`) : undefined);
     const source = exact ?? (!route ? templates.get(mod(midi)) : undefined);
     if (!source) return undefined;
     return {
@@ -157,8 +159,8 @@ export function Fretboard({
           ref={board}
           className={`fretboard ${wide ? 'wide' : ''}`}
           style={{
-            minWidth: Math.max(520, frets.length * 48),
-            gridTemplateColumns: `36px repeat(${frets.length},minmax(44px,1fr))`,
+            ['--fret-count' as string]: frets.length,
+            ['--fretboard-min' as string]: `${Math.max(520, frets.length * 48)}px`,
           }}
           role="group"
           aria-label={`${title} Griffbrett, Bünde ${range[0]} bis ${range[1]}`}
@@ -236,7 +238,11 @@ export function Fretboard({
                 const displayedNote = germanNoteName(n?.name ?? noteName(string.midi + fret));
                 const displayedDegree = pretty(degree ?? n?.name ?? noteName(string.midi + fret));
                 const label = visible
-                  ? labels === 'Notes'
+                  ? labels === 'Fingers'
+                    ? n?.finger === 0
+                      ? '○'
+                      : String(n?.finger ?? '·')
+                    : labels === 'Notes'
                     ? displayedNote
                     : displayedDegree
                   : isMarked
@@ -277,7 +283,7 @@ export function Fretboard({
                     }}
                   >
                     <span
-                      className={`degree-marker ${labels === 'Both' && visible ? 'both' : ''} ${matches.length ? 'overlay' : isRoot ? 'root' : chord ? 'chord' : 'scale'} ${overlayRoot ? 'overlay-root' : ''} ${!visible && !isMarked ? 'empty' : ''} ${isMarked ? 'marked' : ''} ${n?.role === 'Passing tone' ? 'passing' : ''}`}
+                    className={`degree-marker ${labels === 'Both' && visible ? 'both' : ''} ${labels === 'Fingers' && visible ? 'finger' : ''} ${matches.length ? 'overlay' : isRoot ? 'root' : chord ? 'chord' : 'scale'} ${overlayRoot ? 'overlay-root' : ''} ${!visible && !isMarked ? 'empty' : ''} ${isMarked ? 'marked' : ''} ${n?.role === 'Passing tone' ? 'passing' : ''}`}
                       style={overlayBackground ? { background: overlayBackground } : undefined}
                       title={
                         matches.length

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { defaultSound, instrumentSpec, voicePresetsFor } from '../../lib/rhythm';
+import { defaultSound, instruments, instrumentSpec, voicePresetsFor } from '../../lib/rhythm';
 import type { DrumSound, Instrument, SoundEngine } from '../../lib/rhythm';
 import { canRenderScope, renderVoiceScope } from '../../lib/voice-scope';
 import type { VoiceScope } from '../../lib/voice-scope';
@@ -100,7 +100,13 @@ const ratioChips: { label: string; ratio: number; why: string }[] = [
 /** Every `DrumSound` field a knob can drive; `engine` is a switch, not a value. */
 type NumericSound = Exclude<keyof DrumSound, 'engine'>;
 
-export function SynthPanel({ id }: { id: Instrument }) {
+export function SynthPanel({
+  id,
+  onSelect,
+}: {
+  id: Instrument;
+  onSelect?: (id: Instrument) => void;
+}) {
   const { pattern, setPattern, preview } = useRhythm();
   const sound = pattern.tracks[id].sound;
   const latestSound = useRef(sound);
@@ -172,9 +178,22 @@ export function SynthPanel({ id }: { id: Instrument }) {
   return (
     <div className="synth-panel">
       <div className="synth-head">
-        <div>
+        <div className="synth-voice-choice">
           <span className="eyebrow">{spec.family}</span>
-          <h3>{spec.name}</h3>
+          <label>
+            <span>Instrument</span>
+            <select
+              aria-label="Instrument im Drum-Synthesizer"
+              value={id}
+              onChange={(event) => onSelect?.(event.target.value as Instrument)}
+            >
+              {instruments.map((instrument) => (
+                <option value={instrument.id} key={instrument.id}>
+                  {instrument.name} · {instrument.family}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
         <div className="synth-head-actions">
           <div className="segmented" role="group" aria-label="Darstellung">

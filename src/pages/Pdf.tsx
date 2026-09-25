@@ -154,8 +154,8 @@ export function Pdf() {
       )}
       <Notice>
         Das englischsprachige Original-PDF bleibt unverändert. Die App nutzt dessen LaTeX-Quelle und
-        erzeugt Notation und TAB aus denselben Fingersätzen. Bekannte Unstimmigkeiten der Quelle
-        werden auf den jeweiligen Übungsseiten erläutert.
+        erzeugt Notation aus denselben Fingersätzen. Bekannte Unstimmigkeiten der Quelle werden auf
+        den jeweiligen Übungsseiten erläutert.
       </Notice>
     </>
   );

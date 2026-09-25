@@ -21,6 +21,9 @@
   --accent-light: #193a44;
   --chord: #efbc71;
   --chord-light: #42341f;
+  --burnt: #e58b52;
+  --burnt-light: #422a20;
+  --burnt-border: #925a39;
   --muted: #a6b7c3;
   --line: #344653;
   --surface: #1b2934;
@@ -303,6 +306,8 @@
     background: var(--surface-raised);
   }
   :root[data-theme='dark'] .nav-chapter.active {
-    background: var(--accent-light);
+    border-color: var(--burnt-border);
+    background: var(--burnt-light);
+    color: var(--burnt);
   }
 }

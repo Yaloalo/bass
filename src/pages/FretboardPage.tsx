@@ -40,6 +40,8 @@ import {
 import { PageHeading, Panel, Segmented, usePageTitle, Icon } from '../components/UI';
 import { Score } from '../components/Score';
 import { Playback } from '../components/Playback';
+import { GuitarChordVoicings } from '../components/GuitarChordVoicings';
+import { guitarScaleShapes } from '../lib/guitar-scales';
 import {
   chordGuideEntries,
   fretboardGuidePath,
@@ -68,6 +70,7 @@ export function FretboardPage() {
     [selectedNote, setSelectedNote] = useState('C'),
     [showNoteLabels, setShowNoteLabels] = useState(true),
     [showDegreeLabels, setShowDegreeLabels] = useState(true),
+    [guitarScaleIndex, setGuitarScaleIndex] = useState(0),
     [trainer, setTrainer] = useState(false),
     [selectedChords, setSelectedChords] = useState<FretboardChordSelection[]>(() => [
       {
@@ -96,6 +99,16 @@ export function FretboardPage() {
     selectedRoot,
     mode === 'Scale' || mode === 'Arpeggio' ? item.degreeLabels : chromaticDegreesFor(selectedRoot),
   );
+  const latestChordSelection = selectedChords[selectedChords.length - 1];
+  const guitarGrip =
+    mode === 'Arpeggio'
+      ? { root, chord: selectedArpeggio }
+      : mode === 'Chords' && latestChordSelection
+        ? {
+            root: latestChordSelection.root,
+            chord: chords.find((chord) => chord.id === latestChordSelection.chordId),
+          }
+        : undefined;
   const arpeggioPickerItems = useMemo(
     () =>
       chords
@@ -112,7 +125,16 @@ export function FretboardPage() {
         })),
     [root, noteLabel],
   );
-  const route = useMemo(() => transposeRoute(item.fingering, root), [item, root]);
+  const baseRoute = useMemo(() => transposeRoute(item.fingering, root), [item, root]);
+  const guitarScalePositions = useMemo(
+    () => guitarScaleShapes(root, selectedScale.degreeLabels),
+    [root, selectedScale],
+  );
+  const route =
+    instrument === 'guitar' && mode === 'Scale'
+      ? (guitarScalePositions[Math.min(guitarScaleIndex, guitarScalePositions.length - 1)]?.events ??
+        baseRoute)
+      : baseRoute;
   const chordOverlays = useMemo(
     () => makeFretboardChordOverlays(selectedChords, noteLabel.chord, noteLabel.note),
     [selectedChords, noteLabel],
@@ -222,6 +244,7 @@ export function FretboardPage() {
   useEffect(() => {
     if (guideSources.length) resetGuidePaths('Wähle einen Grundton auf dem Griffbrett.');
   }, [selectedRoot, instrument, rangeName, arpId]);
+  useEffect(() => setGuitarScaleIndex(0), [root, selectedScale.id]);
   const events = useMemo(() => {
     if (mode === 'Chords')
       return fretboardChordEvents(selectedChords, selectedRoot, range[0], range[1]);
@@ -251,11 +274,14 @@ export function FretboardPage() {
     selectedRoot,
   ]);
   const activeFingering = (mode === 'Scale' || mode === 'Arpeggio') && view === 'Fingering';
-  const fretboardLabels: 'Degrees' | 'Notes' | 'Both' = showNoteLabels
-    ? showDegreeLabels
-      ? 'Both'
-      : 'Notes'
-    : 'Degrees';
+  const fretboardLabels: 'Degrees' | 'Notes' | 'Both' | 'Fingers' =
+    instrument === 'guitar' && mode === 'Scale' && activeFingering
+      ? 'Fingers'
+      : showNoteLabels
+        ? showDegreeLabels
+          ? 'Both'
+          : 'Notes'
+        : 'Degrees';
   const toggleLabels = (kind: 'notes' | 'degrees') => {
     if (kind === 'notes') {
       if (showNoteLabels && !showDegreeLabels) return;
@@ -465,6 +491,27 @@ export function FretboardPage() {
           <Trainer key={root + rangeName + scaleId} root={root} range={range} scaleId={scaleId} />
         ) : (
           <>
+            {instrument === 'guitar' && mode === 'Scale' && activeFingering && (
+              <div className="guitar-scale-position-picker">
+                <div>
+                  <span className="eyebrow">GRIFFMUSTER</span>
+                  <strong>Große Zahlen zeigen die Greiffinger</strong>
+                </div>
+                <div className="guitar-shape-tabs" role="group" aria-label="Tonleiterlage wählen">
+                  {guitarScalePositions.map((shape, index) => (
+                    <button
+                      type="button"
+                      className={index === guitarScaleIndex ? 'active' : ''}
+                      aria-pressed={index === guitarScaleIndex}
+                      onClick={() => setGuitarScaleIndex(index)}
+                      key={shape.id}
+                    >
+                      {shape.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             {guideSpecs.length > 0 && (
               <div
                 className="fretboard-guide-status"
@@ -494,6 +541,14 @@ export function FretboardPage() {
           </>
         )}
       </Panel>
+      {instrument === 'guitar' && guitarGrip?.chord && !trainer && (
+        <GuitarChordVoicings
+          key={`${guitarGrip.root}-${guitarGrip.chord.id}`}
+          root={guitarGrip.root}
+          chord={guitarGrip.chord}
+          title={`${noteLabel.chord(guitarGrip.root, guitarGrip.chord.symbol)} · Griff wählen`}
+        />
+      )}
       {activeFingering && !trainer && (
         <>
           <Score events={route} />

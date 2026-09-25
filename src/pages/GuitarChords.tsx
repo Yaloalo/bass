@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Navigate } from 'react-router-dom';
 import { Fretboard } from '../components/Fretboard';
 import { GuitarChordDiagram } from '../components/GuitarChordDiagram';
 import { Icon, PageHeading, Panel, Section, Segmented, usePageTitle } from '../components/UI';
@@ -26,7 +25,14 @@ const supportedScales = new Set([
 
 export function GuitarChords() {
   usePageTitle('Gitarrenakkorde einer Tonart');
-  const { instrument, root: selectedRoot, setRoot, scaleId, setScaleId } = useStore();
+  const {
+    instrument,
+    setInstrument,
+    root: selectedRoot,
+    setRoot,
+    scaleId,
+    setScaleId,
+  } = useStore();
   const label = useNoteLabel();
   const piano = usePiano(58);
   const availableScales = scales.filter((scale) => supportedScales.has(scale.id));
@@ -68,8 +74,10 @@ export function GuitarChords() {
     if (scaleId !== activeScale.id) setScaleId(activeScale.id);
   }, [activeScale.id, scaleId, setScaleId]);
   useEffect(() => setShapeIndex(0), [selectedChord?.root, selectedChord?.chord.id]);
-
-  if (instrument !== 'guitar') return <Navigate to="/bass" replace />;
+  // A direct bookmark or restored tab must open the guitar feature instead of bouncing away.
+  useEffect(() => {
+    if (instrument !== 'guitar') setInstrument('guitar');
+  }, [instrument, setInstrument]);
 
   return (
     <div className="guitar-chords-page">

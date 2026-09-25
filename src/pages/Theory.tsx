@@ -173,7 +173,10 @@ export function Theory() {
   const profile = instrumentProfile(instrument);
   const notationRows =
     instrument === 'bass'
-      ? readingRows
+      ? [
+          ['Standardstimmung', 'E–A–D–G, von tief nach hoch.'],
+          ...readingRows.slice(1),
+        ]
       : [
           [
             'Standardstimmung',
@@ -187,6 +190,14 @@ export function Theory() {
           ],
           ...readingRows.slice(4),
         ];
+  const instrumentArticulationRows =
+    instrument === 'bass'
+      ? articulationRows.map((row) => {
+          if (row[0] === 'Glissando / Slide') return [row[0], 'Glissando-Linie', row[2]];
+          if (row[0] === 'Hammer-on / Pull-off') return [row[0], 'Bindebogen · H / P', row[2]];
+          return row;
+        })
+      : articulationRows;
   const [target, setTarget] = useState('Eb');
   const [signatureRoot, setSignatureRoot] = useState(root);
   useEffect(() => setSignatureRoot(root), [root]);
@@ -224,7 +235,10 @@ export function Theory() {
                     'key-signatures': 'Vorzeichen, paralleles Moll und Akkorde',
                     harmony: 'Akkordfamilien in Dur und natürlichem Moll',
                     rhythm: 'Notenwerte, Pausen und Zählweise',
-                    notation: `${profile.notationClef === 'bass' ? 'Bassschlüssel' : 'Violinschlüssel'}, Artikulation und TAB-Zeichen`,
+                    notation:
+                      instrument === 'bass'
+                        ? 'Bassschlüssel, Notenwerte und Artikulation'
+                        : 'Violinschlüssel, Artikulation und TAB-Zeichen',
                     transposition: 'Griffe verschieben und Intervalle erhalten',
                   }[key]
                 }
@@ -430,8 +444,11 @@ export function Theory() {
           >
             <ReferenceTable headers={['Begriff', 'Bedeutung']} rows={notationRows} />
           </Panel>
-          <Panel title="Notation und TAB-Zeichen">
-            <ReferenceTable headers={['Technik', 'Zeichen', 'Bedeutung']} rows={articulationRows} />
+          <Panel title={instrument === 'bass' ? 'Artikulation und Notationszeichen' : 'Notation und TAB-Zeichen'}>
+            <ReferenceTable
+              headers={['Technik', 'Zeichen', 'Bedeutung']}
+              rows={instrumentArticulationRows}
+            />
           </Panel>
         </>
       )}
@@ -449,8 +466,9 @@ export function Theory() {
               </li>
               <li>Schreibe Stufen mit ihren passenden Stammtönen: F-Dur enthält B, nicht Ais.</li>
               <li>
-                Notiere {profile.name === 'Bass' ? 'den Bass' : 'die Gitarre'} eine Oktave über dem
-                Klang; TAB zeigt weiterhin den gespielten Bund.
+                {instrument === 'bass'
+                  ? 'Notiere den Bass eine Oktave über dem Klang.'
+                  : 'Notiere die Gitarre eine Oktave über dem Klang; TAB zeigt weiterhin den gespielten Bund.'}
               </li>
             </ol>
           </Panel>

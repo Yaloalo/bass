@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { chordById } from '../../data/chords';
 import { germanNoteName } from '../../lib/i18n';
-import { harmonyDurationLabel, harmonyNotes, harmonyTimeline } from '../../lib/harmony-play';
+import { harmonyNotes, harmonyTimeline } from '../../lib/harmony-play';
 import {
   dropoutActive,
   modeInstruction,
@@ -57,16 +57,6 @@ export function DrumFocus({ onClose }: { onClose: () => void }) {
   const nextStep =
     harmony.steps.length > 1 ? harmony.steps[(index + 1) % harmony.steps.length] : step;
   const target = targetForChord(nextStep, trainer.targetTone, formCycle + index);
-  const upcoming =
-    harmony.steps.length > 1
-      ? Array.from({ length: Math.min(3, harmony.steps.length - 1) }, (_, offset) => {
-          const next = harmony.steps[(index + offset + 1) % harmony.steps.length];
-          return {
-            name: chordTitleFor(next, label),
-            duration: harmonyDurationLabel(next, pattern.meter),
-          };
-        })
-      : [];
   const active = status.running || status.starting;
   const state = status.starting
     ? 'Startet …'
@@ -106,6 +96,15 @@ export function DrumFocus({ onClose }: { onClose: () => void }) {
         event.preventDefault();
         stop();
         onClose();
+      }}
+      onKeyDown={(event) => {
+        if (event.code !== 'Space' || event.repeat) return;
+        const target = event.target as HTMLElement;
+        if (target.closest('button, input, select, textarea, [role="button"]')) return;
+        event.preventDefault();
+        if (status.running) pause();
+        else if (status.paused) resume('drums');
+        else start('drums');
       }}
     >
       <div className="drum-focus-shell">
@@ -248,7 +247,11 @@ export function DrumFocus({ onClose }: { onClose: () => void }) {
         )}
 
         {trainer.aids.progression && timeline.length > 0 && (
-          <div className="drum-focus-timeline" aria-label="Harmonische Form">
+          <div
+            className="drum-focus-timeline"
+            aria-label="Harmonische Form"
+            style={{ ['--timeline-columns' as string]: timeline.length }}
+          >
             {timeline.map((bar) => (
               <div className={bar.number === currentBar ? 'is-current' : ''} key={bar.number}>
                 <small>{bar.number}</small>
@@ -268,21 +271,6 @@ export function DrumFocus({ onClose }: { onClose: () => void }) {
               </div>
             ))}
           </div>
-        )}
-
-        {upcoming.length > 0 && !countIn && trainer.aids.nextChord && !hideNames && (
-          <aside className="drum-focus-upcoming" aria-label="Nächste Akkorde">
-            <span className="drum-focus-kicker">ALS NÄCHSTES</span>
-            <ol>
-              {upcoming.map((next, offset) => (
-                <li key={`${offset}-${next.name}`}>
-                  <small>{offset + 1}</small>
-                  <strong>{next.name}</strong>
-                  <span>{next.duration}</span>
-                </li>
-              ))}
-            </ol>
-          </aside>
         )}
 
         {status.error && (

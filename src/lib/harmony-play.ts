@@ -170,6 +170,32 @@ export const progressions: Progression[] = [
     steps: [step(0, 'major-7'), step(9, 'dominant-7'), step(2, 'minor-7'), step(7, 'dominant-7')],
   },
   {
+    id: 'three-six-two-five',
+    name: 'iii–VI–ii–V',
+    hint: 'Eine längere Rückführung: zwei verbundene II–V-Bewegungen zurück zur I.',
+    category: 'Jazz',
+    steps: [step(4, 'minor-7'), step(9, 'dominant-7'), step(2, 'minor-7'), step(7, 'dominant-7')],
+  },
+  {
+    id: 'tadd-turnaround',
+    name: 'Tadd-Dameron-Turnaround',
+    hint: 'Imaj7–♭III7–♭VImaj7–♭II7: große Sprünge mit chromatischer Rückführung.',
+    category: 'Jazz',
+    steps: [step(0, 'major-7'), step(3, 'dominant-7'), step(8, 'major-7'), step(1, 'dominant-7')],
+  },
+  {
+    id: 'minor-backdoor-chain',
+    name: 'Moll · Backdoor-Kette',
+    hint: 'i9–IV13–♭VImaj9–V7alt. Übe klare Zielnoten trotz farbiger Akkorde.',
+    category: 'Jazz',
+    steps: [
+      step(0, 'minor-9'),
+      step(5, 'dominant-13'),
+      step(8, 'major-9'),
+      step(7, 'dominant-7alt'),
+    ],
+  },
+  {
     id: 'funk-dominant',
     name: 'Dominant-Vamp',
     hint: 'Ein 9er-Akkord mit 13er-Farbe. Halte einen starken Pocket ohne viele Wechsel.',
@@ -201,6 +227,25 @@ export const progressions: Progression[] = [
     hint: 'Der Vorhalt löst sich auf demselben Grundton: kleine Änderung, große Wirkung.',
     category: 'Funk',
     steps: [step(0, 'dominant-7sus4', 2), step(0, 'dominant-7', 2)],
+  },
+  {
+    id: 'funk-one-four-pocket',
+    name: 'Funk · I9–IV9 Pocket',
+    hint: 'Zwei Takte auf der I, ein Takt IV und ein Takt zurück. Ideal für ein klares Riff.',
+    category: 'Funk',
+    steps: [step(0, 'dominant-9', 2), step(5, 'dominant-9'), step(0, 'dominant-9')],
+  },
+  {
+    id: 'funk-chromatic-return',
+    name: 'Funk · chromatischer Rückweg',
+    hint: 'I9–♭III9–II9–♭II9. Halte das Motiv stabil, während die Grundtöne fallen.',
+    category: 'Funk',
+    steps: [
+      step(0, 'dominant-9'),
+      step(3, 'dominant-9'),
+      step(2, 'dominant-9'),
+      step(1, 'dominant-9'),
+    ],
   },
   {
     id: 'rnb-six-four-one-five',
@@ -243,6 +288,27 @@ export const progressions: Progression[] = [
     hint: 'Zwei lange Maj9-Akkorde. Lass den Bass singen, statt jede Lücke zu füllen.',
     category: 'R&B',
     steps: [step(0, 'major-9', 2), step(5, 'major-9', 2)],
+  },
+  {
+    id: 'rnb-three-six-two-five',
+    name: 'R&B · iii–vi–ii–V',
+    hint: 'Die Jazz-Rückführung mit weichen Nonen und einer 13 auf der Dominante.',
+    category: 'R&B',
+    steps: [step(4, 'minor-9'), step(9, 'minor-9'), step(2, 'minor-9'), step(7, 'dominant-13')],
+  },
+  {
+    id: 'neo-soul-major-planing',
+    name: 'Neo-Soul · Maj9-Flächen',
+    hint: 'Imaj9–♭IIImaj9–♭VImaj9–♭IImaj9. Gemeinsame Töne und sparsame Linien suchen.',
+    category: 'R&B',
+    steps: [step(0, 'major-9'), step(3, 'major-9'), step(8, 'major-9'), step(1, 'major-9')],
+  },
+  {
+    id: 'rnb-minor-lift',
+    name: 'R&B · Moll mit Lift',
+    hint: 'i9–♭IIImaj9–IV13–ivm9. Ein dunkler Vamp mit kurzer heller Öffnung.',
+    category: 'R&B',
+    steps: [step(0, 'minor-9'), step(3, 'major-9'), step(5, 'dominant-13'), step(5, 'minor-9')],
   },
 ];
 

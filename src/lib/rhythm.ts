@@ -700,6 +700,58 @@ export interface SoundBank {
 const membraneLike = (id: Instrument) => instrumentSpec(id).engine === 'membrane';
 const metalLike = (id: Instrument) => ['metal', 'bell'].includes(instrumentSpec(id).engine);
 
+/** A restrained synthesized live-kit character, tuned per physical instrument family. */
+function acousticStudioSound(id: Instrument): Partial<DrumSound> {
+  const engine = instrumentSpec(id).engine;
+  if (id === 'kick')
+    return {
+      engine: 'analog',
+      pitch: 0,
+      decay: 0.95,
+      tone: 0.34,
+      bend: 0.22,
+      resonance: 0.24,
+      noise: 0.45,
+      drive: 0.04,
+      fmAmount: 0,
+    };
+  if (id === 'snare')
+    return {
+      engine: 'analog',
+      pitch: -1,
+      decay: 0.92,
+      tone: 0.52,
+      resonance: 0.2,
+      noise: 1.3,
+      drive: 0.06,
+      fmAmount: 0,
+    };
+  if (engine === 'membrane' || engine === 'slap')
+    return {
+      engine: 'analog',
+      decay: 1.15,
+      tone: 0.44,
+      bend: 0.14,
+      resonance: 0.18,
+      noise: 0.7,
+      drive: 0.03,
+      fmAmount: 0,
+    };
+  if (engine === 'metal' || engine === 'bell')
+    return {
+      engine: 'fm',
+      decay: id === 'closedHat' ? 0.62 : id === 'openHat' ? 1.1 : 1.25,
+      tone: id === 'closedHat' ? 0.58 : 0.48,
+      fmAmount: 1.35,
+      fmRatio: 1.48,
+      fmDecay: 0.34,
+      drive: 0,
+    };
+  if (engine === 'wood')
+    return { engine: 'fm', decay: 0.62, tone: 0.48, fmAmount: 0.6, fmRatio: 1, drive: 0 };
+  return { engine: 'analog', decay: 0.9, tone: 0.48, resonance: 0.15, drive: 0 };
+}
+
 export const soundBanks: SoundBank[] = [
   {
     id: 'natural',
@@ -746,14 +798,25 @@ export const soundBanks: SoundBank[] = [
     }),
   },
   {
+    id: 'acoustic',
+    name: 'Akustik-Studio',
+    description:
+      'Runde Kick, Snareteppich, natürliche Toms und dunkle Becken – synthetisch, aber wie ein kompaktes Live-Set abgestimmt.',
+    sound: acousticStudioSound,
+  },
+  {
     id: 'room',
-    name: 'Akustischer Raum',
-    description: 'Weichere Attacks, etwas länger, weniger Modulation. Sitzt hinter dem Bass.',
+    name: 'Warmer Raum',
+    description: 'Weiche, längere Trommeln und zurückgenommene Becken. Sitzt hinter dem Bass.',
     sound: (id) => ({
-      decay: membraneLike(id) ? 1.2 : 1.15,
-      tone: 0.4,
-      bend: membraneLike(id) ? 0.2 : 0,
-      fmAmount: metalLike(id) ? 1.6 : 0,
+      engine: membraneLike(id) ? 'analog' : 'fm',
+      decay: membraneLike(id) ? 1.3 : 1.15,
+      tone: 0.34,
+      bend: membraneLike(id) ? 0.16 : 0,
+      resonance: membraneLike(id) ? 0.28 : 0.35,
+      noise: membraneLike(id) ? 0.75 : 1,
+      fmAmount: metalLike(id) ? 1.25 : 0,
+      drive: 0.03,
     }),
   },
   {
@@ -1192,7 +1255,8 @@ export function normalizePreferences(value: unknown): RhythmPreferences {
     ramp: (() => {
       const ramp = object(data.ramp);
       return {
-        enabled: ramp.enabled === true,
+        // Legacy values are intentionally ignored: the Tempo-Trainer was removed from the UI.
+        enabled: false,
         step: Math.round(clamp(ramp.step, -20, 20, 4)) || 4,
         every: Math.round(clamp(ramp.every, 1, 32, 4)),
         target: Math.round(clamp(ramp.target, 30, 300, 120)),
@@ -1206,7 +1270,8 @@ export function normalizePreferences(value: unknown): RhythmPreferences {
           : 1,
       accent: metro.accent !== false,
       clicks: metro.clicks === 'backbeat' || metro.clicks === 'first' ? metro.clicks : 'all',
-      gap: metro.gap === true,
+      // Legacy gap-click sessions must not silently reactivate a removed feature.
+      gap: false,
       audibleBars: Math.round(clamp(metro.audibleBars, 1, 8, 2)),
       silentBars: Math.round(clamp(metro.silentBars, 1, 8, 2)),
     },

@@ -62,7 +62,10 @@ export function Drums() {
   const [complexity, setComplexity] = useState(2);
   const [status, setStatus] = useState('');
   const [view, setView] = useState<'simple' | 'details'>(() =>
-    exercise || !window.matchMedia('(max-width: 700px)').matches ? 'details' : 'simple',
+    exercise ||
+    !window.matchMedia('(max-width: 700px), (pointer: coarse) and (max-width: 1000px)').matches
+      ? 'details'
+      : 'simple',
   );
   const wasRunning = useRef(false);
   useTransportShortcuts(page, 'drums');
@@ -285,7 +288,7 @@ export function Drums() {
 
           <details className="drum-drawer drum-synth-drawer" id="drum-synth">
             <summary>Drum-Synthesizer · {instrumentSpec(selected).name}</summary>
-            <SynthPanel id={selected} />
+            <SynthPanel id={selected} onSelect={setSelected} />
           </details>
 
           <details className="drum-drawer drum-harmony-drawer" id="drum-harmony">

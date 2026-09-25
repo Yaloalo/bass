@@ -93,6 +93,60 @@
   color: var(--accent);
 }
 
+.guitar-voicing-priority,
+.guitar-voicing-actions,
+.guitar-scale-position-picker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.guitar-voicing-priority {
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+.guitar-voicing-priority p {
+  max-width: 520px;
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.guitar-voicing-actions {
+  width: min(100%, 560px);
+  margin: 0 auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.guitar-voicing-actions button {
+  min-height: 44px;
+}
+.guitar-voicing-actions span {
+  color: var(--muted);
+  font-size: 12px;
+  text-align: right;
+}
+.guitar-finger-key {
+  margin: 14px 0 0 32px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.guitar-scale-position-picker {
+  margin: 0 0 15px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: 6px;
+  background: var(--accent-light);
+}
+.guitar-scale-position-picker > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+.guitar-scale-position-picker strong {
+  font-size: 12px;
+}
+
 .guitar-chord-diagram {
   width: min(100%, 560px);
   margin: 8px auto 20px;
@@ -276,6 +330,30 @@
     align-items: flex-start;
     flex-direction: column;
   }
+  .guitar-voicing-priority,
+  .guitar-voicing-actions,
+  .guitar-scale-position-picker {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .guitar-voicing-priority .guitar-shape-tabs,
+  .guitar-scale-position-picker .guitar-shape-tabs {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .guitar-voicing-priority .guitar-shape-tabs button,
+  .guitar-scale-position-picker .guitar-shape-tabs button {
+    min-width: 0;
+    min-height: 44px;
+    white-space: normal;
+  }
+  .guitar-voicing-actions button {
+    width: 100%;
+  }
+  .guitar-voicing-actions span {
+    text-align: left;
+  }
   .guitar-chord-open-row,
   .guitar-chord-string-labels,
   .guitar-chord-fret-row {
@@ -295,6 +373,9 @@
   }
   .guitar-chord-diagram figcaption span {
     text-align: left;
+  }
+  .guitar-finger-key {
+    margin-left: 24px;
   }
   .guitar-chord-play {
     width: calc(100% - 24px);

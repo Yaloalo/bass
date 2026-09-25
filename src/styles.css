@@ -10,6 +10,9 @@
   --accent-light: #dff3f7;
   --chord: #b76500;
   --chord-light: #fff0d5;
+  --burnt: #b85c24;
+  --burnt-light: #f9e5d8;
+  --burnt-border: #dea27d;
   --muted: #64717b;
   --line: #dce2e5;
   --surface: #fff;
@@ -378,8 +381,8 @@ kbd {
   margin-right: 6px;
 }
 .home-link.active {
-  color: var(--accent);
-  border-color: var(--accent);
+  color: var(--burnt);
+  border-color: var(--burnt);
 }
 .nav-chapter {
   display: flex;
@@ -389,8 +392,8 @@ kbd {
   border-bottom: 2px solid transparent;
 }
 .nav-chapter.active {
-  color: var(--accent);
-  border-color: var(--accent);
+  color: var(--burnt);
+  border-color: var(--burnt);
 }
 .nav-chapter > a {
   display: flex;
@@ -703,6 +706,8 @@ kbd {
   position: relative;
   display: grid;
   width: 100%;
+  min-width: var(--fretboard-min);
+  grid-template-columns: 36px repeat(var(--fret-count), minmax(44px, 1fr));
   isolation: isolate;
 }
 .string-row {
@@ -789,6 +794,13 @@ kbd {
   background: var(--chord-light);
   border: 1px solid #c69b51;
   color: #87560b;
+}
+.degree-marker.finger {
+  border: 2px solid var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 800;
 }
 .degree-marker.empty {
   visibility: hidden;
@@ -1792,12 +1804,14 @@ td:first-child {
   }
   .nav-chapter {
     height: 43px;
-    border: 0;
-    background: #f5f8f9;
+    border: 1px solid var(--line);
+    background: var(--surface);
     border-radius: 4px;
   }
   .nav-chapter.active {
-    background: var(--accent-light);
+    border-color: var(--burnt-border);
+    background: var(--burnt-light);
+    color: var(--burnt);
   }
   .nav-chapter > a {
     flex: 1;
@@ -4277,6 +4291,8 @@ td:first-child {
   gap: 20px;
 }
 .home-choice-card {
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -4287,8 +4303,15 @@ td:first-child {
   background: var(--surface);
   color: var(--ink);
 }
+.home-choice-card::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 5px;
+  background: var(--burnt);
+  content: '';
+}
 .home-choice-card > svg:first-child {
-  color: var(--accent);
+  color: var(--burnt);
 }
 .home-choice-card strong {
   font-size: clamp(20px, 2.1vw, 27px);
@@ -4304,8 +4327,8 @@ td:first-child {
   color: var(--accent);
 }
 .home-choice-card:hover {
-  border-color: var(--accent);
-  background: var(--accent-light);
+  border-color: var(--burnt-border);
+  background: var(--burnt-light);
 }
 .home-choice-card:focus-visible {
   outline: 3px solid var(--accent);
@@ -4318,6 +4341,71 @@ td:first-child {
   .home-choice-card {
     min-height: 0;
     padding: 22px 24px;
+  }
+}
+
+/* Compact landscape workbench: controls stay reachable while the instrument remains large. */
+@media (orientation: landscape) and (max-height: 600px) and (max-width: 1000px) {
+  :root {
+    --header: 96px;
+  }
+  .topbar {
+    height: 52px;
+    padding-inline: 12px;
+  }
+  .top-nav {
+    display: flex;
+    flex-wrap: nowrap;
+    padding: 3px 8px;
+  }
+  .top-nav .home-link {
+    display: flex;
+    grid-column: auto;
+    height: 38px;
+  }
+  .top-nav .nav-chapter {
+    height: 38px;
+  }
+  .topbar-actions {
+    gap: 7px;
+  }
+  .scale-control,
+  .search-trigger {
+    display: none;
+  }
+  .app-layout > main {
+    padding: 14px 16px 28px;
+  }
+  .page-heading {
+    margin-bottom: 12px;
+  }
+  .page-heading .eyebrow,
+  .page-heading p {
+    display: none;
+  }
+  .page-heading h1 {
+    font-size: 25px;
+  }
+  .fretboard-wrap {
+    padding: 12px 14px 0;
+  }
+  .fretboard {
+    min-width: 100%;
+    grid-template-columns: 32px repeat(var(--fret-count), minmax(0, 1fr));
+  }
+  .fretboard .string-name,
+  .fretboard .fret-cell {
+    height: 40px;
+    min-height: 40px;
+  }
+  .fretboard .degree-marker {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+  }
+  .fretboard-caption,
+  .position-info {
+    margin-top: 5px;
   }
 }
 

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { scales, scaleById } from '../data/catalog';
 import {
@@ -29,6 +29,7 @@ import { PianoPreview } from '../components/PianoPreview';
 import { Score } from '../components/Score';
 import { Playback } from '../components/Playback';
 import { instrumentProfile } from '../lib/instrument';
+import { guitarScaleShapes } from '../lib/guitar-scales';
 export function ReferenceIndex() {
   const data = scales;
   usePageTitle('Tonleiter-Atlas');
@@ -100,7 +101,25 @@ export function ReferencePage() {
   const root = readableRoot(selectedRoot, item?.degreeLabels ?? ['1']);
   const [labels, setLabels] = useState('Degrees');
   const [comparison, setComparison] = useState('');
-  const route = useMemo(() => (item ? transposeRoute(item.fingering, root) : []), [item, root]);
+  const [guitarShapeIndex, setGuitarShapeIndex] = useState(0);
+  const bassRoute = useMemo(
+    () => (item ? transposeRoute(item.fingering, root) : []),
+    [item, root],
+  );
+  const guitarShapes = useMemo(
+    () => (item ? guitarScaleShapes(root, item.degreeLabels) : []),
+    [item, root],
+  );
+  const route =
+    instrument === 'guitar'
+      ? (guitarShapes[Math.min(guitarShapeIndex, guitarShapes.length - 1)]?.events ?? bassRoute)
+      : bassRoute;
+  useEffect(() => {
+    setGuitarShapeIndex(0);
+  }, [item?.id, root]);
+  useEffect(() => {
+    setLabels(instrument === 'guitar' ? 'Fingers' : 'Degrees');
+  }, [instrument]);
   usePageTitle(item?.name ?? 'Eintrag nicht gefunden');
   if (!item)
     return (
@@ -158,9 +177,24 @@ export function ReferencePage() {
       </div>
       <Section className="fretboard-panel" title="Griffbrett" aside="Eine Oktave · aufwärts">
         <div className="panel-tools">
+          {instrument === 'guitar' && (
+            <div className="guitar-shape-tabs" role="group" aria-label="Tonleiterlage wählen">
+              {guitarShapes.map((shape, index) => (
+                <button
+                  type="button"
+                  className={index === guitarShapeIndex ? 'active' : ''}
+                  aria-pressed={index === guitarShapeIndex}
+                  onClick={() => setGuitarShapeIndex(index)}
+                  key={shape.id}
+                >
+                  {shape.name}
+                </button>
+              ))}
+            </div>
+          )}
           <Segmented
             label="Griffbrett-Beschriftung"
-            options={['Degrees', 'Notes']}
+            options={instrument === 'guitar' ? ['Fingers', 'Degrees', 'Notes'] : ['Degrees', 'Notes']}
             value={labels}
             onChange={setLabels}
           />
@@ -170,7 +204,7 @@ export function ReferencePage() {
           events={route}
           root={root}
           range={routeRange(route)}
-          labels={labels as 'Degrees' | 'Notes'}
+          labels={labels as 'Fingers' | 'Degrees' | 'Notes'}
           title={`${germanNoteName(root)} ${item.name}`}
           route
         />
@@ -179,7 +213,8 @@ export function ReferencePage() {
       <div className="reference-play-row">
         <Playback events={route} scale />
         <span className="small-label">
-          {item.fingering.length} NOTEN · EIN GEMEINSAMER FINGERSATZ
+          {route.filter(isNote).length} NOTEN ·{' '}
+          {instrument === 'guitar' ? 'VERSCHIEBBARE LAGE' : 'EIN GEMEINSAMER FINGERSATZ'}
         </span>
       </div>
       <PianoPreview

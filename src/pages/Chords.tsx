@@ -30,6 +30,7 @@ import { Fretboard } from '../components/Fretboard';
 import { PianoPreview } from '../components/PianoPreview';
 import { Score } from '../components/Score';
 import { Playback } from '../components/Playback';
+import { GuitarChordVoicings } from '../components/GuitarChordVoicings';
 import '../chords.css';
 import { instrumentProfile } from '../lib/instrument';
 
@@ -215,6 +216,8 @@ function ChordDetail({ chord }: { chord: ChordDefinition }) {
             .join(' · ')}
         </span>
       </div>
+
+      {instrument === 'guitar' && <GuitarChordVoicings root={root} chord={chord} />}
 
       <Section className="fretboard-panel" title="Griffbrett" aside="Alle Positionen · Bünde 0–15">
         <div className="panel-tools">

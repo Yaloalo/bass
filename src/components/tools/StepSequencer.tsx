@@ -231,7 +231,8 @@ export function StepSequencer({
   const [paint, setPaint] = useState<PaintValue>('cycle');
   const [fill, setFill] = useState(0);
   const [note, setNote] = useState('');
-  const [mobile, setMobile] = useState(() => window.matchMedia('(max-width: 700px)').matches);
+  const compactGridQuery = '(max-width: 700px), (pointer: coarse) and (max-width: 1000px)';
+  const [mobile, setMobile] = useState(() => window.matchMedia(compactGridQuery).matches);
   const [beatPage, setBeatPage] = useState(0);
   const grid = useRef<HTMLDivElement>(null);
   const painting = useRef<Step | null>(null);
@@ -252,11 +253,11 @@ export function StepSequencer({
   const transport = useRhythmStatus();
 
   useEffect(() => {
-    const query = window.matchMedia('(max-width: 700px)');
+    const query = window.matchMedia(compactGridQuery);
     const sync = () => setMobile(query.matches);
     query.addEventListener('change', sync);
     return () => query.removeEventListener('change', sync);
-  }, []);
+  }, [compactGridQuery]);
   useEffect(() => setBeatPage((old) => Math.min(old, beats - 1)), [beats]);
   useEffect(() => {
     if (
