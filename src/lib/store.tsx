@@ -14,6 +14,8 @@ export function useLocal<T>(_key: string, initial: T): [T, Dispatch<SetStateActi
 interface Store {
   root: string;
   setRoot: (v: string) => void;
+  scaleId: string;
+  setScaleId: (v: string) => void;
   bpm: number;
   setBpm: (v: number) => void;
   noteStyle: NoteNameStyle;
@@ -23,6 +25,8 @@ const Context = createContext<Store | null>(null);
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [savedRoot, setRoot] = useLocal('root', 'D');
   const root = roots.includes(savedRoot) ? savedRoot : 'D';
+  const [savedScaleId, setScaleId] = useLocal('scale', 'major');
+  const scaleId = typeof savedScaleId === 'string' ? savedScaleId : 'major';
   const [savedBpm, setBpmValue] = useLocal('bpm', 80);
   const [savedStyle, setNoteStyle] = useLocal<unknown>('note-names', 'de');
   const noteStyle: NoteNameStyle = savedStyle === 'int' ? 'int' : 'de';
@@ -33,6 +37,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const store: Store = {
     root,
     setRoot,
+    scaleId,
+    setScaleId,
     bpm,
     setBpm: (v) => setBpmValue(Math.max(30, Math.min(240, Math.round(v) || 80))),
     noteStyle,

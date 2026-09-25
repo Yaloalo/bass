@@ -1,10 +1,9 @@
 /* The drum machine is its own instrument surface: wider than a reading page,
-   with a sticky transport under the app header and a persistent inspector. */
+   while its specialist controls stay out of the way until they are needed. */
 .drums-page {
   max-width: 1560px;
   margin: 0 auto;
   --rail: 222px;
-  --inspector: 320px;
   --step-min: 34px;
   --row-h: 40px;
   --gap: 3px;
@@ -43,29 +42,71 @@
 .drums-page .heading-actions {
   padding-top: 0;
 }
-.drum-jumps {
-  display: flex;
-  gap: 5px;
-  margin-bottom: 10px;
-}
-.drum-jumps a {
+.drum-view-switch {
   display: inline-flex;
-  align-items: center;
-  min-height: 38px;
-  padding: 7px 13px;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 12px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--surface);
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 650;
-  text-decoration: none;
-  white-space: nowrap;
 }
-.drum-jumps a:hover,
-.drum-jumps a:focus-visible {
+.drum-view-switch button {
+  min-width: 112px;
+  border-color: transparent;
+  background: transparent;
+  font-weight: 700;
+}
+.drum-view-switch button.active {
   border-color: var(--accent);
+  background: var(--accent-light);
   color: var(--accent);
+}
+.drum-simple {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.simple-choice {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 7px;
+}
+.simple-choice > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.simple-choice > span b {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--tool-active-ink);
+  font-size: 11px;
+}
+.simple-choice select {
+  width: 100%;
+  font-weight: 650;
+}
+.simple-choice small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+.simple-groove-start {
+  grid-column: 1 / -1;
+  min-height: 50px !important;
+  font-size: 14px;
 }
 #drum-sequencer,
 #drum-synth,
@@ -77,9 +118,7 @@
 /* ------------------------------------------------------------ transport */
 
 .drum-controls {
-  position: sticky;
-  top: var(--header, 124px);
-  z-index: 40;
+  position: static;
   margin-bottom: 12px;
 }
 .drum-controls > summary {
@@ -227,16 +266,6 @@
   color: var(--muted);
 }
 
-/* ---------------------------------------------------------- workspace */
-
-.drums-workspace {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--inspector);
-  gap: 18px;
-  align-items: start;
-  margin-bottom: 12px;
-}
-
 /* ---------------------------------------------------------- sequencer */
 
 .sequencer-panel {
@@ -306,6 +335,32 @@
   font-size: 12px;
   color: var(--muted);
 }
+.beat-page {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  padding: 0 12px 12px;
+}
+.beat-page > button {
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+  font-size: 18px;
+}
+.beat-page label {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+.beat-page label span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 650;
+}
+.beat-page select {
+  width: 100%;
+}
 .seq-scroll {
   overflow-x: auto;
   overscroll-behavior-x: contain;
@@ -341,10 +396,11 @@
   align-items: center;
 }
 .ruler-cell {
+  position: relative;
   font-size: 10px;
   text-align: center;
   color: var(--muted);
-  padding-bottom: 3px;
+  padding: 10px 0 3px;
   min-width: var(--step-min);
 }
 .ruler-cell.is-beat {
@@ -352,7 +408,19 @@
   font-weight: 650;
 }
 .ruler-cell.is-bar {
-  border-left: 2px solid var(--muted);
+  border-left: 3px solid var(--ink);
+}
+.ruler-cell.is-group:not(.is-bar) {
+  border-left: 2px solid var(--accent-border);
+}
+.ruler-cell.is-bar::before {
+  content: 'T' attr(data-bar);
+  position: absolute;
+  left: 2px;
+  top: 0;
+  color: var(--accent);
+  font-size: 8px;
+  font-weight: 750;
 }
 /* Same template and gap as .seq-grid, laid over it, so the column geometry matches
    exactly without the playhead ever taking part in grid auto-placement. */
@@ -463,7 +531,10 @@
   opacity: 0.35;
 }
 .pad.is-bar {
-  border-left: 2px solid var(--muted);
+  border-left: 3px solid var(--ink);
+}
+.pad.is-group:not(.is-bar) {
+  border-left: 2px solid var(--accent-border);
 }
 .pad.v-1 {
   --fill: 26%;
@@ -525,12 +596,9 @@
 /* ---------------------------------------------------------- inspector */
 
 .drum-inspector {
-  position: sticky;
-  top: calc(var(--header, 124px) + var(--transport-h) + 14px);
-  max-height: calc(100vh - var(--header, 124px) - var(--transport-h) - 110px);
-  overflow-y: auto;
-  /* No `overscroll-behavior: contain` here: it stopped the wheel from chaining to the
-     page, so scrolling died as soon as the pointer sat over the inspector. */
+  position: static;
+  max-height: none;
+  overflow: visible;
   border: 1px solid var(--line);
   border-radius: 7px;
   background: var(--surface);
@@ -683,6 +751,37 @@
   font-size: 12px;
   color: var(--chord);
 }
+.library-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: min(100%, 620px);
+  margin-top: 14px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-subtle);
+}
+.library-search:focus-within {
+  border-color: var(--accent);
+}
+.library-search svg,
+.library-search small {
+  flex: none;
+  color: var(--muted);
+}
+.library-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+}
+.library-search input:focus {
+  outline: 0;
+}
+.library-search small {
+  font-size: 11px;
+}
 .library-group {
   margin-top: 18px;
 }
@@ -782,15 +881,6 @@
 
 /* ------------------------------------------------------------ responsive */
 
-@media (max-width: 1279px) {
-  .drums-workspace {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .drum-inspector {
-    position: static;
-    max-height: none;
-  }
-}
 @media (pointer: coarse), (max-width: 1100px) {
   .drums-page {
     --rail: 200px;
@@ -846,28 +936,26 @@
   .drums-page .heading-actions {
     font-size: 12px;
   }
-  .drum-jumps {
-    position: sticky;
-    top: 120px;
-    z-index: 40;
-    justify-content: space-between;
-    gap: 4px;
-    padding: 5px 0;
-    background: var(--surface-subtle);
+  .drum-view-switch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
   }
-  .drum-jumps a {
-    justify-content: center;
-    flex: 1;
+  .drum-view-switch button {
+    min-height: 46px;
     min-width: 0;
-    min-height: 42px;
-    padding: 5px 3px;
-    font-size: 11px;
   }
-  #drum-sequencer,
-  #drum-synth,
-  #drum-harmony,
-  #drum-patterns {
-    scroll-margin-top: 180px;
+  .drum-simple {
+    grid-template-columns: 1fr;
+    padding: 12px;
+  }
+  .simple-choice {
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .simple-choice:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
   }
   .drum-controls,
   .grid-settings {
@@ -944,12 +1032,25 @@
   .seq-guide > summary {
     min-height: 44px;
   }
+  .harmony-preset-results {
+    max-height: none;
+    overflow: visible;
+    overscroll-behavior: auto;
+  }
+  .seq-scroll {
+    overflow: visible;
+    overscroll-behavior: auto;
+  }
+  .seq-grid,
+  .playhead-layer {
+    min-width: 0;
+    width: 100%;
+  }
 }
 @media (max-width: 600px) {
   .drums-page {
-    /* The name column is the rail minus two 28px toggles and the edge padding. */
-    --rail: 164px;
-    --step-min: 42px;
+    --rail: 132px;
+    --step-min: 0px;
     --gap: 2px;
     --transport-h: 56px;
   }
@@ -980,6 +1081,15 @@
   .seq-scroll {
     padding-inline: 12px;
   }
+  .seq-scroll {
+    overflow: visible;
+    padding-right: 12px;
+  }
+  .seq-grid,
+  .playhead-layer {
+    min-width: 0;
+    width: 100%;
+  }
   .sequencer-note,
   .sequencer-scrollhint {
     margin-inline: 12px;
@@ -1002,6 +1112,9 @@
   .pattern-library {
     padding: 14px 12px;
   }
+  .library-search small {
+    display: none;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .beat-dots span.current {
@@ -1016,7 +1129,7 @@
   }
 }
 
-/* Editing panels stay open on first visit and can be folded away individually. */
+/* Detail tools are deliberately closed until requested. */
 .drum-drawer {
   border: 1px solid var(--line);
   border-radius: 7px;
@@ -1054,12 +1167,69 @@
   border-radius: 0;
   margin: 0;
 }
-.drum-drawer > .synth-panel,
-.drum-drawer > .harmony-panel {
+.drum-sequencer-drawer > .sequencer-panel,
+.drum-mixer-drawer > .drum-inspector {
   border: 0;
   border-top: 1px solid var(--line);
   border-radius: 0;
   margin: 0;
+}
+.drum-drawer > .synth-panel,
+.drum-drawer > .harmony-panel,
+.drum-drawer > .improv-trainer {
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  margin: 0;
+}
+
+/* ------------------------------------------------ improvisation trainer */
+.improv-trainer {
+  padding: clamp(16px, 3vw, 28px);
+  background: var(--surface);
+}
+.improv-trainer-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+}
+.improv-trainer-head h2 {
+  margin: 4px 0 0;
+}
+.improv-trainer-head .tool-field {
+  width: min(100%, 330px);
+}
+.improv-instruction {
+  margin: 16px 0;
+  padding: 12px 14px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-light);
+}
+.improv-settings-grid,
+.improv-dropout-grid,
+.improv-aids {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+}
+.improv-subsection {
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+.improv-subsection > summary {
+  min-height: 46px;
+  padding: 12px 14px;
+  color: var(--accent);
+  font-weight: 650;
+  cursor: pointer;
+}
+.improv-subsection > div {
+  padding: 0 14px 14px;
+}
+.improv-aids .tool-checkbox {
+  min-height: 42px;
 }
 
 /* ------------------------------------------------------ FM synthesizer */
@@ -1459,7 +1629,7 @@
   color: var(--muted);
   font-size: 11px;
 }
-@media (max-width: 600px) {
+@media (max-width: 700px) {
   .harmony-preset-picker > summary small {
     display: none;
   }
@@ -1469,7 +1639,9 @@
     margin-top: 6px;
   }
   .harmony-preset-results {
-    max-height: min(320px, 40vh);
+    max-height: none;
+    overflow: visible;
+    overscroll-behavior: auto;
   }
 }
 .harmony-controls {
@@ -1649,6 +1821,27 @@
 .drum-focus-state.is-running {
   color: var(--green);
 }
+.drum-focus-form-flash {
+  padding: 8px 12px;
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  color: var(--accent);
+}
+.drum-focus-form-flash.is-flash {
+  animation: form-flash 700ms ease-out both;
+}
+@keyframes form-flash {
+  from {
+    background: var(--accent);
+    color: var(--tool-active-ink);
+    transform: scale(1.08);
+  }
+  to {
+    background: transparent;
+    color: var(--accent);
+    transform: none;
+  }
+}
 .drum-focus-beats {
   display: flex;
   gap: 8px;
@@ -1667,6 +1860,41 @@
   border-color: var(--accent);
   background: var(--accent);
   color: var(--tool-active-ink);
+}
+.drum-focus-substep {
+  min-width: 42px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.drum-focus-phrase {
+  padding: 9px 14px;
+  border: 1px solid var(--green);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--green) 12%, var(--surface));
+  color: var(--green);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-align: center;
+}
+.drum-focus-phrase.is-listen {
+  border-color: var(--muted);
+  background: var(--surface);
+  color: var(--muted);
+}
+.drum-focus-task {
+  margin: 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--accent);
+  background: var(--surface);
+  font-size: 14px;
+}
+.drum-focus-task span {
+  margin-right: 8px;
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
 }
 .drum-focus-chord {
   display: flex;
@@ -1732,6 +1960,108 @@
   color: var(--accent);
   font-size: 17px;
   font-weight: 700;
+}
+.drum-focus-tone.is-muted {
+  border-color: var(--line);
+  background: var(--surface-subtle);
+  filter: saturate(0.2);
+  opacity: 0.38;
+}
+.drum-focus-hidden {
+  margin: 18px 0 0;
+  color: var(--accent);
+  font-size: clamp(2rem, 6vw, 6rem);
+  line-height: 1;
+}
+.drum-focus-target,
+.drum-focus-rhythm {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 18px;
+  border: 1px solid var(--accent-border);
+  border-radius: 14px;
+  background: var(--accent-light);
+}
+.drum-focus-target strong {
+  color: var(--accent);
+  font-size: clamp(2.4rem, 5vw, 5rem);
+  line-height: 1;
+}
+.drum-focus-target > span:last-child {
+  font-weight: 650;
+}
+.drum-focus-rhythm {
+  display: grid;
+  grid-template-columns: auto minmax(180px, 1fr);
+}
+.drum-focus-rhythm p {
+  margin: 0;
+}
+.drum-focus-rhythm-grid {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(var(--rhythm-steps), minmax(4px, 1fr));
+  gap: 3px;
+}
+.drum-focus-rhythm-grid span {
+  height: 22px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--surface);
+}
+.drum-focus-rhythm-grid span.is-hit {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+.drum-focus-rhythm-grid span.is-current {
+  outline: 3px solid var(--ink);
+  outline-offset: 1px;
+}
+.drum-focus-timeline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 5px;
+}
+.drum-focus-timeline > div {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.drum-focus-timeline > div.is-current {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.drum-focus-timeline small {
+  position: absolute;
+  z-index: 1;
+  left: 5px;
+  top: 2px;
+  color: var(--muted);
+  font-size: 9px;
+}
+.drum-focus-timeline > div > span {
+  display: flex;
+  width: 100%;
+  min-height: 48px;
+}
+.drum-focus-timeline b {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  padding: 12px 4px 4px;
+  border-left: 1px solid var(--line);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.drum-focus-timeline b.is-current {
+  background: var(--accent);
+  color: var(--tool-active-ink);
 }
 .drum-focus-upcoming {
   display: flex;
@@ -1855,6 +2185,28 @@
     min-width: 120px;
     min-height: 58px;
   }
+  .drum-focus-target {
+    gap: 10px;
+    padding: 10px 12px;
+  }
+  .drum-focus-timeline {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .drum-focus-timeline b {
+    font-size: 11px;
+  }
+  .improv-trainer-head {
+    display: grid;
+  }
+  .improv-trainer-head .tool-field {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drum-focus-form-flash.is-flash {
+    animation: none;
+  }
 }
 
 .harmony-root select {
@@ -1937,25 +2289,43 @@
   grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
   gap: 5px;
 }
-.harmony-grid button {
+.harmony-grid li {
   position: relative;
+  min-width: 0;
+  min-height: 52px;
+  padding-top: 13px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-subtle);
+  overflow: hidden;
+}
+.harmony-grid-segments {
+  display: flex;
+  min-height: 39px;
+}
+.harmony-grid button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  min-height: 52px;
-  padding: 6px 8px;
-  border-radius: 7px;
+  min-width: 0;
+  min-height: 39px;
+  padding: 5px 4px;
+  border-width: 0 0 0 1px;
+  border-radius: 0;
   border-style: dashed;
+  overflow: hidden;
 }
-.harmony-grid li.is-start button {
+.harmony-grid button.is-start {
   border-style: solid;
 }
 .harmony-grid strong {
   font-size: 15px;
   font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.harmony-grid li:not(.is-start) strong {
+.harmony-grid button:not(.is-start) strong {
   font-size: 15px;
   font-weight: 500;
   color: var(--muted);
@@ -1970,17 +2340,16 @@
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
-.harmony-grid li.is-shown button {
+.harmony-grid button.is-shown {
   border-color: var(--accent);
   background: var(--accent-light);
 }
-.harmony-grid li.is-current button {
+.harmony-grid button.is-current {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--tool-active-ink, #fff);
 }
-.harmony-grid li.is-current .harmony-grid-bar,
-.harmony-grid li.is-current strong {
+.harmony-grid button.is-current strong {
   color: inherit;
 }
 @media (max-width: 600px) {

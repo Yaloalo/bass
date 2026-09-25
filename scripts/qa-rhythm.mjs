@@ -6,9 +6,28 @@ export async function checkRhythm(browser, check, errors) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   await installAudioProbe(context);
   const page = await context.newPage();
+  const base = process.env.BASS_QA_URL || 'http://127.0.0.1:4175';
   page.on('pageerror', (error) => errors.push(error.message));
   const button = (name) => page.getByRole('button', { name, exact: true });
   const field = (name) => page.getByLabel(name, { exact: true });
+  const showDetails = async () => {
+    const trigger = page.getByRole('button', { name: 'Details', exact: true });
+    if ((await trigger.getAttribute('aria-pressed')) !== 'true') await trigger.click();
+    await page.locator('.drum-detail-view > details').evaluateAll((drawers) => {
+      drawers.forEach((drawer) => {
+        drawer.open = true;
+      });
+    });
+    await page.locator('.drum-inspector > details').evaluateAll((drawers) => {
+      drawers.forEach((drawer) => {
+        drawer.open = true;
+      });
+    });
+  };
+  const gotoDrums = async () => {
+    await page.goto(base + '/drums');
+    await showDetails();
+  };
   const reset = () =>
     page.evaluate(() => {
       window.__bassAudioProbe.length = 0;
@@ -53,14 +72,15 @@ export async function checkRhythm(browser, check, errors) {
     await check(
       'first drag paints; keyboard edits and focused buttons preserve native activation',
       async () => {
-        await page.goto((process.env.BASS_QA_URL || 'http://127.0.0.1:4175') + '/drums');
+        await gotoDrums();
         await field('Übe-Tempo').fill('');
         await field('Übe-Tempo').pressSequentially('96');
         await field('Übe-Tempo').press('Tab');
         await expect(field('Tempo in BPM')).toHaveValue('96');
         await button('Schritte löschen').click();
         const pads = page.locator('.track-row').first().locator('.pad');
-        await pads.nth(0).scrollIntoViewIfNeeded();
+        // Keep the whole drag stroke comfortably inside the viewport so its geometry is stable.
+        await pads.nth(0).evaluate((element) => element.scrollIntoView({ block: 'center' }));
         const first = await pads.nth(0).boundingBox(),
           third = await pads.nth(2).boundingBox();
         await page.mouse.move(first.x + first.width / 2, first.y + first.height / 2);
@@ -148,13 +168,14 @@ export async function checkRhythm(browser, check, errors) {
       await button('Als neues Pattern sichern').click();
       await expect(button('QA Pocket duplizieren')).toBeVisible();
       await page.reload();
+      await showDetails();
       await expect(field('Pattern-Name')).toHaveValue('Gerader Pocket');
       await expect(button('QA Pocket duplizieren')).toHaveCount(0);
       const stored = await page.evaluate(() => Object.keys(localStorage));
       assert.deepEqual(stored, [], `the drum machine stored ${stored.join(', ')}`);
     });
     await check('the analog engine filters the voice and the rail shows full names', async () => {
-      await page.goto((process.env.BASS_QA_URL || 'http://127.0.0.1:4175') + '/drums');
+      await gotoDrums();
       const trace = () => page.locator('.synth-trace').getAttribute('d');
       await expect(page.locator('.synth-readout')).toContainText('Modulator');
       const fm = await trace();
@@ -232,7 +253,7 @@ export async function checkRhythm(browser, check, errors) {
         .toBeGreaterThanOrEqual(2);
     });
     await check('the chord progression comps in time with the groove', async () => {
-      await page.goto((process.env.BASS_QA_URL || 'http://127.0.0.1:4175') + '/drums');
+      await gotoDrums();
       const rows = page.locator('.harmony-steps li');
       await expect(rows).toHaveCount(0);
       await page.getByLabel('Globaler Grundton').selectOption({ value: 'C' });
@@ -337,7 +358,7 @@ export async function checkRhythm(browser, check, errors) {
     await check(
       'chords audition, switch on mid-bar and edit without stopping the drummer',
       async () => {
-        await page.goto((process.env.BASS_QA_URL || 'http://127.0.0.1:4175') + '/drums');
+        await gotoDrums();
         await field('Übe-Tempo').fill('90');
         await field('Einzähler in Takten').selectOption('0');
         await button('Schritte löschen').click();
@@ -377,33 +398,16 @@ export async function checkRhythm(browser, check, errors) {
         await expect(page.locator('.harmony-steps li')).toHaveCount(0);
       },
     );
-    await check('offbeat comping stays aligned with the audio clock', async () => {
-      await page.goto((process.env.BASS_QA_URL || 'http://127.0.0.1:4175') + '/drums');
-      await field('Übe-Tempo').fill('240');
-      await field('Einzähler in Takten').selectOption('0');
-      await button('Schritte löschen').click();
-      await chooseProgression(/II–V–I in Dur/);
-      await page.getByRole('button', { name: 'Offbeats' }).click();
-      await reset();
-      await button('Groove starten').click();
-      await page.waitForTimeout(800);
-      const starts = [
-        ...new Set(
-          (await audioEvents(page)).filter((e) => e.kind === 'oscillator').map((e) => e.at),
-        ),
-      ].sort((a, b) => a - b);
-      assert.ok(starts.length >= 2, 'offbeat chords should sound between beats');
-      for (let i = 1; i < starts.length; i++)
-        assert.ok(
-          Math.abs(starts[i] - starts[i - 1] - 0.25) < 0.003,
-          'offbeat cadence remains one quarter note',
-        );
-      await stop();
+    await check('the removed accompaniment style controls stay out of the interface', async () => {
+      await gotoDrums();
+      for (const name of ['Fläche', 'Auf 1 & 3', 'Offbeats'])
+        await expect(page.getByRole('button', { name, exact: true })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Mitspielansicht öffnen' })).toHaveCount(0);
     });
     await check(
       'the searchable progression picker stays compact and transposes its choice',
       async () => {
-        await page.goto((process.env.BASS_QA_URL || 'http://127.0.0.1:4175') + '/drums');
+        await gotoDrums();
         await page.getByLabel('Globaler Grundton').selectOption('C');
         const picker = page.locator('.harmony-preset-picker');
         await expect(picker).not.toHaveAttribute('open');
@@ -423,7 +427,7 @@ export async function checkRhythm(browser, check, errors) {
       },
     );
     await check('the player view follows chords and pause resumes in the same phrase', async () => {
-      await page.goto((process.env.BASS_QA_URL || 'http://127.0.0.1:4175') + '/drums');
+      await gotoDrums();
       await page.getByLabel('Globaler Grundton').selectOption('C');
       await field('Übe-Tempo').fill('240');
       await field('Einzähler in Takten').selectOption('0');
@@ -466,58 +470,58 @@ export async function checkRhythm(browser, check, errors) {
       await expect(focus.locator('.drum-focus-upcoming li').first()).toContainText('Am7');
       await focus.getByRole('button', { name: 'Stopp' }).click();
       await expect(focus).toHaveCount(0);
-      await page.getByRole('button', { name: 'Mitspielansicht öffnen' }).click();
-      await expect(focus).toBeVisible();
-      await focus.getByRole('button', { name: 'Stopp' }).click();
-      await expect(focus).toHaveCount(0);
     });
-    await check('the synth and chord editor remain usable at phone width', async () => {
+    await check('the simple and detailed drum views remain usable at phone width', async () => {
       await page.setViewportSize({ width: 390, height: 844 });
-      await page.goto((process.env.BASS_QA_URL || 'http://127.0.0.1:4175') + '/drums');
-      const settings = page.locator('.drum-controls');
-      await expect(settings).not.toHaveAttribute('open');
-      await expect(page.getByRole('button', { name: 'Drum-Maschine starten' })).toBeVisible();
-      await settings.locator('summary').click();
-      await expect(settings).toHaveAttribute('open');
-      await expect(field('Einzähler in Takten')).toBeVisible();
-      await settings.locator('summary').click();
-      await expect(settings).not.toHaveAttribute('open');
-      const patternSettings = page.locator('.grid-settings');
-      await expect(patternSettings).not.toHaveAttribute('open');
-      await patternSettings.locator('summary').click();
-      await expect(field('Raster')).toBeVisible();
-      await patternSettings.locator('summary').click();
-      await expect(patternSettings).not.toHaveAttribute('open');
-      await page.getByRole('link', { name: 'Akkorde', exact: true }).click();
-      await expect(page).toHaveURL(/#drum-harmony$/);
-      await expect
-        .poll(async () => {
-          const top = await page
-            .locator('#drum-harmony')
-            .evaluate((el) => el.getBoundingClientRect().top);
-          return top >= 150 && top < 400;
-        })
-        .toBe(true);
-      await expect(page.locator('.drum-jumps')).toBeInViewport();
+      await page.goto(base + '/drums');
+      await expect(page.getByRole('button', { name: 'Einfach', exact: true })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
+      await expect(field('Drum-Pattern')).toBeVisible();
+      await expect(field('Akkordfolge für einfache Ansicht')).toBeVisible();
+      await expect(field('Drum-Kit')).toBeVisible();
+      await expect(page.locator('.drum-simple .simple-choice')).toHaveCount(3);
+      await expect(page.getByRole('button', { name: 'Groove starten' })).toBeVisible();
+
+      await page.getByRole('button', { name: 'Details', exact: true }).click();
       const drawers = page.locator('.drum-drawer');
-      await expect(drawers).toHaveCount(3);
-      for (let i = 0; i < 3; i++) await expect(drawers.nth(i)).toHaveAttribute('open');
-      await drawers.nth(0).locator('summary').click();
-      await expect(drawers.nth(0)).not.toHaveAttribute('open');
-      await expect(drawers.nth(1)).toHaveAttribute('open');
-      await drawers.nth(0).locator('summary').click();
+      await expect(drawers).toHaveCount(8);
+      for (let i = 0; i < 8; i++) await expect(drawers.nth(i)).not.toHaveAttribute('open');
+
+      await page.locator('.drum-sequencer-drawer > summary').click();
+      await expect(page.locator('.beat-page')).toBeVisible();
+      await expect(field('Zählzeit im Sequencer')).toBeVisible();
+      await expect(page.locator('.track-row').first().locator('.pad')).toHaveCount(4);
+      const sequenceFits = await page
+        .locator('.seq-scroll')
+        .evaluate((element) => element.scrollWidth <= element.clientWidth + 1);
+      assert.equal(sequenceFits, true, 'the mobile sequencer must not need its own scroll area');
+      await page.getByRole('button', { name: 'Nächste Zählzeit' }).click();
+      await expect(field('Zählzeit im Sequencer')).toHaveValue('1');
+
+      await page.locator('.drum-mixer-drawer > summary').click();
       const inspector = page.locator('.inspector-section');
       await expect(inspector).toHaveCount(3);
-      for (let i = 0; i < 3; i++) await expect(inspector.nth(i)).toHaveAttribute('open');
-      await inspector.nth(2).locator('summary').click();
-      await expect(inspector.nth(2)).not.toHaveAttribute('open');
-      await inspector.nth(2).locator('summary').click();
+      for (let i = 0; i < 3; i++) await expect(inspector.nth(i)).not.toHaveAttribute('open');
+
+      await page.locator('.drum-synth-drawer > summary').click();
+      await page.locator('.drum-harmony-drawer > summary').click();
       await expect(
         page.getByText('Takt, Unterteilung und Swing – was das Raster bedeutet'),
       ).toHaveCount(0);
-      await chooseProgression(/II–V–I in Dur/);
+      const mobilePicker = page.locator('.harmony-preset-picker');
+      await mobilePicker.locator('summary').click();
+      assert.equal(
+        await mobilePicker
+          .locator('.harmony-preset-results')
+          .evaluate((element) => getComputedStyle(element).overflowY),
+        'visible',
+        'the mobile progression list must use the page scroll',
+      );
+      await mobilePicker.getByRole('button', { name: /II–V–I in Dur/ }).click();
       await expect(page.getByRole('button', { name: 'Akkord 2 vorhören' })).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Offbeats' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Offbeats' })).toHaveCount(0);
       await expect(page.getByRole('slider', { name: 'Kick FM Stärke' })).toBeVisible();
       const fit = await page.evaluate(() => {
         const elements = ['.synth-panel', '.harmony-panel', '.harmony-steps li'];
@@ -537,29 +541,24 @@ export async function checkRhythm(browser, check, errors) {
       );
       await page.getByRole('button', { name: 'Akkord 2 vorhören' }).click();
       await expect(page.locator('.harmony-board summary')).toContainText('7');
-      await page.getByRole('button', { name: 'Mitspielansicht öffnen' }).click();
+      await page.getByRole('button', { name: 'Einfach', exact: true }).click();
+      await page.getByRole('button', { name: 'Groove starten' }).click();
       const focus = page.getByRole('dialog', { name: 'Mitspielansicht' });
       await expect(focus).toBeVisible();
       const focusWidth = await focus.evaluate((el) => el.scrollWidth);
       assert.ok(focusWidth <= 390, `the player view overflows by ${focusWidth - 390}px`);
-      await expect(focus.getByRole('button', { name: 'Groove starten' })).toBeVisible();
-      await focus.getByRole('button', { name: 'Stopp' }).click();
-      await expect(focus).toHaveCount(0);
-      await page.getByRole('button', { name: 'Drum-Maschine starten' }).click();
-      await expect(focus).toBeVisible();
       await focus.getByRole('button', { name: 'Stopp' }).click();
       await expect(focus).toHaveCount(0);
       await page.setViewportSize({ width: 1440, height: 900 });
     });
     await check('chords overlap at the bar line instead of dropping to silence', async () => {
-      await page.goto((process.env.BASS_QA_URL || 'http://127.0.0.1:4175') + '/drums');
+      await gotoDrums();
       await field('Übe-Tempo').fill('150');
       await field('Einzähler in Takten').selectOption('0');
       // With no drum steps every oscillator that sounds belongs to the chord pad.
       await button('Schritte löschen').click();
       await chooseProgression(/II–V–I in Dur/);
-      // Only the held pad has to join up; stabs are separate hits by design.
-      await button('Fläche').click();
+      // The simplified accompaniment uses the held pad by default.
       await reset();
       await button('Groove starten').click();
       await expect
@@ -583,7 +582,7 @@ export async function checkRhythm(browser, check, errors) {
     });
     await check('the floating chord picker fits a phone screen', async () => {
       await page.setViewportSize({ width: 390, height: 844 });
-      await page.goto((process.env.BASS_QA_URL || 'http://127.0.0.1:4175') + '/drums');
+      await gotoDrums();
       await chooseProgression(/II–V–I in Dur/);
       await page.getByRole('button', { name: 'Akkordtyp von Akkord 1' }).click();
       const panel = page.locator('.chord-picker-panel');
@@ -602,7 +601,7 @@ export async function checkRhythm(browser, check, errors) {
       await page.setViewportSize({ width: 1440, height: 900 });
     });
     await check('the tempo trainer raises the tempo and stops at its target', async () => {
-      await page.goto((process.env.BASS_QA_URL || 'http://127.0.0.1:4175') + '/drums');
+      await gotoDrums();
       await field('Übe-Tempo').fill('100');
       await field('Einzähler in Takten').selectOption('0');
       await field('Pattern-Länge').selectOption('1');
@@ -623,7 +622,7 @@ export async function checkRhythm(browser, check, errors) {
       await expect(field('Tempo in BPM')).toHaveValue('120');
     });
     await check('the progression also reads as a grid of bars', async () => {
-      await page.goto((process.env.BASS_QA_URL || 'http://127.0.0.1:4175') + '/drums');
+      await gotoDrums();
       await chooseProgression(/II–V–I in Dur/);
       // One cell per bar: Dm7 | G7 | Cmaj7 Cmaj7 is four bars, not three chords.
       const cells = page.locator('.harmony-grid li');
@@ -647,12 +646,14 @@ export async function checkRhythm(browser, check, errors) {
     await check('opening an exercise sets its own tempo, groove and no trainer', async () => {
       // Client-side navigation throughout: a full page load starts the session over,
       // since the app writes nothing to the browser.
-      const toDrums = () =>
-        page
+      const toDrums = async () => {
+        await page
           .getByRole('navigation', { name: 'Hauptbereiche' })
           .getByRole('link', { name: 'DRUM-MASCHINE', exact: true })
           .click();
-      await page.goto((process.env.BASS_QA_URL || 'http://127.0.0.1:4175') + '/drums');
+        await showDetails();
+      };
+      await gotoDrums();
       await page.getByRole('switch', { name: 'Tempo-Trainer' }).check();
       await field('Übe-Tempo').fill('177');
       await expect(field('Tempo in BPM')).toHaveValue('177');
@@ -731,7 +732,7 @@ export async function checkRhythm(browser, check, errors) {
           .getByRole('link', { name, exact: true })
           .click();
       const litPads = () => page.locator('.pad[aria-pressed="true"]').count();
-      await page.goto((process.env.BASS_QA_URL || 'http://127.0.0.1:4175') + '/drums');
+      await gotoDrums();
       // Build something of your own in the drum machine.
       await page
         .locator('.library-cards')
@@ -746,6 +747,7 @@ export async function checkRhythm(browser, check, errors) {
       await page.getByRole('link', { name: 'Übungsbibliothek' }).first().click();
       await page.locator('a[href="/exercises/basics/5"]').first().click();
       await page.getByRole('button', { name: 'Groove bearbeiten' }).click();
+      await showDetails();
       const banner = page.locator('.drum-edit-banner');
       await expect(banner).toContainText('B5');
       // The sequencer now shows the exercise's groove, not yours.
@@ -759,6 +761,7 @@ export async function checkRhythm(browser, check, errors) {
       await banner.getByRole('link').click();
       await expect(page.locator('h1')).toContainText('B5');
       await nav('DRUM-MASCHINE');
+      await showDetails();
       await expect(field('Pattern-Name')).toHaveValue('Reggae One Drop');
       await expect.poll(litPads).toBe(mine);
       // The back button exists only in that mode.
@@ -785,7 +788,7 @@ export async function checkRhythm(browser, check, errors) {
       await expect(page.locator('.program-current-header h2')).toHaveText(wasOn);
     });
     await check('the inspector no longer traps the page scroll', async () => {
-      await page.goto((process.env.BASS_QA_URL || 'http://127.0.0.1:4175') + '/drums');
+      await gotoDrums();
       const box = await page.locator('.drum-inspector').boundingBox();
       await page.mouse.move(box.x + box.width / 2, box.y + 100);
       for (let i = 0; i < 12; i++) await page.mouse.wheel(0, 300);
@@ -824,7 +827,7 @@ export async function checkRhythm(browser, check, errors) {
       await page.waitForTimeout(200);
       assert.equal((await audioEvents(page)).length, stopped.events.length);
     });
-    await check('count-in lasts one bar and transport works after navigation', async () => {
+    await check('count-in lasts one bar and playback stops cleanly on navigation', async () => {
       await field('Übe-Tempo').fill('240');
       await field('Einzähler in Takten').selectOption('1');
       await reset();
@@ -837,11 +840,10 @@ export async function checkRhythm(browser, check, errors) {
         .getByRole('navigation', { name: 'Hauptbereiche' })
         .getByRole('link', { name: 'MUSIKTHEORIE', exact: true })
         .click();
-      await page.locator('.utility-bar .metro-toggle').click();
-      await expect(page.locator('.utility-bar .metro-toggle')).toHaveAttribute(
-        'aria-label',
-        'Metronom starten',
-      );
+      await expect(page.locator('.utility-bar')).toHaveCount(0);
+      const afterNavigation = (await audioEvents(page)).length;
+      await page.waitForTimeout(200);
+      assert.equal((await audioEvents(page)).length, afterNavigation);
     });
     await check('gap-click omits a full bar and returns on time', async () => {
       await page.goto((process.env.BASS_QA_URL || 'http://127.0.0.1:4175') + '/tools/metronome');

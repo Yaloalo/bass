@@ -28,7 +28,7 @@ import {
 } from '../lib/piano';
 import type { DiatonicPianoChord, PianoChordMatch } from '../lib/piano';
 import { usePiano } from '../lib/use-piano';
-import { useLocal, useNoteLabel, useStore } from '../lib/store';
+import { useNoteLabel, useStore } from '../lib/store';
 import '../piano.css';
 
 const chordKey = (chord: DiatonicPianoChord) => `${chord.degree}-${chord.chord!.id}`;
@@ -36,12 +36,11 @@ const romans = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
 
 export function PianoPage() {
   usePageTitle('Interaktives Piano');
-  const { root: selectedRoot, setRoot } = useStore();
+  const { root: selectedRoot, setRoot, scaleId, setScaleId } = useStore();
   const label = useNoteLabel();
   const displayNote = (name: string) =>
     label.style === 'de' ? germanNoteName(name) : label.note(name);
-  const [savedScale, setScale] = useLocal<unknown>('piano-scale', 'major');
-  const scale = scales.find((item) => item.id === savedScale) ?? scales[0];
+  const scale = scales.find((item) => item.id === scaleId) ?? scales[0];
   const root = readableRoot(selectedRoot, scale.degreeLabels);
   const scaleNotes = useMemo(
     () => scale.degreeLabels.map((degree) => spellDegree(root, degree)),
@@ -182,7 +181,7 @@ export function PianoPage() {
               value={scale.id}
               onChange={(event) => {
                 setChordChoice('');
-                setScale(event.target.value);
+                setScaleId(event.target.value);
               }}
             >
               {scales.map((item) => (

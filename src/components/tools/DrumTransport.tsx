@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useStore } from '../../lib/store';
 import { useRhythm, useRhythmStatus } from '../../lib/rhythm-store';
+import { meterById } from '../../lib/rhythm';
 import type { RhythmMode } from '../../lib/rhythm';
 import { Icon } from '../UI';
 import { TempoInput } from './TempoInput';
@@ -50,7 +51,7 @@ function Position({ mode }: { mode: RhythmMode }) {
   const status = useRhythmStatus();
   const playing = status.running && status.mode === mode;
   const pulse = playing ? status.pulse : null;
-  const beats = mode === 'drums' ? 4 : preferences.metronome.beats;
+  const beats = mode === 'drums' ? meterById(pattern.meter).numerator : preferences.metronome.beats;
   const state = !playing
     ? status.paused && status.mode === mode
       ? 'Pausiert'
@@ -72,7 +73,9 @@ function Position({ mode }: { mode: RhythmMode }) {
         ))}
       </div>
       <span className="transport-bar" aria-hidden="true">
-        {pulse && !pulse.countIn ? `Takt ${(pulse.bar % pattern.bars) + 1}/${pattern.bars}` : '—'}
+        {pulse && !pulse.countIn
+          ? `Pattern ${(pulse.bar % pattern.bars) + 1}/${pattern.bars}${pulse.formBars ? ` · Form ${pulse.formBar + 1}/${pulse.formBars}` : ''}`
+          : '—'}
       </span>
       {/* Only the state changes here, so a screen reader is not flooded once per step. */}
       <span className="transport-state" role="status">
@@ -150,22 +153,34 @@ export function DrumTransport({ mode }: { mode: RhythmMode }) {
         </select>
       </label>
       {drums && (
-        <label className="tool-field swing-field">
-          <span>
-            Swing <output>{Math.round(pattern.swing * 100)}%</output>
-          </span>
-          <input
-            type="range"
-            aria-label="Swing"
-            min={50}
-            max={67}
-            disabled={pattern.subdivision === 3}
-            value={Math.round(pattern.swing * 100)}
-            onChange={(event) =>
-              setPattern({ ...pattern, swing: Math.min(2 / 3, Number(event.target.value) / 100) })
-            }
-          />
-        </label>
+        <>
+          <label className="tool-checkbox metric-click-toggle">
+            <input
+              type="checkbox"
+              checked={preferences.metricClick}
+              onChange={(event) =>
+                setPreferences({ ...preferences, metricClick: event.target.checked })
+              }
+            />
+            Metrik-Klick
+          </label>
+          <label className="tool-field swing-field">
+            <span>
+              Swing <output>{Math.round(pattern.swing * 100)}%</output>
+            </span>
+            <input
+              type="range"
+              aria-label="Swing"
+              min={50}
+              max={67}
+              disabled={pattern.subdivision === 3}
+              value={Math.round(pattern.swing * 100)}
+              onChange={(event) =>
+                setPattern({ ...pattern, swing: Math.min(2 / 3, Number(event.target.value) / 100) })
+              }
+            />
+          </label>
+        </>
       )}
       <label className="tool-field volume-field">
         <span>

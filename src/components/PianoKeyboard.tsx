@@ -17,6 +17,7 @@ export function PianoKeyboard({
   onEnd,
   onToggle,
   onTap,
+  showContext = true,
 }: {
   /** Lowest and highest MIDI note drawn; wide enough for whatever must be shown. */
   first?: number;
@@ -32,6 +33,8 @@ export function PianoKeyboard({
   onEnd: (key: string) => void;
   onToggle: (midi: number) => void;
   onTap: (midi: number) => void;
+  /** False for quizzes where highlighting the scale would reveal the answer. */
+  showContext?: boolean;
 }) {
   const keyboard = useRef<HTMLDivElement>(null);
   const keys = useMemo(() => pianoKeys(first, last), [first, last]);
@@ -53,7 +56,7 @@ export function PianoKeyboard({
           const plain = noteLabel(noteName(midi, true));
           const alias = plain === name ? '' : plain;
           const octave = Math.floor(midi / 12) - 1;
-          const inScale = scalePitchClasses.has(mod(midi));
+          const inScale = showContext && scalePitchClasses.has(mod(midi));
           const isSelected = selected.has(midi);
           const width = black ? 0.64 : 1;
           const left = whiteIndex - (black ? width / 2 : 0);
@@ -62,15 +65,15 @@ export function PianoKeyboard({
               key={midi}
               data-midi={midi}
               type="button"
-              className={`piano-key ${black ? 'is-black' : 'is-white'} ${inScale ? 'in-scale' : 'outside-scale'} ${mod(midi) === rootPitch ? 'is-root' : ''} ${isSelected ? 'is-selected' : ''} ${pressed.has(midi) ? 'is-playing' : ''}`}
+              className={`piano-key ${black ? 'is-black' : 'is-white'} ${showContext ? (inScale ? 'in-scale' : 'outside-scale') : 'is-neutral'} ${showContext && mod(midi) === rootPitch ? 'is-root' : ''} ${isSelected ? 'is-selected' : ''} ${pressed.has(midi) ? 'is-playing' : ''}`}
               style={{
                 left: `${(left / whiteCount) * 100}%`,
                 width: `${(width / whiteCount) * 100}%`,
               }}
               aria-label={`${name}${octave}`}
               aria-pressed={selecting ? isSelected : undefined}
-              aria-description={`${inScale ? 'Ton der gewählten Skala' : 'Außerhalb der gewählten Skala'}. ${selecting ? 'Spielen und Auswahl umschalten.' : 'Spielen.'}`}
-              title={`${name}${octave} · ${inScale ? 'Skalenton' : 'skalenfremd'}`}
+              aria-description={`${showContext ? (inScale ? 'Ton der gewählten Skala. ' : 'Außerhalb der gewählten Skala. ') : ''}${selecting ? 'Spielen und Auswahl umschalten.' : 'Spielen.'}`}
+              title={`${name}${octave}${showContext ? ` · ${inScale ? 'Skalenton' : 'skalenfremd'}` : ''}`}
               onPointerDown={(event) => {
                 if (event.button !== 0) return;
                 event.currentTarget.setPointerCapture(event.pointerId);
@@ -108,7 +111,7 @@ export function PianoKeyboard({
               onContextMenu={(event) => event.preventDefault()}
             >
               <span className="piano-key-scale" aria-hidden="true">
-                {inScale ? (mod(midi) === rootPitch ? '1' : '•') : ''}
+                {showContext && inScale ? (mod(midi) === rootPitch ? '1' : '•') : ''}
               </span>
               <span className="piano-key-name">
                 {name}

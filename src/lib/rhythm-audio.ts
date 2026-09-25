@@ -1,13 +1,22 @@
 import { audioContext } from './audio';
-import { harmonyAt, harmonyVoicing, harmonyVoicings } from './harmony-play';
+import { harmonyAtTick, harmonyVoicing, harmonyVoicings } from './harmony-play';
 import type { Harmony, HarmonyStep } from './harmony-play';
+import { dropoutActive } from './improvisation-trainer';
+import type { ImprovisationTrainer } from './improvisation-trainer';
 import {
+  PPQ,
+  barTicks,
   clickAt,
   instrumentSpec,
   instruments,
   isSilentBar,
+  meterById,
+  meterGroupStarts,
   recoverScheduleTime,
   stepDuration,
+  stepsPerBar,
+  stepsPerPulse,
+  stepTicks,
   stepVelocity,
 } from './rhythm';
 import type {
@@ -25,11 +34,22 @@ export interface RhythmConfig {
   preferences: RhythmPreferences;
   /** Chords to comp under the groove; absent or disabled means drums only. */
   harmony?: Harmony;
+  trainer?: ImprovisationTrainer;
 }
 export interface RhythmPulse {
+  /** Pattern step, retained for the sequencer playhead. */
   step: number;
+  /** Numerator pulse inside the current bar. */
   beat: number;
+  /** Step inside the current numerator pulse. */
+  substep: number;
+  /** Absolute musical position after count-in. */
+  tick: number;
   bar: number;
+  formBar: number;
+  formBars: number;
+  formCycle: number;
+  formTick: number;
   countIn: boolean;
   silent: boolean;
   /** Index into the harmony progression, or -1 when no chords are playing. */
@@ -371,12 +391,20 @@ export class Percussion {
     return silent;
   }
 
-  click(time: number, accent: boolean, subdivision = false) {
+  click(time: number, accent: boolean, subdivision = false, grouped = false) {
     const oscillator = this.ctx.createOscillator();
     const envelope = this.ctx.createGain();
     oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(accent ? 1200 : subdivision ? 650 : 850, time);
-    const silent = this.envelope(envelope.gain, subdivision ? 0.18 : 0.35, time, 0.035);
+    oscillator.frequency.setValueAtTime(
+      accent ? 1200 : grouped ? 1000 : subdivision ? 650 : 850,
+      time,
+    );
+    const silent = this.envelope(
+      envelope.gain,
+      accent ? 0.42 : grouped ? 0.32 : subdivision ? 0.18 : 0.26,
+      time,
+      0.035,
+    );
     oscillator.connect(envelope);
     envelope.connect(this.master);
     this.register(oscillator, [envelope], time, silent);
@@ -783,7 +811,8 @@ export class RhythmEngine {
     const drums = this.status.mode === 'drums';
     const structuralChange = drums
       ? before.pattern.subdivision !== config.pattern.subdivision ||
-        before.pattern.bars !== config.pattern.bars
+        before.pattern.bars !== config.pattern.bars ||
+        before.pattern.meter !== config.pattern.meter
       : before.preferences.metronome.beats !== config.preferences.metronome.beats ||
         before.preferences.metronome.subdivision !== config.preferences.metronome.subdivision;
     // Restart only for meter/grid changes. Editing chords never stops the drummer.
@@ -924,7 +953,10 @@ export class RhythmEngine {
       mode === 'drums'
         ? this.config.pattern.subdivision
         : this.config.preferences.metronome.subdivision;
-    const beats = mode === 'drums' ? 4 : this.config.preferences.metronome.beats;
+    const barSteps =
+      mode === 'drums'
+        ? stepsPerBar(this.config.pattern)
+        : this.config.preferences.metronome.beats * subdivision;
     const position = {
       mode,
       bar: upcoming
@@ -932,7 +964,7 @@ export class RhythmEngine {
           ? 0
           : upcoming.pulse.bar
         : Math.max(0, this.absoluteBar - this.countInBars),
-      step: upcoming ? upcoming.pulse.step % (beats * subdivision) : this.sequence,
+      step: upcoming ? upcoming.pulse.step % barSteps : this.sequence,
       pulse: this.status.pulse,
     };
     this.stop();
@@ -948,32 +980,75 @@ export class RhythmEngine {
    * Sounds the progression from the same look-ahead clock as the drums, so the pad can
    * never drift against the groove. Returns the chord index for the pulse, or -1.
    */
-  private comp(bar: number, step: number, subdivision: number, beats: number, bpm: number) {
+  private comp(
+    bar: number,
+    step: number,
+    subdivision: DrumPattern['subdivision'],
+    bpm: number,
+    stepSeconds: number,
+  ) {
     const harmony = this.config.harmony;
-    if (!harmony?.enabled || !harmony.steps.length) return -1;
-    const at = harmonyAt(harmony.steps, bar);
-    if (!at) return -1;
+    const meter = this.config.pattern.meter;
+    const absoluteTick = bar * barTicks(meter) + step * stepTicks(subdivision);
+    if (!harmony?.enabled || !harmony.steps.length)
+      return { index: -1, formTick: 0, formTicks: 0, formCycle: 1, formBar: 0 };
+    const at = harmonyAtTick(harmony.steps, absoluteTick, meter);
+    if (!at) return { index: -1, formTick: 0, formTicks: 0, formCycle: 1, formBar: 0 };
     const beatSeconds = 60 / bpm;
-    // Sustains start with the chord (or at the next beat when switched on mid-bar).
+    const trainer = this.config.trainer;
+    const audible = !trainer || !dropoutActive(trainer, at.cycle + 1);
+    const playPad = (position: typeof at, time: number) => {
+      if (!this.comping) return;
+      const cycleAudible = !trainer || !dropoutActive(trainer, position.cycle + 1);
+      this.comping.release(time);
+      if (!cycleAudible) return;
+      this.comping.play(
+        this.chordVoicings[position.index] ?? harmonyVoicing(position.step),
+        time,
+        beatSeconds * (position.remainingTicks / PPQ),
+        harmony.timbre,
+      );
+    };
+    // Sustains start with the chord (or immediately when switched on mid-phrase).
     const stabs = harmony.style === 'stabs';
     const offbeats = harmony.style === 'offbeats';
     const hit = stabs
-      ? step % (subdivision * 2) === 0
+      ? at.first || step % (subdivision * 2) === 0
       : offbeats
         ? step % subdivision === (subdivision === 3 ? 2 : subdivision / 2)
-        : (step === 0 && at.first) || (this.pendingPad && step % subdivision === 0);
-    if (this.comping && step === 0 && at.first) this.comping.release(this.next);
-    if (this.comping && hit) {
-      const remainingBeats = (at.step.bars - at.localBar) * beats - Math.floor(step / subdivision);
+        : at.first || this.pendingPad;
+    if (!stabs && !offbeats) {
+      if (hit) playPad(at, this.next);
+      // A tick-based boundary may fall between two triplet grid steps. Schedule it at its
+      // exact fraction of this audio interval rather than waiting for the next drum step.
+      const endTick = absoluteTick + stepTicks(subdivision);
+      let boundary = absoluteTick + at.remainingTicks;
+      while (boundary < endTick) {
+        const next = harmonyAtTick(harmony.steps, boundary, meter);
+        if (!next) break;
+        playPad(
+          next,
+          this.next + ((boundary - absoluteTick) / stepTicks(subdivision)) * stepSeconds,
+        );
+        boundary += next.remainingTicks;
+      }
+      this.pendingPad = false;
+    } else if (this.comping && hit && audible) {
       this.comping.play(
         this.chordVoicings[at.index] ?? harmonyVoicing(at.step),
         this.next,
-        stabs ? beatSeconds * 1.3 : offbeats ? beatSeconds * 0.4 : beatSeconds * remainingBeats,
+        stabs ? beatSeconds * 1.3 : beatSeconds * 0.4,
         harmony.timbre,
       );
       this.pendingPad = false;
     }
-    return at.index;
+    return {
+      index: at.index,
+      formTick: at.formTick,
+      formTicks: at.totalTicks,
+      formCycle: at.cycle + 1,
+      formBar: Math.floor(at.formTick / barTicks(meter)),
+    };
   }
 
   /**
@@ -1001,8 +1076,11 @@ export class RhythmEngine {
   nextDownbeat(): number | undefined {
     const ctx = this.ctx;
     if (!ctx || !this.status.running || !this.barStart) return undefined;
-    const beats = this.status.mode === 'drums' ? 4 : this.config.preferences.metronome.beats;
-    const bar = (60 / (this.ramped ?? this.config.bpm)) * beats;
+    const barQuarterNotes =
+      this.status.mode === 'drums'
+        ? barTicks(this.config.pattern.meter) / PPQ
+        : this.config.preferences.metronome.beats;
+    const bar = (60 / (this.ramped ?? this.config.bpm)) * barQuarterNotes;
     let target = this.barStart;
     // Far enough ahead that the notes can still be scheduled before it arrives.
     while (target < ctx.currentTime + 0.06) target += bar;
@@ -1022,7 +1100,8 @@ export class RhythmEngine {
     const bpm = this.ramped ?? this.config.bpm;
     const metro = preferences.metronome;
     const drums = this.status.mode === 'drums';
-    const beats = drums ? 4 : metro.beats;
+    const meter = meterById(this.config.pattern.meter);
+    const beats = drums ? meter.numerator : metro.beats;
     // Retain at most the latest elapsed pulse when animation frames are throttled.
     while (this.queue.length > 1 && this.queue[1].time <= ctx.currentTime) this.queue.shift();
     const recovered = recoverScheduleTime(this.next, ctx.currentTime);
@@ -1039,19 +1118,35 @@ export class RhythmEngine {
       const bar = countIn ? absoluteBar : absoluteBar - this.countInBars;
       const position = drumPosition(this.config, countIn ? 0 : bar);
       const subdivision = drums ? position.pattern.subdivision : metro.subdivision;
-      const stepsPerBar = beats * subdivision;
+      const barSteps = drums ? stepsPerBar(position.pattern) : beats * subdivision;
+      const pulseSteps = drums ? stepsPerPulse(position.pattern) : subdivision;
       const step = this.sequence;
-      const beat = Math.floor(step / subdivision);
+      const beat = Math.floor(step / pulseSteps);
+      const substep = step % pulseSteps;
+      const tick = countIn
+        ? step * stepTicks(subdivision)
+        : bar * barTicks(position.pattern.meter) + step * stepTicks(subdivision);
       let swing = 0.5;
       if (countIn) {
-        if (step % subdivision === 0) synth.click(this.next, beat === 0);
+        if (substep === 0) {
+          const grouped = drums && beat !== 0 && meterGroupStarts(meter).includes(beat);
+          synth.click(this.next, beat === 0, false, grouped);
+        }
       } else if (drums) {
         const pattern = position.pattern;
         swing = pattern.swing;
-        const chordIndex = this.comp(bar, step, subdivision, beats, bpm);
+        const duration = stepDuration(bpm, subdivision, step, swing);
+        const form = this.comp(bar, step, pattern.subdivision, bpm, duration);
+        if (preferences.metricClick && substep === 0)
+          synth.click(
+            this.next,
+            beat === 0,
+            false,
+            beat !== 0 && meterGroupStarts(meter).includes(beat),
+          );
         const mix = this.config.pattern;
         const solo = instruments.some(({ id }) => mix.tracks[id].solo);
-        const patternStep = position.localBar * stepsPerBar + step;
+        const patternStep = position.localBar * barSteps + step;
         // Sustaining voices are scheduled first so a choking voice at the same step cuts them.
         for (const spec of [...instruments].sort(
           (a, b) => Number(!!b.sustain) - Number(!!a.sustain),
@@ -1063,11 +1158,24 @@ export class RhythmEngine {
         }
         this.queue.push({
           time: this.next,
-          pulse: { step: patternStep, beat, bar, countIn: false, silent: false, chord: chordIndex },
+          pulse: {
+            step: patternStep,
+            beat,
+            substep,
+            tick,
+            bar,
+            formBar: form.formBar,
+            formBars: form.formTicks ? Math.ceil(form.formTicks / barTicks(pattern.meter)) : 0,
+            formCycle: form.formCycle,
+            formTick: form.formTick,
+            countIn: false,
+            silent: false,
+            chord: form.index,
+          },
         });
-        this.next += stepDuration(bpm, subdivision, step, swing);
+        this.next += duration;
         this.sequence++;
-        if (this.sequence >= stepsPerBar) {
+        if (this.sequence >= barSteps) {
           this.sequence = 0;
           this.absoluteBar++;
           this.advanceRamp(bpm);
@@ -1081,7 +1189,13 @@ export class RhythmEngine {
         pulse: {
           step,
           beat,
+          substep,
+          tick,
           bar,
+          formBar: 0,
+          formBars: 0,
+          formCycle: 1,
+          formTick: 0,
           countIn,
           silent: !drums && !countIn && isSilentBar(bar, metro),
           chord: -1,
@@ -1089,7 +1203,7 @@ export class RhythmEngine {
       });
       this.next += stepDuration(bpm, subdivision, step, 0.5);
       this.sequence++;
-      if (this.sequence >= stepsPerBar) {
+      if (this.sequence >= barSteps) {
         this.sequence = 0;
         this.absoluteBar++;
         if (!countIn) this.advanceRamp(bpm);

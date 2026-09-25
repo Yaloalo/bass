@@ -13,12 +13,15 @@ import type { EarMode } from '../src/lib/ear';
 import {
   buildProgression,
   harmonyAt,
+  harmonyAtTick,
   harmonyBars,
   harmonyNotes,
+  harmonyTimeline,
   harmonyVoicing,
   harmonyVoicings,
   normalizeHarmony,
   progressions,
+  retimeHarmonyForMeter,
   transposeHarmony,
 } from '../src/lib/harmony-play';
 import { circle, findPosition, keyDetail, signatureLabel, signatureNotes } from '../src/lib/circle';
@@ -137,6 +140,46 @@ test('the progression clock repeats and marks where each chord starts', () => {
     [0, 1],
   ]);
   assert.equal(harmonyAt([], 0), undefined);
+});
+
+test('tick-based harmony supports two chord changes inside a bar and loops independently', () => {
+  const steps = [
+    { root: 'D', chordId: 'minor-7', bars: 0.5, durationTicks: 192 },
+    { root: 'G', chordId: 'dominant-7', bars: 0.5, durationTicks: 192 },
+    { root: 'C', chordId: 'major-7', bars: 1, durationTicks: 384 },
+  ];
+  assert.equal(harmonyAtTick(steps, 0)?.index, 0);
+  assert.equal(harmonyAtTick(steps, 191)?.index, 0);
+  assert.equal(harmonyAtTick(steps, 192)?.index, 1);
+  assert.equal(harmonyAtTick(steps, 384)?.index, 2);
+  assert.equal(harmonyAtTick(steps, 768)?.cycle, 1);
+  const timeline = harmonyTimeline(steps);
+  assert.equal(timeline.length, 2);
+  assert.deepEqual(
+    timeline[0].segments.map((segment) => [segment.index, segment.start, segment.width]),
+    [
+      [0, 0, 0.5],
+      [1, 0.5, 0.5],
+    ],
+  );
+});
+
+test('meter changes retime whole bars but preserve absolute note durations', () => {
+  const changed = retimeHarmonyForMeter(
+    [
+      { root: 'D', chordId: 'minor-7', bars: 1, durationTicks: 384 },
+      { root: 'G', chordId: 'dominant-7', bars: 0.5, durationTicks: 192 },
+    ],
+    '4/4',
+    '3/4',
+  );
+  assert.deepEqual(
+    changed.map((step) => [step.durationTicks, step.bars]),
+    [
+      [288, 1],
+      [192, 2 / 3],
+    ],
+  );
 });
 
 test('comping retains defining tones and connects ii–V–I in close positions', () => {

@@ -473,10 +473,54 @@ export interface DrumTrack {
 export type Subdivision = 2 | 3 | 4;
 export type Bars = 1 | 2 | 4;
 
+/** Musical time is stored independently from tempo. One quarter note equals 96 ticks. */
+export const PPQ = 96;
+export type MeterId = '2/4' | '3/4' | '4/4' | '5/4' | '6/8' | '7/8';
+export interface Meter {
+  id: MeterId;
+  numerator: number;
+  denominator: 4 | 8;
+  /** Numerator pulses grouped as musicians normally feel this meter. */
+  groups: number[];
+}
+export const meters: readonly Meter[] = [
+  { id: '2/4', numerator: 2, denominator: 4, groups: [2] },
+  { id: '3/4', numerator: 3, denominator: 4, groups: [3] },
+  { id: '4/4', numerator: 4, denominator: 4, groups: [2, 2] },
+  { id: '5/4', numerator: 5, denominator: 4, groups: [3, 2] },
+  { id: '6/8', numerator: 6, denominator: 8, groups: [3, 3] },
+  { id: '7/8', numerator: 7, denominator: 8, groups: [2, 2, 3] },
+] as const;
+export const meterById = (id: MeterId): Meter =>
+  meters.find((meter) => meter.id === id) ?? meters[2];
+export const pulseTicks = (meter: Meter | MeterId): number => {
+  const value = typeof meter === 'string' ? meterById(meter) : meter;
+  return (PPQ * 4) / value.denominator;
+};
+export const barTicks = (meter: Meter | MeterId): number => {
+  const value = typeof meter === 'string' ? meterById(meter) : meter;
+  return value.numerator * pulseTicks(value);
+};
+export const stepTicks = (subdivision: number): number => PPQ / subdivision;
+export const stepsPerBar = (pattern: Pick<DrumPattern, 'meter' | 'subdivision'>): number =>
+  barTicks(pattern.meter) / stepTicks(pattern.subdivision);
+export const stepsPerPulse = (pattern: Pick<DrumPattern, 'meter' | 'subdivision'>): number =>
+  pulseTicks(pattern.meter) / stepTicks(pattern.subdivision);
+export const meterGroupStarts = (meter: Meter | MeterId): number[] => {
+  const value = typeof meter === 'string' ? meterById(meter) : meter;
+  let cursor = 0;
+  return value.groups.map((size) => {
+    const start = cursor;
+    cursor += size;
+    return start;
+  });
+};
+
 export interface DrumPattern {
   name: string;
   bars: Bars;
   subdivision: Subdivision;
+  meter: MeterId;
   swing: number;
   /** Which instruments the grid shows. Hidden tracks still play; see visibleTracks(). */
   visible: Instrument[];
@@ -515,13 +559,16 @@ export interface TempoRamp {
 export interface RhythmPreferences {
   volume: number;
   countIn: number;
+  /** An independent metric guide layered under the drum pattern. */
+  metricClick: boolean;
   ramp: TempoRamp;
   metronome: MetronomeSettings;
 }
 
 export const defaultPreferences: RhythmPreferences = {
   volume: 0.65,
-  countIn: 0,
+  countIn: 1,
+  metricClick: false,
   ramp: { enabled: false, step: 4, every: 4, target: 120 },
   metronome: {
     beats: 4,
@@ -1019,18 +1066,21 @@ export function emptyPattern(
   subdivision: Subdivision = 4,
   bars: Bars = 1,
   kit: KitId = 'standard',
+  meter: MeterId = '4/4',
 ): DrumPattern {
+  const shape = { meter, subdivision };
   return {
     name,
     subdivision,
     bars,
+    meter,
     swing: 0.5,
     visible: [...kitById(kit).tracks],
     tracks: Object.fromEntries(
       instruments.map((spec) => [
         spec.id,
         {
-          steps: Array<Step>(4 * subdivision * bars).fill(0),
+          steps: Array<Step>(stepsPerBar(shape) * bars).fill(0),
           volume: spec.level,
           mute: false,
           solo: false,
@@ -1072,6 +1122,7 @@ function normalizeSound(value: unknown, id: Instrument, legacyStep: boolean): Dr
 const isSubdivision = (value: unknown): value is Subdivision =>
   value === 2 || value === 3 || value === 4;
 const isBars = (value: unknown): value is Bars => value === 1 || value === 2 || value === 4;
+const isMeter = (value: unknown): value is MeterId => meters.some((meter) => meter.id === value);
 const isInstrument = (value: unknown): value is Instrument =>
   typeof value === 'string' && byId.has(value as Instrument);
 
@@ -1087,6 +1138,8 @@ export function normalizePattern(value: unknown, legacy = false): DrumPattern {
     name,
     isSubdivision(data.subdivision) ? data.subdivision : 4,
     isBars(data.bars) ? data.bars : 1,
+    'standard',
+    isMeter(data.meter) ? data.meter : '4/4',
   );
   result.swing = clamp(data.swing, 0.5, 2 / 3, 0.5);
   if (Array.isArray(data.visible)) {
@@ -1134,7 +1187,8 @@ export function normalizePreferences(value: unknown): RhythmPreferences {
   const metro = object(data.metronome);
   return {
     volume: clamp(data.volume, 0, 1, 0.65),
-    countIn: Math.round(clamp(data.countIn, 0, 2, 0)),
+    countIn: Math.round(clamp(data.countIn, 0, 2, 1)),
+    metricClick: data.metricClick === true,
     ramp: (() => {
       const ramp = object(data.ramp);
       return {
@@ -1164,21 +1218,28 @@ export function resizePattern(
   pattern: DrumPattern,
   subdivision: Subdivision,
   bars: Bars,
+  meter: MeterId = pattern.meter,
 ): DrumPattern {
-  const next = emptyPattern(pattern.name, subdivision, bars);
+  // Quarter-note triplets do not divide an odd number of eighth-note pulses cleanly.
+  const safeSubdivision = meterById(meter).denominator === 8 && subdivision === 3 ? 4 : subdivision;
+  const next = emptyPattern(pattern.name, safeSubdivision, bars, 'standard', meter);
   next.swing = pattern.swing;
   next.visible = [...pattern.visible];
-  const oldStepsPerBar = 4 * pattern.subdivision;
+  const oldStepsPerBar = stepsPerBar(pattern);
+  const newStepsPerBar = stepsPerBar(next);
+  const oldTick = stepTicks(pattern.subdivision);
+  const newTick = stepTicks(next.subdivision);
   for (const { id } of instruments) {
     const source = pattern.tracks[id].steps;
     next.tracks[id] = {
       ...pattern.tracks[id],
       steps: next.tracks[id].steps.map((_, index) => {
-        const bar = Math.floor(index / (4 * subdivision));
-        const beatPosition = ((index % (4 * subdivision)) / subdivision) * pattern.subdivision;
-        if (!Number.isInteger(beatPosition)) return 0;
+        const bar = Math.floor(index / newStepsPerBar);
+        const localTick = (index % newStepsPerBar) * newTick;
+        const oldStep = localTick / oldTick;
+        if (!Number.isInteger(oldStep) || oldStep >= oldStepsPerBar) return 0;
         // Shorter patterns repeat to fill a longer one, so growing never blanks the new bars.
-        return source[((bar % pattern.bars) * oldStepsPerBar + beatPosition) % source.length] ?? 0;
+        return source[((bar % pattern.bars) * oldStepsPerBar + oldStep) % source.length] ?? 0;
       }),
     };
   }
@@ -1212,10 +1273,17 @@ export function clickAt(
   return true;
 }
 
-export function stepLabel(index: number, subdivision: number): string {
+export function stepLabel(index: number, subdivision: number, meter: MeterId = '4/4'): string {
   const syllables =
     subdivision === 4 ? ['', 'e', '&', 'a'] : subdivision === 3 ? ['', 'trip', 'let'] : ['', '&'];
-  return `${(Math.floor(index / subdivision) % 4) + 1}${syllables[index % subdivision] ?? ''}`;
+  const pulseSteps = stepsPerPulse({ meter, subdivision: subdivision as Subdivision });
+  const pulse = Math.floor(
+    (index % stepsPerBar({ meter, subdivision: subdivision as Subdivision })) / pulseSteps,
+  );
+  const within = index % pulseSteps;
+  const pulseSyllables =
+    pulseSteps === 4 ? ['', 'e', '&', 'a'] : pulseSteps === 3 ? ['', 'tri', 'let'] : ['', '&'];
+  return `${pulse + 1}${pulseSyllables[within] ?? syllables[index % subdivision] ?? ''}`;
 }
 
 /** One place builds the pad's accessible name, so the grid and its tests can never drift. */
@@ -1224,9 +1292,11 @@ export function stepAriaLabel(
   index: number,
   subdivision: number,
   value: Step,
+  meter: MeterId = '4/4',
 ): string {
-  const bar = Math.floor(index / (4 * subdivision)) + 1;
-  return `${name}, Takt ${bar}, ${stepLabel(index, subdivision)}: ${stepWords[value]}`;
+  const pattern = { meter, subdivision: subdivision as Subdivision };
+  const bar = Math.floor(index / stepsPerBar(pattern)) + 1;
+  return `${name}, Takt ${bar}, ${stepLabel(index, subdivision, meter)}: ${stepWords[value]}`;
 }
 
 export function recoverScheduleTime(next: number, now: number): number {
@@ -1251,25 +1321,40 @@ export function generateGroove(
   random = Math.random,
 ): DrumPattern {
   const complexity = Math.round(clamp(level, 1, 4, 2));
-  const fresh = emptyPattern(base.name, 4, base.bars);
+  const fresh = emptyPattern(base.name, 4, base.bars, 'standard', base.meter);
   const hit = (id: Instrument, index: number, value: Step) => {
     fresh.tracks[id].steps[index] = value;
   };
+  const perBar = stepsPerBar(fresh);
+  const perPulse = stepsPerPulse(fresh);
+  const meter = meterById(base.meter);
+  const groupStarts = meterGroupStarts(meter);
   for (let bar = 0; bar < base.bars; bar++) {
-    const offset = bar * 16;
-    for (const step of [0, 8]) hit('kick', offset + step, 3);
-    for (const step of [4, 12]) hit('snare', offset + step, 3);
+    const offset = bar * perBar;
+    if (meter.id === '4/4') {
+      hit('kick', offset, 3);
+      hit('kick', offset + 2 * perPulse, 2);
+      hit('snare', offset + perPulse, 3);
+      hit('snare', offset + 3 * perPulse, 3);
+    } else {
+      for (const pulse of groupStarts) hit('kick', offset + pulse * perPulse, 3);
+      const backbeats = groupStarts.length > 1 ? groupStarts.slice(1) : [meter.numerator - 1];
+      for (const pulse of backbeats) hit('snare', offset + pulse * perPulse, 3);
+    }
     if (complexity >= 2)
-      for (let step = 0; step < 16; step += 2) hit('closedHat', offset + step, step % 4 ? 2 : 3);
+      for (let step = 0; step < perBar; step += Math.max(1, 2))
+        hit('closedHat', offset + step, step % perPulse ? 2 : 3);
     if (complexity >= 3) {
-      hit('kick', offset + [3, 6, 10][Math.min(2, Math.floor(random() * 3))], 2);
-      hit('kick', offset + 8, random() < 0.5 ? 0 : 3);
-      hit('closedHat', offset + 14, 0);
-      hit('openHat', offset + 14, 2);
+      const choices = Array.from({ length: Math.max(1, perBar - 1) }, (_, index) => index + 1);
+      hit('kick', offset + choices[Math.floor(random() * choices.length)], 2);
+      const lastEighth = offset + Math.max(0, perBar - 2);
+      hit('closedHat', lastEighth, 0);
+      hit('openHat', lastEighth, 2);
     }
     if (complexity >= 4) {
-      hit('snare', offset + (random() < 0.5 ? 7 : 11), 1);
-      for (const step of [1, 5, 9, 13]) if (random() < 0.45) hit('closedHat', offset + step, 1);
+      hit('snare', offset + Math.min(perBar - 1, Math.max(1, Math.floor(perBar * 0.7))), 1);
+      for (let step = 1; step < perBar; step += perPulse)
+        if (random() < 0.45) hit('closedHat', offset + step, 1);
     }
   }
   return {
@@ -1284,7 +1369,7 @@ export function generateGroove(
 }
 
 export function clearSteps(pattern: DrumPattern): DrumPattern {
-  const blank = emptyPattern('', pattern.subdivision, pattern.bars);
+  const blank = emptyPattern('', pattern.subdivision, pattern.bars, 'standard', pattern.meter);
   return {
     ...pattern,
     tracks: Object.fromEntries(

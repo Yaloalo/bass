@@ -9,7 +9,7 @@ import {
 } from 'react';
 import type { ReactNode } from 'react';
 import { useStore } from './store';
-import { emptyHarmony, normalizeHarmony } from './harmony-play';
+import { emptyHarmony, normalizeHarmony, retimeHarmonyForMeter } from './harmony-play';
 import type { Harmony, HarmonyStep } from './harmony-play';
 import { RhythmEngine, stoppedRhythm } from './rhythm-audio';
 import type { RhythmStatus } from './rhythm-audio';
@@ -29,6 +29,11 @@ import type {
   SavedPattern,
 } from './rhythm';
 import { drumPresets, presetById } from './drum-presets';
+import {
+  defaultImprovisationTrainer,
+  normalizeImprovisationTrainer,
+} from './improvisation-trainer';
+import type { ImprovisationTrainer } from './improvisation-trainer';
 
 /**
  * Session-only, like everything else here: patterns, chords and preferences live in
@@ -62,6 +67,8 @@ export interface RhythmStore {
   removePattern: (id: string) => void;
   harmony: Harmony;
   setHarmony: (harmony: Harmony) => void;
+  trainer: ImprovisationTrainer;
+  setTrainer: (trainer: ImprovisationTrainer) => void;
   /**
    * An exercise's groove, kept apart from the pattern you build in the drum machine.
    * Playing along with an exercise never touches your own working pattern, and editing
@@ -117,6 +124,12 @@ export function RhythmProvider({ children }: { children: ReactNode }) {
     emptyHarmony,
     normalizeHarmony,
   );
+  const [trainer, setTrainer] = useValidatedLocal<ImprovisationTrainer>(
+    'rhythm:trainer:v1',
+    'rhythm:trainer:v1',
+    defaultImprovisationTrainer,
+    normalizeImprovisationTrainer,
+  );
   const [exerciseGrooves, setExerciseGrooves] = useState<Record<string, DrumPattern>>({});
   const [editingExercise, setEditingExercise] = useState<string | null>(null);
   const [override, setOverride] = useState<DrumPattern | null>(null);
@@ -131,6 +144,18 @@ export function RhythmProvider({ children }: { children: ReactNode }) {
   // exercise's groove — then it shows that, and your own is left untouched.
   const edited = editingExercise ? exerciseGrooves[editingExercise] : undefined;
   const shownPattern = edited ?? pattern;
+  const previousMeter = useRef(shownPattern.meter);
+  useEffect(() => {
+    const from = previousMeter.current;
+    const to = shownPattern.meter;
+    if (from !== to) {
+      setHarmony((current) => ({
+        ...current,
+        steps: retimeHarmonyForMeter(current.steps, from, to),
+      }));
+      previousMeter.current = to;
+    }
+  }, [shownPattern.meter, setHarmony]);
   const setShownPattern = useCallback(
     (next: DrumPattern) =>
       editingExercise
@@ -141,8 +166,8 @@ export function RhythmProvider({ children }: { children: ReactNode }) {
   // What the transport actually plays: an exercise's groove while one is chosen,
   // otherwise whatever the sequencer is showing.
   const sounding = override ?? shownPattern;
-  const config = useRef({ bpm, pattern: sounding, preferences, harmony });
-  config.current = { bpm, pattern: sounding, preferences, harmony };
+  const config = useRef({ bpm, pattern: sounding, preferences, harmony, trainer });
+  config.current = { bpm, pattern: sounding, preferences, harmony, trainer };
 
   useEffect(() => {
     engine.current = new RhythmEngine(config.current, setStatus, (next) => setBpm(next));
@@ -153,8 +178,8 @@ export function RhythmProvider({ children }: { children: ReactNode }) {
     };
   }, []);
   useEffect(
-    () => engine.current?.update({ bpm, pattern: sounding, preferences, harmony }),
-    [bpm, sounding, preferences, harmony],
+    () => engine.current?.update({ bpm, pattern: sounding, preferences, harmony, trainer }),
+    [bpm, sounding, preferences, harmony, trainer],
   );
 
   const dirty = useMemo(() => {
@@ -280,6 +305,8 @@ export function RhythmProvider({ children }: { children: ReactNode }) {
       removePattern,
       harmony,
       setHarmony,
+      trainer,
+      setTrainer,
       exerciseGrooves,
       editingExercise,
       beginGrooveEdit,
@@ -312,6 +339,8 @@ export function RhythmProvider({ children }: { children: ReactNode }) {
       removePattern,
       harmony,
       setHarmony,
+      trainer,
+      setTrainer,
       exerciseGrooves,
       editingExercise,
       beginGrooveEdit,

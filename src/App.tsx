@@ -22,6 +22,7 @@ import { ReferenceIndex, ReferencePage } from './pages/Reference';
 import { PageHeading } from './components/UI';
 import { ToolsPage } from './pages/Tools';
 import { Drums } from './pages/Drums';
+import { TheoryMemory } from './pages/TheoryMemory';
 function ScrollReset() {
   const { pathname, hash } = useLocation();
   useEffect(() => {
@@ -42,7 +43,7 @@ function Layout() {
     // the margin only invites you to leave the session you just started.
     /^\/programs\/.+/.test(pathname) ||
     pathname === '/grundlagen' ||
-    ['/piano', '/musiktheorie', '/bass'].includes(pathname);
+    ['/piano', '/auswendig-lernen', '/musiktheorie', '/bass'].includes(pathname);
   return (
     <>
       <Navigation />
@@ -57,6 +58,7 @@ function Layout() {
             <Route path="/bass" element={<Area id="bass" />} />
             <Route path="/tools" element={<Navigate to="/drums" replace />} />
             <Route path="/piano" element={<PianoPage />} />
+            <Route path="/auswendig-lernen" element={<TheoryMemory />} />
             <Route path="/gehoer" element={<EarTraining />} />
             <Route path="/quintenzirkel" element={<CircleOfFifths />} />
             <Route path="/grundlagen" element={<Fundamentals />} />

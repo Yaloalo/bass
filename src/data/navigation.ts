@@ -24,6 +24,13 @@ export const areas = [
         description: 'Tonleitern sehen, Töne spielen und Akkorde erkennen.',
       },
       {
+        title: 'Auswendig lernen',
+        path: '/auswendig-lernen',
+        group: 'Üben',
+        icon: 'check',
+        description: 'Tonleitern und Akkorde Ton für Ton selbst zusammensetzen.',
+      },
+      {
         title: 'Gehörbildung',
         path: '/gehoer',
         group: 'Entdecken',
@@ -116,7 +123,7 @@ export type AreaId = (typeof areas)[number]['id'];
 
 export function areaForPath(path: string): AreaId | undefined {
   const segment = path.split('/')[1];
-  if (['drums', 'tools'].includes(segment)) return 'drums';
+  if (segment === 'drums') return 'drums';
   if (
     [
       'bass',
@@ -133,6 +140,7 @@ export function areaForPath(path: string): AreaId | undefined {
     [
       'musiktheorie',
       'piano',
+      'auswendig-lernen',
       'gehoer',
       'quintenzirkel',
       'grundlagen',

@@ -123,19 +123,19 @@ function SoundBanks() {
 export function TrackInspector() {
   return (
     <aside className="drum-inspector" aria-label="Klang und Mischung">
-      <details className="inspector-section" open>
+      <details className="inspector-section">
         <summary>Mischung</summary>
         <div className="inspector-body">
           <Mixer />
         </div>
       </details>
-      <details className="inspector-section" open>
+      <details className="inspector-section">
         <summary>Spuren einblenden</summary>
         <div className="inspector-body">
           <TrackPicker />
         </div>
       </details>
-      <details className="inspector-section" open>
+      <details className="inspector-section">
         <summary>Klangbank</summary>
         <div className="inspector-body">
           <SoundBanks />

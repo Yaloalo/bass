@@ -16,11 +16,11 @@ export async function checkPiano(browser, check, errors) {
   };
   try {
     await check(
-      'three main areas preserve existing tools and link to the integrated piano',
+      'the main areas and metronome slot preserve existing tools and link to the piano',
       async () => {
         await page.goto((process.env.BASS_QA_URL || 'http://127.0.0.1:4175') + '/musiktheorie');
         const nav = page.getByRole('navigation', { name: 'Hauptbereiche' });
-        for (const name of ['MUSIKTHEORIE', 'BASS', 'DRUM-MASCHINE'])
+        for (const name of ['MUSIKTHEORIE', 'BASS', 'DRUM-MASCHINE', 'METRONOM'])
           await expect(nav.getByRole('link', { name, exact: true })).toBeVisible();
         await page.locator('main a[href="/piano"]').click();
         await expect(page.locator('h1')).toHaveText('Interaktives Piano');
@@ -167,32 +167,29 @@ export async function checkPiano(browser, check, errors) {
       );
       await expect(page.getByRole('alert')).toHaveCount(0);
     });
-    await check(
-      'piano and three-area navigation remain usable on phones in both themes',
-      async () => {
-        await page.setViewportSize({ width: 390, height: 844 });
-        for (const theme of ['light', 'dark']) {
-          if (theme === 'dark')
-            await page.getByRole('button', { name: 'Dunkelmodus aktivieren' }).click();
-          assert.equal(
-            await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
-            false,
-          );
-          for (const name of ['MUSIKTHEORIE', 'BASS', 'DRUM-MASCHINE'])
-            await expect(
-              page
-                .getByRole('navigation', { name: 'Hauptbereiche' })
-                .getByRole('link', { name, exact: true }),
-            ).toBeVisible();
-          await page.getByRole('button', { name: 'Auswählen + spielen', exact: true }).click();
-          await key(72).scrollIntoViewIfNeeded();
-          await key(72).click({ position: { x: 10, y: 180 } });
-          await expect(key(72)).toHaveAttribute('aria-pressed', 'true');
-          await page.getByRole('button', { name: 'Auswahl leeren', exact: true }).click();
-          await page.screenshot({ path: `/tmp/bass-qa/piano-${theme}-390.png`, fullPage: true });
-        }
-      },
-    );
+    await check('piano and main navigation remain usable on phones in both themes', async () => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      for (const theme of ['light', 'dark']) {
+        if (theme === 'dark')
+          await page.getByRole('button', { name: 'Dunkelmodus aktivieren' }).click();
+        assert.equal(
+          await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
+          false,
+        );
+        for (const name of ['MUSIKTHEORIE', 'BASS', 'DRUM-MASCHINE', 'METRONOM'])
+          await expect(
+            page
+              .getByRole('navigation', { name: 'Hauptbereiche' })
+              .getByRole('link', { name, exact: true }),
+          ).toBeVisible();
+        await page.getByRole('button', { name: 'Auswählen + spielen', exact: true }).click();
+        await key(72).scrollIntoViewIfNeeded();
+        await key(72).click({ position: { x: 10, y: 180 } });
+        await expect(key(72)).toHaveAttribute('aria-pressed', 'true');
+        await page.getByRole('button', { name: 'Auswahl leeren', exact: true }).click();
+        await page.screenshot({ path: `/tmp/bass-qa/piano-${theme}-390.png`, fullPage: true });
+      }
+    });
   } finally {
     await context.close();
   }

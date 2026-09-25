@@ -40,12 +40,11 @@ import {
 import { Score } from '../components/Score';
 import { Playback } from '../components/Playback';
 export function FretboardPage() {
-  const { root: selectedRoot } = useStore();
+  const { root: selectedRoot, scaleId, setScaleId } = useStore();
   usePageTitle('Interaktives Griffbrett');
   const [mode, setMode] = useState('Notes'),
     [rangeName, setRangeName] = useState('0–24'),
     [view, setView] = useState('All positions'),
-    [scaleId, setScaleId] = useState('major'),
     [arpId, setArpId] = useState('major'),
     [noteFilter, setNoteFilter] = useState('All notes'),
     [selectedNote, setSelectedNote] = useState('C'),

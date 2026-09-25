@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { scales, programs, exercises, exercisePath, theoryPages, search } from '../data/catalog';
-import { Icon, RootSelector } from './UI';
-import { Metronome } from './Metronome';
+import { Icon, RootSelector, ScaleSelector } from './UI';
 import { ThemeToggle } from './ThemeToggle';
 import { areas, areaForPath, areaPath } from '../data/navigation';
 import type { AreaId } from '../data/navigation';
 import { textDe } from '../lib/i18n';
 import { chords } from '../data/chords';
 import { chordFamilies } from '../lib/chord-types';
+import { useRhythm } from '../lib/rhythm-store';
 export const chapters = areas.map((area) => area.title);
 interface MenuItem {
   title: string;
@@ -163,10 +163,14 @@ export function Navigation() {
   const [menu, setMenu] = useState(''),
     [searchOpen, setSearchOpen] = useState(false);
   const { pathname } = useLocation();
+  const { stop } = useRhythm();
   const header = useRef<HTMLElement>(null);
+  const previousPath = useRef(pathname);
   useEffect(() => {
     setMenu('');
-  }, [pathname]);
+    if (previousPath.current !== pathname) stop();
+    previousPath.current = pathname;
+  }, [pathname, stop]);
   useEffect(() => {
     const keyboard = (e: KeyboardEvent) => {
       const typing =
@@ -222,6 +226,7 @@ export function Navigation() {
             </button>
             <ThemeToggle />
             <RootSelector />
+            <ScaleSelector />
           </div>
         </div>
         <nav className="top-nav" aria-label="Hauptbereiche">
@@ -247,6 +252,14 @@ export function Navigation() {
               </div>
             );
           })}
+          <div className={`nav-chapter ${pathname === '/tools/metronome' ? 'active' : ''}`}>
+            <NavLink
+              to="/tools/metronome"
+              aria-current={pathname === '/tools/metronome' ? 'page' : undefined}
+            >
+              METRONOM
+            </NavLink>
+          </div>
           <span className="nav-edition">DEINE BASS WORKSTATION</span>
         </nav>
         {menu && (
@@ -287,16 +300,6 @@ export function Navigation() {
           </div>
         )}
       </header>
-      <footer className="utility-bar">
-        <div className="utility-note">
-          <span className="status-dot" />
-          DEINE PERSÖNLICHE BASS WORKSTATION
-        </div>
-        <Metronome />
-        <span className="utility-tip">
-          <kbd>/</kbd> zum Suchen
-        </span>
-      </footer>
       {searchOpen && <GlobalSearch onClose={() => setSearchOpen(false)} />}
     </>
   );

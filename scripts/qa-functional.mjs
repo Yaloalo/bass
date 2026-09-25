@@ -190,12 +190,18 @@ try {
     },
   );
   await check('metronome starts and stops, tempo direct entry', async () => {
-    await page.getByLabel('Tempo in BPM').fill('110');
-    await page.getByRole('button', { name: 'Metronom starten' }).click();
-    await expect(page.getByRole('button', { name: 'Metronom stoppen' })).toBeVisible();
-    await page.getByRole('button', { name: 'Metronom stoppen' }).click();
+    await page
+      .getByRole('navigation', { name: 'Hauptbereiche' })
+      .getByRole('link', { name: 'METRONOM', exact: true })
+      .click();
+    await expect(page.locator('h1')).toHaveText('Metronom');
+    await page.getByLabel('Übe-Tempo').fill('110');
+    await page.getByRole('button', { name: 'Klick starten' }).click();
+    await expect(page.getByRole('button', { name: 'Stopp', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Stopp', exact: true }).click();
     await page.getByRole('button', { name: 'Tempo um 5 erhöhen' }).click();
-    await expect(page.getByLabel('Tempo in BPM')).toHaveValue('115');
+    await expect(page.getByLabel('Übe-Tempo')).toHaveValue('115');
+    await expect(page.locator('.utility-bar')).toHaveCount(0);
   });
   await check('builder updates note layers and remains deterministic', async () => {
     await go('/basslines');

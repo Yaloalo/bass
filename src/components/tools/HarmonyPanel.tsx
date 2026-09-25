@@ -9,7 +9,10 @@ import {
   buildProgression,
   compingChords,
   harmonyBars,
+  harmonyDurationLabel,
   harmonyNotes,
+  harmonyStepTicks,
+  harmonyTimeline,
   progressions,
   transposeHarmony,
 } from '../../lib/harmony-play';
@@ -19,6 +22,7 @@ import { readableRoot, roots, routeRange, transposeRoute } from '../../lib/music
 import { germanNoteName } from '../../lib/i18n';
 import { useRhythm, useRhythmStatus } from '../../lib/rhythm-store';
 import { useNoteLabel, useStore } from '../../lib/store';
+import { PPQ, barTicks } from '../../lib/rhythm';
 
 /** Which chord the transport is on right now; -1 when nothing is comping. */
 export function useCurrentChord() {
@@ -94,8 +98,8 @@ const pickerItems = compingChords.map((chord) => ({
   keywords: chord.aliases,
 }));
 
-export function HarmonyPanel({ onOpenFocus }: { onOpenFocus?: () => void }) {
-  const { harmony, setHarmony, previewChord } = useRhythm();
+export function HarmonyPanel() {
+  const { harmony, setHarmony, previewChord, pattern } = useRhythm();
   const [previewIndex, setPreviewIndex] = useState(0);
   const [dragging, setDragging] = useState<number | null>(null);
   const list = useRef<HTMLOListElement>(null);
@@ -128,6 +132,22 @@ export function HarmonyPanel({ onOpenFocus }: { onOpenFocus?: () => void }) {
       .toLocaleLowerCase('de')
       .includes(presetSearch.trim().toLocaleLowerCase('de')),
   );
+  const bar = barTicks(pattern.meter);
+  const timeline = harmonyTimeline(harmony.steps, pattern.meter);
+  const noteOptions = [
+    { ticks: PPQ / 2, label: '1/8 Note' },
+    { ticks: PPQ, label: '1/4 Note' },
+    { ticks: PPQ * 2, label: '1/2 Note' },
+  ].map((option) =>
+    option.ticks === bar ? { ...option, label: `${option.label} · 1 Takt` } : option,
+  );
+  const durationOptions = [
+    ...noteOptions,
+    ...[1, 2, 4, 8].flatMap((bars) => ({
+      ticks: bars * bar,
+      label: `${bars} ${bars === 1 ? 'Takt' : 'Takte'}`,
+    })),
+  ].filter((option, index, all) => all.findIndex((item) => item.ticks === option.ticks) === index);
 
   return (
     <section className="harmony-panel" aria-label="Akkorde zum Mitspielen">
@@ -139,13 +159,6 @@ export function HarmonyPanel({ onOpenFocus }: { onOpenFocus?: () => void }) {
             Eine Akkordfolge läuft im selben Takt wie der Groove. Die Fläche liegt bewusst hoch –
             der Bass bleibt dein Register.
           </p>
-        </div>
-        <div className="harmony-head-actions">
-          {onOpenFocus && harmony.steps.length > 0 && (
-            <button type="button" className="primary" onClick={onOpenFocus}>
-              Mitspielansicht öffnen
-            </button>
-          )}
         </div>
       </div>
 
@@ -190,7 +203,7 @@ export function HarmonyPanel({ onOpenFocus }: { onOpenFocus?: () => void }) {
                         setHarmony({
                           ...harmony,
                           enabled: true,
-                          steps: buildProgression(item, globalRoot),
+                          steps: buildProgression(item, globalRoot, pattern.meter),
                         });
                         setPresetSearch('');
                         if (presetPicker.current) presetPicker.current.open = false;
@@ -218,25 +231,6 @@ export function HarmonyPanel({ onOpenFocus }: { onOpenFocus?: () => void }) {
       ) : (
         <>
           <div className="harmony-controls">
-            <div className="segmented" role="group" aria-label="Begleitung">
-              {(
-                [
-                  ['pad', 'Fläche'],
-                  ['stabs', 'Auf 1 & 3'],
-                  ['offbeats', 'Offbeats'],
-                ] as const
-              ).map(([value, text]) => (
-                <button
-                  type="button"
-                  key={value}
-                  aria-pressed={harmony.style === value}
-                  className={harmony.style === value ? 'selected' : ''}
-                  onClick={() => update({ style: value })}
-                >
-                  {text}
-                </button>
-              ))}
-            </div>
             <label className="harmony-timbre">
               Akkordklang
               <select
@@ -261,43 +255,52 @@ export function HarmonyPanel({ onOpenFocus }: { onOpenFocus?: () => void }) {
                 onChange={(event) => update({ volume: Number(event.target.value) })}
               />
             </label>
-            <span className="small-label">{harmonyBars(harmony.steps)} TAKTE IM UMLAUF</span>
+            <span className="small-label">
+              {harmonyBars(harmony.steps, pattern.meter).toLocaleString('de-DE')} TAKTE IM UMLAUF
+            </span>
           </div>
-          <p className="harmony-hint">
-            Fläche hält den Akkord, 1 &amp; 3 setzt kurze Akzente, Offbeats spielt zwischen den
-            Zählzeiten. Die Akkorde wechseln unabhängig von der Pattern-Länge.
-          </p>
 
           {/* The form at a glance, read like a lead sheet: one cell per bar, the chord
               named where it starts and a repeat sign while it holds. */}
           <ol className="harmony-grid" aria-label="Akkordfolge nach Takten">
-            {harmony.steps.flatMap((step, index) =>
-              Array.from({ length: step.bars }, (_, bar) => {
-                const number =
-                  harmony.steps.slice(0, index).reduce((sum, item) => sum + item.bars, 0) + bar + 1;
-                const live = playing && index === liveIndex;
-                return (
-                  <li
-                    key={`${index}-${bar}`}
-                    className={`${live ? 'is-current' : ''} ${
-                      index === shownIndex ? 'is-shown' : ''
-                    } ${bar === 0 ? 'is-start' : ''}`}
-                  >
-                    <button
-                      type="button"
-                      aria-label={`Takt ${number}: ${chordTitle(step, label)} anzeigen`}
-                      aria-pressed={index === shownIndex}
-                      onClick={() => setPreviewIndex(index)}
-                    >
-                      <span className="harmony-grid-bar" aria-hidden="true">
-                        {number}
-                      </span>
-                      <strong>{bar === 0 ? chordTitle(step, label) : '％'}</strong>
-                    </button>
-                  </li>
-                );
-              }),
-            )}
+            {timeline.map((cell) => (
+              <li
+                key={cell.number}
+                className={`${
+                  cell.segments.some((segment) => playing && segment.index === liveIndex)
+                    ? 'is-current'
+                    : ''
+                } ${
+                  cell.segments.some((segment) => segment.index === shownIndex) ? 'is-shown' : ''
+                } ${cell.segments.some((segment) => segment.startsHere) ? 'is-start' : ''}`}
+              >
+                <span className="harmony-grid-bar" aria-hidden="true">
+                  {cell.number}
+                </span>
+                <div className="harmony-grid-segments">
+                  {cell.segments.map((segment) => {
+                    const live = playing && segment.index === liveIndex;
+                    return (
+                      <button
+                        type="button"
+                        key={`${segment.index}-${segment.start}`}
+                        className={`${live ? 'is-current' : ''} ${
+                          segment.index === shownIndex ? 'is-shown' : ''
+                        } ${segment.startsHere ? 'is-start' : ''}`}
+                        style={{ width: `${segment.width * 100}%` }}
+                        aria-label={`Takt ${cell.number}: ${chordTitle(segment.step, label)} anzeigen`}
+                        aria-pressed={segment.index === shownIndex}
+                        onClick={() => setPreviewIndex(segment.index)}
+                      >
+                        <strong>
+                          {segment.startsHere ? chordTitle(segment.step, label) : '％'}
+                        </strong>
+                      </button>
+                    );
+                  })}
+                </div>
+              </li>
+            ))}
           </ol>
 
           <ol className="harmony-steps" ref={list}>
@@ -391,12 +394,17 @@ export function HarmonyPanel({ onOpenFocus }: { onOpenFocus?: () => void }) {
                 <label className="harmony-bars">
                   <span className="visually-hidden">Takte für Akkord {index + 1}</span>
                   <select
-                    value={step.bars}
-                    onChange={(event) => setStep(index, { bars: Number(event.target.value) })}
+                    value={harmonyStepTicks(step, pattern.meter)}
+                    aria-label={`Dauer von Akkord ${index + 1}`}
+                    title={harmonyDurationLabel(step, pattern.meter)}
+                    onChange={(event) => {
+                      const durationTicks = Number(event.target.value);
+                      setStep(index, { durationTicks, bars: durationTicks / bar });
+                    }}
                   >
-                    {[1, 2, 4, 8].map((bars) => (
-                      <option key={bars} value={bars}>
-                        {bars} {bars === 1 ? 'Takt' : 'Takte'}
+                    {durationOptions.map((option) => (
+                      <option key={option.ticks} value={option.ticks}>
+                        {option.label}
                       </option>
                     ))}
                   </select>
@@ -437,6 +445,7 @@ export function HarmonyPanel({ onOpenFocus }: { onOpenFocus?: () => void }) {
                   root: globalRoot,
                   chordId: 'minor-7',
                   bars: 1,
+                  durationTicks: bar,
                 },
               ],
             })

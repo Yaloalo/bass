@@ -318,6 +318,10 @@ kbd {
   min-height: 36px;
   padding: 6px 10px;
 }
+.scale-control select {
+  width: clamp(120px, 13vw, 174px);
+  min-width: 120px;
+}
 .top-nav {
   height: 51px;
   display: flex;
@@ -432,7 +436,7 @@ kbd {
 .app-layout > main {
   min-width: 0;
   flex: 1;
-  padding: 38px 42px 90px;
+  padding: 38px 42px 48px;
 }
 .home-layout > main {
   max-width: 1800px;
@@ -1444,7 +1448,7 @@ td:first-child {
 }
 @media (min-width: 1800px) {
   .app-layout > main {
-    padding: 45px 56px 100px;
+    padding: 45px 56px 56px;
   }
   .topbar {
     padding: 0 45px;
@@ -1501,7 +1505,7 @@ td:first-child {
     gap: 8px;
   }
   .app-layout > main {
-    padding: 30px 28px 85px;
+    padding: 30px 28px 45px;
   }
   .chapter-sidebar {
     width: 205px;
@@ -1553,7 +1557,7 @@ td:first-child {
     padding: 24px 8px;
   }
   .app-layout > main {
-    padding: 28px 22px 85px;
+    padding: 28px 22px 44px;
   }
   .formula-strip {
     flex-wrap: wrap;
@@ -1660,6 +1664,10 @@ td:first-child {
     min-width: 59px;
     font-size: 14px;
   }
+  .scale-control select {
+    width: 120px;
+    min-width: 120px;
+  }
   .mobile-toggle {
     display: none;
   }
@@ -1741,7 +1749,7 @@ td:first-child {
     min-height: 39px;
   }
   .app-layout > main {
-    padding: 25px 22px 90px;
+    padding: 25px 22px 45px;
   }
   .page-heading {
     margin-bottom: 23px;
@@ -1830,11 +1838,21 @@ td:first-child {
   .root-control > span {
     display: none;
   }
+  .brand > small,
+  .brand-mark {
+    display: none;
+  }
+  .scale-control select {
+    width: min(30vw, 118px);
+    min-width: 0;
+    padding-right: 22px;
+    font-size: 12px;
+  }
   .search-trigger {
     min-width: 34px;
   }
   .app-layout > main {
-    padding: 23px 16px 85px;
+    padding: 23px 16px 36px;
   }
   .chapter-sidebar {
     padding: 12px 16px;
@@ -2065,6 +2083,14 @@ td:first-child {
   }
   .time-digits {
     font-size: 58px;
+  }
+}
+@media (max-width: 440px) {
+  .brand > div {
+    display: none;
+  }
+  .brand-mark {
+    display: flex;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -3603,15 +3629,20 @@ td:first-child {
     grid-template-columns: 1fr;
     gap: 12px;
   }
+  .top-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .top-nav .home-link {
     display: none;
   }
   .top-nav .nav-chapter {
-    flex: 1;
+    width: 100%;
     min-width: 0;
   }
   .top-nav .nav-chapter > a {
     padding: 0 5px;
+    font-size: 11px;
   }
   .top-nav .nav-chapter > button {
     min-width: 30px;

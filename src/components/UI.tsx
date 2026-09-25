@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import { useStore } from '../lib/store';
 import { roots } from '../lib/music';
 import { germanNoteName, textDe } from '../lib/i18n';
+import { scaleName } from '../lib/i18n';
+import { scales } from '../data/catalog';
 export function Icon({ name, size = 18 }: { name: string; size?: number }) {
   const paths: Record<string, ReactNode> = {
     search: (
@@ -83,6 +85,26 @@ export function RootSelector() {
         {roots.map((r) => (
           <option key={r} value={r}>
             {germanNoteName(r)}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+export function ScaleSelector() {
+  const { scaleId, setScaleId } = useStore();
+  const value = scales.some((scale) => scale.id === scaleId) ? scaleId : scales[0].id;
+  return (
+    <label className="root-control scale-control">
+      <span>TONLEITER</span>
+      <select
+        aria-label="Globale Tonleiter"
+        value={value}
+        onChange={(event) => setScaleId(event.target.value)}
+      >
+        {scales.map((scale) => (
+          <option key={scale.id} value={scale.id}>
+            {scaleName(scale.id)}
           </option>
         ))}
       </select>

@@ -1,15 +1,23 @@
 import { useEffect, useRef } from 'react';
 import { chordById } from '../../data/chords';
 import { germanNoteName } from '../../lib/i18n';
-import { harmonyBars, harmonyNotes } from '../../lib/harmony-play';
+import { harmonyDurationLabel, harmonyNotes, harmonyTimeline } from '../../lib/harmony-play';
+import {
+  dropoutActive,
+  modeInstruction,
+  phrasingState,
+  relevantToneIndices,
+  targetForChord,
+} from '../../lib/improvisation-trainer';
 import { pretty } from '../../lib/music';
+import { meterById, stepLabel, stepsPerBar } from '../../lib/rhythm';
 import { useRhythm, useRhythmStatus } from '../../lib/rhythm-store';
 import { useNoteLabel, useStore } from '../../lib/store';
 
 /** A reading-distance view for the player, separate from the editing workbench. */
 export function DrumFocus({ onClose }: { onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
-  const { harmony, pattern, preferences, start, pause, resume, stop } = useRhythm();
+  const { harmony, pattern, preferences, trainer, start, pause, resume, stop } = useRhythm();
   const status = useRhythmStatus();
   const { bpm } = useStore();
   const label = useNoteLabel();
@@ -32,18 +40,30 @@ export function DrumFocus({ onClose }: { onClose: () => void }) {
   const chord = step ? chordById(step.chordId) : undefined;
   const chordName = step ? label.chord(step.root, chord?.symbol ?? '') : '';
   const notes = step ? harmonyNotes(step) : [];
+  const relevant = relevantToneIndices(step, trainer.mode);
+  const meter = meterById(pattern.meter);
+  const perBar = stepsPerBar(pattern);
+  const timeline = harmonyTimeline(harmony.steps, pattern.meter);
+  const totalBars = pulse?.formBars || timeline.length;
+  const currentBar = pulse && !countIn ? pulse.formBar + 1 : 1;
+  const formCycle = pulse?.formCycle || 1;
+  const dropout = !countIn && dropoutActive(trainer, formCycle);
+  const hideNames = dropout && trainer.dropout.display !== 'audio';
+  const positionOnly = dropout && trainer.dropout.display === 'position-only';
+  const phrase = phrasingState(trainer, pulse?.bar ?? 0);
+  const nextStep =
+    harmony.steps.length > 1 ? harmony.steps[(index + 1) % harmony.steps.length] : step;
+  const target = targetForChord(nextStep, trainer.targetTone, formCycle + index);
   const upcoming =
     harmony.steps.length > 1
       ? Array.from({ length: Math.min(3, harmony.steps.length - 1) }, (_, offset) => {
           const next = harmony.steps[(index + offset + 1) % harmony.steps.length];
           return {
-            name: label.chord(next.root, chordById(next.chordId)?.symbol ?? ''),
-            bars: next.bars,
+            name: chordTitleFor(next, label),
+            duration: harmonyDurationLabel(next, pattern.meter),
           };
         })
       : [];
-  const totalBars = harmonyBars(harmony.steps);
-  const currentBar = pulse && !countIn && totalBars ? (pulse.bar % totalBars) + 1 : 1;
   const active = status.running || status.starting;
   const state = status.starting
     ? 'Startet …'
@@ -52,8 +72,27 @@ export function DrumFocus({ onClose }: { onClose: () => void }) {
       : status.running
         ? countIn
           ? 'Einzähler'
-          : 'Läuft'
+          : dropout
+            ? 'Harmony Dropout'
+            : 'Läuft'
         : 'Gestoppt';
+  const formStart =
+    status.running && !countIn && pulse?.formTick === 0 && pulse.beat === 0 && pulse.substep === 0;
+
+  const rhythmTrack = trainer.rhythmRule === 'copy-snare' ? 'snare' : 'kick';
+  const rhythmSteps = pattern.tracks[rhythmTrack].steps.slice(
+    ((pulse?.bar ?? 0) % pattern.bars) * perBar,
+    (((pulse?.bar ?? 0) % pattern.bars) + 1) * perBar,
+  );
+  const rhythmActive = (value: number, stepIndex: number) => {
+    if (trainer.rhythmRule === 'between-kick') return !value;
+    if (trainer.rhythmRule === 'subdivision') {
+      const unit =
+        trainer.subdivision === 'quarters' ? 1 : trainer.subdivision === 'eighths' ? 2 : 4;
+      return stepIndex % Math.max(1, pattern.subdivision / unit) === 0;
+    }
+    return value > 0;
+  };
 
   return (
     <dialog
@@ -71,29 +110,63 @@ export function DrumFocus({ onClose }: { onClose: () => void }) {
           <div>
             <span className="eyebrow">DRUM-MASCHINE · MITSPIELEN</span>
             <p>
-              {pattern.name} · {bpm} BPM
+              {pattern.name} · {pattern.meter} · {bpm} BPM
             </p>
           </div>
+          {!countIn && (trainer.aids.position || positionOnly) && (
+            <strong className={`drum-focus-form-flash ${formStart ? 'is-flash' : ''}`}>
+              FORM {formCycle}
+            </strong>
+          )}
         </header>
 
-        <div className="drum-focus-meta" aria-label="Wiedergabeposition">
-          <span className={`drum-focus-state ${active ? 'is-running' : ''}`}>{state}</span>
-          {!countIn && (
-            <span>
-              Takt {currentBar} von {totalBars || 1}
-            </span>
-          )}
-          <div
-            className="drum-focus-beats"
-            aria-label={pulse ? `Zählzeit ${pulse.beat + 1} von 4` : 'Vier Zählzeiten'}
-          >
-            {[1, 2, 3, 4].map((beat) => (
-              <span key={beat} className={active && pulse?.beat === beat - 1 ? 'is-current' : ''}>
-                {beat}
+        {(trainer.aids.position || positionOnly) && (
+          <div className="drum-focus-meta" aria-label="Wiedergabeposition">
+            <span className={`drum-focus-state ${active ? 'is-running' : ''}`}>{state}</span>
+            {!countIn && (
+              <span>
+                Takt {currentBar} / {totalBars || 1} · Durchlauf {formCycle}
               </span>
-            ))}
+            )}
+            <div
+              className="drum-focus-beats"
+              aria-label={
+                pulse
+                  ? `Zählzeit ${pulse.beat + 1} von ${meter.numerator}`
+                  : `${meter.numerator} Zählzeiten`
+              }
+            >
+              {Array.from({ length: meter.numerator }, (_, beat) => (
+                <span key={beat} className={active && pulse?.beat === beat ? 'is-current' : ''}>
+                  {beat + 1}
+                </span>
+              ))}
+            </div>
+            <small className="drum-focus-substep">
+              {pulse && !countIn
+                ? stepLabel(pulse.step % perBar, pattern.subdivision, pattern.meter)
+                : '—'}
+            </small>
           </div>
-        </div>
+        )}
+
+        {trainer.phrasing !== 'free' && !countIn && !positionOnly && (
+          <div className={`drum-focus-phrase is-${phrase}`} role="status">
+            {phrase === 'play'
+              ? trainer.phrasing === 'call-response'
+                ? 'CALL · SPIELEN'
+                : 'SPIELEN'
+              : trainer.phrasing === 'call-response'
+                ? 'RESPONSE · ANTWORTEN'
+                : 'PAUSE / ZUHÖREN'}
+          </div>
+        )}
+
+        {trainer.mode !== 'free' && !countIn && !positionOnly && (
+          <p className="drum-focus-task">
+            <span>AUFGABE</span> {modeInstruction(trainer)}
+          </p>
+        )}
 
         <section className="drum-focus-chord" aria-label="Aktueller Akkord und Akkordtöne">
           {countIn ? (
@@ -104,7 +177,7 @@ export function DrumFocus({ onClose }: { onClose: () => void }) {
                 Einzähler · {preferences.countIn} {preferences.countIn === 1 ? 'Takt' : 'Takte'}
               </p>
             </>
-          ) : step ? (
+          ) : step && trainer.aids.currentChord && !hideNames ? (
             <>
               <span className="drum-focus-kicker">AKTUELLER AKKORD</span>
               <h1
@@ -115,21 +188,86 @@ export function DrumFocus({ onClose }: { onClose: () => void }) {
                 {chordName}
               </h1>
               <p className="drum-focus-quality">{chord?.nameDe ?? ''}</p>
-              <div className={`drum-focus-tones count-${notes.length}`} aria-label="Akkordtöne">
-                {notes.map((note, i) => (
-                  <div className="drum-focus-tone" key={`${note}-${i}`}>
-                    <span>{germanNoteName(note)}</span>
-                    <small>{pretty(chord?.formula[i] ?? '')}</small>
-                  </div>
-                ))}
-              </div>
+              {trainer.aids.chordTones && !positionOnly && (
+                <div className={`drum-focus-tones count-${notes.length}`} aria-label="Akkordtöne">
+                  {notes.map((note, i) => (
+                    <div
+                      className={`drum-focus-tone ${relevant.includes(i) ? 'is-relevant' : 'is-muted'}`}
+                      key={`${note}-${i}`}
+                    >
+                      <span>{germanNoteName(note)}</span>
+                      {trainer.aids.intervals && <small>{pretty(chord?.formula[i] ?? '')}</small>}
+                    </div>
+                  ))}
+                </div>
+              )}
             </>
           ) : (
-            <p>Wähle in der Drum-Maschine eine Akkordfolge.</p>
+            <>
+              <span className="drum-focus-kicker">
+                {dropout ? 'HARMONY DROPOUT' : 'ÜBUNGSREGEL'}
+              </span>
+              <strong className="drum-focus-hidden">HÖRE DIE FORM</strong>
+              <p>{modeInstruction(trainer)}</p>
+            </>
           )}
         </section>
 
-        {upcoming.length > 0 && !countIn && (
+        {trainer.mode === 'target' && trainer.aids.targetTone && target && !positionOnly && (
+          <aside className="drum-focus-target" aria-label="Zielton für den nächsten Akkord">
+            <span className="drum-focus-kicker">ZIEL BEIM NÄCHSTEN WECHSEL</span>
+            <strong>{target.note}</strong>
+            <span>
+              {pretty(target.interval)} von{' '}
+              {!hideNames && nextStep ? chordTitleFor(nextStep, label) : 'nächstem Akkord'}
+            </span>
+          </aside>
+        )}
+
+        {trainer.mode === 'rhythm' && !positionOnly && (
+          <aside className="drum-focus-rhythm" aria-label="Rhythmusaufgabe">
+            <span className="drum-focus-kicker">RHYTHMUSREGEL</span>
+            <div
+              className="drum-focus-rhythm-grid"
+              style={{ ['--rhythm-steps' as string]: perBar }}
+            >
+              {rhythmSteps.map((value, stepIndex) => (
+                <span
+                  key={stepIndex}
+                  className={`${rhythmActive(value, stepIndex) ? 'is-hit' : ''} ${
+                    (pulse?.step ?? -1) % perBar === stepIndex ? 'is-current' : ''
+                  }`}
+                  title={stepLabel(stepIndex, pattern.subdivision, pattern.meter)}
+                />
+              ))}
+            </div>
+          </aside>
+        )}
+
+        {trainer.aids.progression && timeline.length > 0 && (
+          <div className="drum-focus-timeline" aria-label="Harmonische Form">
+            {timeline.map((bar) => (
+              <div className={bar.number === currentBar ? 'is-current' : ''} key={bar.number}>
+                <small>{bar.number}</small>
+                <span>
+                  {bar.segments.map((segment) => (
+                    <b
+                      key={`${segment.index}-${segment.start}`}
+                      className={
+                        bar.number === currentBar && segment.index === index ? 'is-current' : ''
+                      }
+                      style={{ width: `${segment.width * 100}%` }}
+                    >
+                      {!hideNames && segment.startsHere ? chordTitleFor(segment.step, label) : '·'}
+                    </b>
+                  ))}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {upcoming.length > 0 && !countIn && trainer.aids.nextChord && !hideNames && (
           <aside className="drum-focus-upcoming" aria-label="Nächste Akkorde">
             <span className="drum-focus-kicker">ALS NÄCHSTES</span>
             <ol>
@@ -137,9 +275,7 @@ export function DrumFocus({ onClose }: { onClose: () => void }) {
                 <li key={`${offset}-${next.name}`}>
                   <small>{offset + 1}</small>
                   <strong>{next.name}</strong>
-                  <span>
-                    {next.bars} {next.bars === 1 ? 'Takt' : 'Takte'}
-                  </span>
+                  <span>{next.duration}</span>
                 </li>
               ))}
             </ol>
@@ -178,4 +314,12 @@ export function DrumFocus({ onClose }: { onClose: () => void }) {
       </div>
     </dialog>
   );
+}
+
+function chordTitleFor(
+  step: { root: string; chordId: string },
+  label: ReturnType<typeof useNoteLabel>,
+) {
+  const chord = chordById(step.chordId);
+  return label.chord(step.root, chord?.symbol ?? '');
 }

@@ -1,14 +1,18 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   fillEvery,
+  meterById,
+  meterGroupStarts,
   nextStep,
   shiftSteps,
   stepAriaLabel,
   stepLabel,
+  stepsPerBar,
+  stepsPerPulse,
   stepWords,
   visibleTracks,
 } from '../../lib/rhythm';
-import type { DrumTrack, Instrument, Step } from '../../lib/rhythm';
+import type { DrumTrack, Instrument, MeterId, Step } from '../../lib/rhythm';
 import { useRhythm, useRhythmStatus } from '../../lib/rhythm-store';
 import { Icon } from '../UI';
 
@@ -25,6 +29,7 @@ const StepPad = memo(function StepPad({
   name,
   index,
   subdivision,
+  meter,
   value,
   focused,
   onSet,
@@ -35,6 +40,7 @@ const StepPad = memo(function StepPad({
   name: string;
   index: number;
   subdivision: number;
+  meter: MeterId;
   value: Step;
   focused: boolean;
   onSet: (value: Step) => void;
@@ -42,15 +48,20 @@ const StepPad = memo(function StepPad({
   onFocus: () => void;
   onPaint: (value: Step) => void;
 }) {
-  const beatStart = index % subdivision === 0;
-  const barStart = index % (4 * subdivision) === 0;
+  const shape = { meter, subdivision: subdivision as 2 | 3 | 4 };
+  const barSteps = stepsPerBar(shape);
+  const pulseSteps = stepsPerPulse(shape);
+  const beatStart = index % pulseSteps === 0;
+  const barStart = index % barSteps === 0;
+  const localPulse = Math.floor((index % barSteps) / pulseSteps);
+  const groupStart = beatStart && meterGroupStarts(meter).includes(localPulse);
   return (
     <button
       type="button"
-      className={`pad v-${value} ${beatStart ? 'is-beat' : ''} ${barStart ? 'is-bar' : ''}`}
+      className={`pad v-${value} ${beatStart ? 'is-beat' : ''} ${groupStart ? 'is-group' : ''} ${barStart ? 'is-bar' : ''}`}
       data-step={index}
       data-value={stepWords[value]}
-      aria-label={stepAriaLabel(name, index, subdivision, value)}
+      aria-label={stepAriaLabel(name, index, subdivision, value, meter)}
       aria-pressed={value !== 0}
       tabIndex={focused ? 0 : -1}
       onPointerDown={(event) => {
@@ -89,6 +100,7 @@ const TrackRow = memo(function TrackRow({
   short,
   track,
   subdivision,
+  meter,
   selected,
   silenced,
   cursorStep,
@@ -98,12 +110,15 @@ const TrackRow = memo(function TrackRow({
   onPreview,
   onFocusStep,
   onPaint,
+  startStep,
+  endStep,
 }: {
   id: Instrument;
   name: string;
   short: string;
   track: DrumTrack;
   subdivision: number;
+  meter: MeterId;
   selected: boolean;
   silenced: boolean;
   cursorStep: number | null;
@@ -113,6 +128,8 @@ const TrackRow = memo(function TrackRow({
   onPreview: () => void;
   onFocusStep: (index: number) => void;
   onPaint: (value: Step) => void;
+  startStep: number;
+  endStep: number;
 }) {
   return (
     <div
@@ -155,21 +172,25 @@ const TrackRow = memo(function TrackRow({
           S
         </button>
       </div>
-      {track.steps.map((value, index) => (
-        <div role="gridcell" className="pad-cell" key={index}>
-          <StepPad
-            name={name}
-            index={index}
-            subdivision={subdivision}
-            value={value}
-            focused={cursorStep === index}
-            onSet={(next) => onStep(index, next)}
-            onCycle={(direction) => onStep(index, nextStep(value, direction))}
-            onFocus={() => onFocusStep(index)}
-            onPaint={onPaint}
-          />
-        </div>
-      ))}
+      {track.steps.slice(startStep, endStep).map((value, offset) => {
+        const index = startStep + offset;
+        return (
+          <div role="gridcell" className="pad-cell" key={index}>
+            <StepPad
+              name={name}
+              index={index}
+              subdivision={subdivision}
+              meter={meter}
+              value={value}
+              focused={cursorStep === index}
+              onSet={(next) => onStep(index, next)}
+              onCycle={(direction) => onStep(index, nextStep(value, direction))}
+              onFocus={() => onFocusStep(index)}
+              onPaint={onPaint}
+            />
+          </div>
+        );
+      })}
       <span className="track-row-end" aria-hidden="true" data-track={id} />
     </div>
   );
@@ -182,10 +203,13 @@ const TrackRow = memo(function TrackRow({
  * column template. As a real grid item it was explicitly placed in every row, so the
  * auto-placed rail and pads had to flow around it and the grid tripled in width on play.
  */
-function Playhead({ steps }: { steps: number }) {
+function Playhead({ startStep, steps }: { startStep: number; steps: number }) {
   const status = useRhythmStatus();
   const active = status.running && status.mode === 'drums' && status.pulse && !status.pulse.countIn;
-  const step = active && status.pulse!.step < steps ? status.pulse!.step : null;
+  const step =
+    active && status.pulse!.step >= startStep && status.pulse!.step < startStep + steps
+      ? status.pulse!.step - startStep
+      : null;
   return (
     <div className="playhead-layer" aria-hidden="true">
       {step !== null && <div className="playhead" style={{ gridColumnStart: step + 2 }} />}
@@ -207,11 +231,43 @@ export function StepSequencer({
   const [paint, setPaint] = useState<PaintValue>('cycle');
   const [fill, setFill] = useState(0);
   const [note, setNote] = useState('');
+  const [mobile, setMobile] = useState(() => window.matchMedia('(max-width: 700px)').matches);
+  const [beatPage, setBeatPage] = useState(0);
   const grid = useRef<HTMLDivElement>(null);
   const painting = useRef<Step | null>(null);
+  // Pointer moves can arrive faster than React commits a render. Keeping the most recent
+  // pattern here prevents a drag stroke from overwriting the pad painted just before it.
+  const patternRef = useRef(pattern);
+  patternRef.current = pattern;
   const rows = visibleTracks(pattern);
-  const steps = 4 * pattern.subdivision * pattern.bars;
+  const perBar = stepsPerBar(pattern);
+  const perPulse = stepsPerPulse(pattern);
+  const meter = meterById(pattern.meter);
+  const steps = perBar * pattern.bars;
+  const beats = meter.numerator * pattern.bars;
+  const startStep = mobile ? beatPage * perPulse : 0;
+  const visibleSteps = mobile ? perPulse : steps;
+  const endStep = Math.min(steps, startStep + visibleSteps);
   const soloing = rows.some((spec) => pattern.tracks[spec.id].solo);
+  const transport = useRhythmStatus();
+
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 700px)');
+    const sync = () => setMobile(query.matches);
+    query.addEventListener('change', sync);
+    return () => query.removeEventListener('change', sync);
+  }, []);
+  useEffect(() => setBeatPage((old) => Math.min(old, beats - 1)), [beats]);
+  useEffect(() => {
+    if (
+      mobile &&
+      transport.running &&
+      transport.mode === 'drums' &&
+      transport.pulse &&
+      !transport.pulse.countIn
+    )
+      setBeatPage(Math.floor(transport.pulse.step / perPulse));
+  }, [mobile, transport.running, transport.mode, transport.pulse, perPulse]);
 
   const setTrack = useCallback(
     (id: Instrument, patch: Partial<DrumTrack>) =>
@@ -223,11 +279,22 @@ export function StepSequencer({
   );
 
   const writeStep = useCallback(
-    (id: Instrument, index: number, value: Step) =>
-      setTrack(id, {
-        steps: pattern.tracks[id].steps.map((old, i) => (i === index ? value : old)),
-      }),
-    [pattern, setTrack],
+    (id: Instrument, index: number, value: Step) => {
+      const current = patternRef.current;
+      const next = {
+        ...current,
+        tracks: {
+          ...current.tracks,
+          [id]: {
+            ...current.tracks[id],
+            steps: current.tracks[id].steps.map((old, i) => (i === index ? value : old)),
+          },
+        },
+      };
+      patternRef.current = next;
+      setPattern(next);
+    },
+    [setPattern],
   );
 
   const resolve = useCallback(
@@ -251,7 +318,7 @@ export function StepSequencer({
     const move = (event: PointerEvent) => {
       if (painting.current === null || event.buttons === 0) return;
       const target = at(event.clientX, event.clientY);
-      if (target && pattern.tracks[target.id].steps[target.index] !== painting.current)
+      if (target && patternRef.current.tracks[target.id].steps[target.index] !== painting.current)
         writeStep(target.id, target.index, painting.current);
     };
     const up = () => {
@@ -265,7 +332,7 @@ export function StepSequencer({
       window.removeEventListener('pointerup', up);
       window.removeEventListener('pointercancel', up);
     };
-  }, [pattern, writeStep]);
+  }, [writeStep]);
 
   const moveCursor = (track: number, step: number) => {
     const next = {
@@ -273,16 +340,16 @@ export function StepSequencer({
       step: Math.max(0, Math.min(steps - 1, step)),
     };
     setCursor(next);
+    if (mobile) setBeatPage(Math.floor(next.step / perPulse));
     requestAnimationFrame(() => {
       const row = grid.current?.querySelectorAll('.track-row')[next.track];
-      row?.querySelectorAll<HTMLElement>('.pad')[next.step]?.focus();
+      row?.querySelector<HTMLElement>(`.pad[data-step="${next.step}"]`)?.focus();
     });
   };
 
   const keyDown = (event: React.KeyboardEvent) => {
     const id = rows[cursor.track]?.id;
     if (!id) return;
-    const perBar = 4 * pattern.subdivision;
     const actions: Record<string, () => void> = {
       ArrowLeft: () => moveCursor(cursor.track, cursor.step - 1),
       ArrowRight: () => moveCursor(cursor.track, cursor.step + 1),
@@ -360,30 +427,73 @@ export function StepSequencer({
         </details>
       </div>
 
+      {mobile && (
+        <div className="beat-page" role="group" aria-label="Sichtbare Zählzeit">
+          <button
+            type="button"
+            aria-label="Vorherige Zählzeit"
+            disabled={beatPage === 0}
+            onClick={() => setBeatPage((old) => Math.max(0, old - 1))}
+          >
+            ←
+          </button>
+          <label>
+            <span>Zählzeit im Raster</span>
+            <select
+              aria-label="Zählzeit im Sequencer"
+              value={beatPage}
+              onChange={(event) => setBeatPage(Number(event.target.value))}
+            >
+              {Array.from({ length: beats }, (_, index) => (
+                <option key={index} value={index}>
+                  Takt {Math.floor(index / meter.numerator) + 1} · Zählzeit{' '}
+                  {(index % meter.numerator) + 1}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            aria-label="Nächste Zählzeit"
+            disabled={beatPage === beats - 1}
+            onClick={() => setBeatPage((old) => Math.min(beats - 1, old + 1))}
+          >
+            →
+          </button>
+        </div>
+      )}
+
       <div className="seq-scroll">
         <div
           className="seq-grid"
           role="grid"
           ref={grid}
-          aria-label={`Step-Sequencer, 4/4, ${pattern.subdivision === 4 ? 'Sechzehntel' : pattern.subdivision === 3 ? 'Triolen' : 'Achtel'}, ${pattern.bars} ${pattern.bars === 1 ? 'Takt' : 'Takte'}`}
-          style={{ ['--steps' as string]: steps }}
+          aria-label={`Step-Sequencer, ${pattern.meter}, ${pattern.subdivision === 4 ? 'Sechzehntel' : pattern.subdivision === 3 ? 'Triolen' : 'Achtel'}, ${pattern.bars} ${pattern.bars === 1 ? 'Takt' : 'Takte'}`}
+          style={{ ['--steps' as string]: visibleSteps }}
           onKeyDown={keyDown}
         >
           <div role="row" className="seq-header">
             <div role="columnheader" className="seq-corner">
               Instrument
             </div>
-            {Array.from({ length: steps }, (_, index) => (
-              <div
-                role="columnheader"
-                key={index}
-                className={`ruler-cell ${index % pattern.subdivision === 0 ? 'is-beat' : ''} ${index % (4 * pattern.subdivision) === 0 ? 'is-bar' : ''}`}
-              >
-                {stepLabel(index, pattern.subdivision)}
-              </div>
-            ))}
+            {Array.from({ length: visibleSteps }, (_, offset) => {
+              const index = startStep + offset;
+              const local = index % perBar;
+              const pulse = Math.floor(local / perPulse);
+              const groupStart = local % perPulse === 0 && meterGroupStarts(meter).includes(pulse);
+              return (
+                <div
+                  role="columnheader"
+                  key={index}
+                  data-bar={local === 0 ? Math.floor(index / perBar) + 1 : undefined}
+                  className={`ruler-cell ${local % perPulse === 0 ? 'is-beat' : ''} ${groupStart ? 'is-group' : ''} ${local === 0 ? 'is-bar' : ''}`}
+                >
+                  {stepLabel(index, pattern.subdivision, pattern.meter)}
+                </div>
+              );
+            })}
           </div>
-          <Playhead steps={steps} />
+          <Playhead startStep={startStep} steps={visibleSteps} />
           {rows.map((spec, rowIndex) => (
             <TrackRow
               key={spec.id}
@@ -392,6 +502,7 @@ export function StepSequencer({
               short={spec.short}
               track={pattern.tracks[spec.id]}
               subdivision={pattern.subdivision}
+              meter={pattern.meter}
               selected={selected === spec.id}
               silenced={soloing && !pattern.tracks[spec.id].solo}
               cursorStep={cursor.track === rowIndex ? cursor.step : null}
@@ -401,6 +512,8 @@ export function StepSequencer({
               onPaint={(value) => {
                 painting.current = resolve(value);
               }}
+              startStep={startStep}
+              endStep={endStep}
               onTrack={(patch) => setTrack(spec.id, patch)}
               onStep={(index, proposed) => {
                 const value = resolve(proposed);
@@ -411,7 +524,9 @@ export function StepSequencer({
                   setNote(`${spec.name}: jeden ${fill}. Schritt auf ${stepWords[value]} gesetzt.`);
                 } else {
                   writeStep(spec.id, index, value);
-                  setNote(stepAriaLabel(spec.name, index, pattern.subdivision, value));
+                  setNote(
+                    stepAriaLabel(spec.name, index, pattern.subdivision, value, pattern.meter),
+                  );
                 }
               }}
             />
@@ -422,11 +537,19 @@ export function StepSequencer({
         {note || `${rows.length} Spuren sichtbar · ${steps} Schritte`}
       </p>
       <p className="sequencer-scrollhint">
-        <Icon name="arrow" size={14} /> Das Raster lässt sich seitwärts scrollen.
-        <span className="pointer-only">
-          {' '}
-          Pfeiltasten bewegen den Cursor, <kbd>M</kbd> und <kbd>S</kbd> schalten stumm bzw. solo.
-        </span>
+        <Icon name="arrow" size={14} />
+        {mobile ? (
+          <>Wähle die Zählzeit über dem Raster – hier gibt es keinen zweiten Scrollbereich.</>
+        ) : (
+          <>
+            Das Raster lässt sich seitwärts scrollen.
+            <span className="pointer-only">
+              {' '}
+              Pfeiltasten bewegen den Cursor, <kbd>M</kbd> und <kbd>S</kbd> schalten stumm bzw.
+              solo.
+            </span>
+          </>
+        )}
       </p>
     </section>
   );

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { drumPresets, presetGroups } from '../../lib/drum-presets';
 import { useRhythm } from '../../lib/rhythm-store';
 import type { DrumPattern } from '../../lib/rhythm';
+import { Icon } from '../UI';
 
 /** Kick on the baseline, snare above it: enough to recognise a groove without playing it. */
 function MiniMap({ pattern }: { pattern: DrumPattern }) {
@@ -50,6 +51,16 @@ export function PatternLibrary() {
   const [renaming, setRenaming] = useState('');
   const [draft, setDraft] = useState('');
   const [message, setMessage] = useState('');
+  const [search, setSearch] = useState('');
+  const needle = search.trim().toLocaleLowerCase('de');
+  const matchingPresets = drumPresets.filter((preset) =>
+    `${preset.pattern.name} ${preset.group} ${preset.hint} ${preset.bpm}`
+      .toLocaleLowerCase('de')
+      .includes(needle),
+  );
+  const matchingSaved = saved.filter((item) =>
+    item.pattern.name.toLocaleLowerCase('de').includes(needle),
+  );
 
   return (
     <section className="pattern-library" aria-label="Pattern-Bibliothek">
@@ -94,13 +105,27 @@ export function PatternLibrary() {
       </div>
       {dirty && <p className="library-dirty">• Ungespeicherte Änderungen am geladenen Pattern.</p>}
 
-      {presetGroups.map((group) => (
-        <div className="library-group" key={group}>
-          <h3>{group}</h3>
-          <div className="library-cards">
-            {drumPresets
-              .filter((preset) => preset.group === group)
-              .map((preset) => (
+      <label className="library-search">
+        <Icon name="search" size={16} />
+        <span className="visually-hidden">Pattern durchsuchen</span>
+        <input
+          type="search"
+          aria-label="Pattern durchsuchen"
+          placeholder="Pattern, Stil oder BPM suchen …"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
+        <small>{matchingPresets.length + matchingSaved.length} Treffer</small>
+      </label>
+
+      {presetGroups.map((group) => {
+        const groupPresets = matchingPresets.filter((preset) => preset.group === group);
+        if (!groupPresets.length) return null;
+        return (
+          <div className="library-group" key={group}>
+            <h3>{group}</h3>
+            <div className="library-cards">
+              {groupPresets.map((preset) => (
                 <button
                   type="button"
                   key={preset.id}
@@ -121,107 +146,113 @@ export function PatternLibrary() {
                   </small>
                 </button>
               ))}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
-      <div className="library-group">
-        <h3>Deine Patterns</h3>
-        {saved.length === 0 ? (
-          <p className="empty-state">
-            Hier erscheinen deine eigenen Patterns. Ändere einen Groove und sichere ihn als neues
-            Pattern.
-          </p>
-        ) : (
-          <ul className="saved-list">
-            {saved.map((item) => (
-              <li key={item.id} className={currentId === item.id ? 'is-current' : ''}>
-                {renaming === item.id ? (
-                  <form
-                    className="rename-form"
-                    onSubmit={(event) => {
-                      event.preventDefault();
-                      renamePattern(item.id, draft);
-                      setRenaming('');
-                      setMessage('Pattern umbenannt.');
-                    }}
-                  >
-                    <input
-                      aria-label="Neuer Pattern-Name"
-                      autoFocus
-                      maxLength={60}
-                      value={draft}
-                      onChange={(event) => setDraft(event.target.value)}
-                    />
-                    <button type="submit">Übernehmen</button>
-                    <button type="button" onClick={() => setRenaming('')}>
-                      Abbrechen
-                    </button>
-                  </form>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      className="saved-load"
-                      aria-pressed={currentId === item.id}
-                      onClick={() => {
-                        loadPattern(item.id);
-                        setMessage(`${item.pattern.name} geladen.`);
+      {(!needle || matchingSaved.length > 0) && (
+        <div className="library-group">
+          <h3>Deine Patterns</h3>
+          {matchingSaved.length === 0 ? (
+            <p className="empty-state">
+              Hier erscheinen deine eigenen Patterns. Ändere einen Groove und sichere ihn als neues
+              Pattern.
+            </p>
+          ) : (
+            <ul className="saved-list">
+              {matchingSaved.map((item) => (
+                <li key={item.id} className={currentId === item.id ? 'is-current' : ''}>
+                  {renaming === item.id ? (
+                    <form
+                      className="rename-form"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        renamePattern(item.id, draft);
+                        setRenaming('');
+                        setMessage('Pattern umbenannt.');
                       }}
                     >
-                      <strong>{item.pattern.name}</strong>
-                      <MiniMap pattern={item.pattern} />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={`${item.pattern.name} umbenennen`}
-                      onClick={() => {
-                        setRenaming(item.id);
-                        setDraft(item.pattern.name);
-                      }}
-                    >
-                      Umbenennen
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={`${item.pattern.name} duplizieren`}
-                      onClick={() => duplicatePattern(item.id)}
-                    >
-                      Duplizieren
-                    </button>
-                    {confirming === item.id ? (
-                      <span className="confirm-delete">
-                        <button
-                          type="button"
-                          className="danger"
-                          onClick={() => {
-                            removePattern(item.id);
-                            setConfirming('');
-                            setMessage('Pattern gelöscht.');
-                          }}
-                        >
-                          Wirklich löschen
-                        </button>
-                        <button type="button" onClick={() => setConfirming('')}>
-                          Abbrechen
-                        </button>
-                      </span>
-                    ) : (
+                      <input
+                        aria-label="Neuer Pattern-Name"
+                        autoFocus
+                        maxLength={60}
+                        value={draft}
+                        onChange={(event) => setDraft(event.target.value)}
+                      />
+                      <button type="submit">Übernehmen</button>
+                      <button type="button" onClick={() => setRenaming('')}>
+                        Abbrechen
+                      </button>
+                    </form>
+                  ) : (
+                    <>
                       <button
                         type="button"
-                        aria-label={`${item.pattern.name} löschen`}
-                        onClick={() => setConfirming(item.id)}
+                        className="saved-load"
+                        aria-pressed={currentId === item.id}
+                        onClick={() => {
+                          loadPattern(item.id);
+                          setMessage(`${item.pattern.name} geladen.`);
+                        }}
                       >
-                        Löschen
+                        <strong>{item.pattern.name}</strong>
+                        <MiniMap pattern={item.pattern} />
                       </button>
-                    )}
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+                      <button
+                        type="button"
+                        aria-label={`${item.pattern.name} umbenennen`}
+                        onClick={() => {
+                          setRenaming(item.id);
+                          setDraft(item.pattern.name);
+                        }}
+                      >
+                        Umbenennen
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`${item.pattern.name} duplizieren`}
+                        onClick={() => duplicatePattern(item.id)}
+                      >
+                        Duplizieren
+                      </button>
+                      {confirming === item.id ? (
+                        <span className="confirm-delete">
+                          <button
+                            type="button"
+                            className="danger"
+                            onClick={() => {
+                              removePattern(item.id);
+                              setConfirming('');
+                              setMessage('Pattern gelöscht.');
+                            }}
+                          >
+                            Wirklich löschen
+                          </button>
+                          <button type="button" onClick={() => setConfirming('')}>
+                            Abbrechen
+                          </button>
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          aria-label={`${item.pattern.name} löschen`}
+                          onClick={() => setConfirming(item.id)}
+                        >
+                          Löschen
+                        </button>
+                      )}
+                    </>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+      {matchingPresets.length === 0 && matchingSaved.length === 0 && (
+        <p className="empty-state">Kein Pattern passt zu „{search.trim()}“.</p>
+      )}
       <p className="library-message" role="status">
         {message}
       </p>

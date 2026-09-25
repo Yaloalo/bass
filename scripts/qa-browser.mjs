@@ -67,13 +67,16 @@ for (const [route, name] of [
 for (const width of [1920, 390]) {
   await page.setViewportSize({ width, height: width === 390 ? 844 : 1080 });
   await page.goto(baseUrl + '/drums');
+  const details = page.getByRole('button', { name: 'Details', exact: true });
+  if ((await details.getAttribute('aria-pressed')) !== 'true') await details.click();
+  await page.locator('.drum-controls > summary').click();
+  await page.locator('.drum-harmony-drawer > summary').click();
   await page.getByLabel('Globaler Grundton').selectOption('C');
   await page.locator('.harmony-preset-picker summary').click();
   await page.screenshot({ path: tmpdir() + `/bass-qa/drum-picker-${width}.png` });
   await page.getByRole('button', { name: /II–V–I in Dur/ }).click();
-  await page
-    .getByRole('button', { name: width === 390 ? 'Drum-Maschine starten' : 'Groove starten' })
-    .click();
+  if (width === 390) await page.getByRole('button', { name: 'Einfach', exact: true }).click();
+  await page.getByRole('button', { name: 'Groove starten' }).click();
   await page.locator('.drum-focus-dialog').waitFor();
   await page.screenshot({ path: tmpdir() + `/bass-qa/drum-focus-${width}.png` });
   console.log(
@@ -88,7 +91,7 @@ for (const width of [1920, 390]) {
     .click();
   if (width === 390) {
     await page.getByRole('button', { name: 'Dunkelmodus aktivieren' }).click();
-    await page.getByRole('button', { name: 'Drum-Maschine starten' }).click();
+    await page.getByRole('button', { name: 'Groove starten' }).click();
     await page.locator('.drum-focus-dialog').waitFor();
     await page.screenshot({ path: tmpdir() + '/bass-qa/drum-focus-dark-390.png' });
     await page
