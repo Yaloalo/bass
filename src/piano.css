@@ -52,6 +52,33 @@
 .piano-context-controls label:last-child select {
   max-width: min(330px, 80vw);
 }
+.piano-chord-scope {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 22px 10px;
+}
+.piano-chord-scope .segmented {
+  flex-shrink: 0;
+}
+.piano-chord-scope > span,
+.piano-chord-pick-note {
+  color: var(--muted);
+  font-size: 12px;
+}
+.piano-chord-pick-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 22px 0;
+}
+.piano-chord-pick-row .chord-picker-trigger {
+  width: min(100%, 520px);
+}
+.piano-chord-pick-note {
+  line-height: 1.55;
+}
 .piano-toolbar {
   justify-content: space-between;
   padding: 18px 22px;
@@ -379,6 +406,29 @@
   }
 }
 @media (max-width: 600px) {
+  .piano-chord-scope {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 14px 16px 8px;
+  }
+  .piano-chord-scope .segmented {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .piano-chord-scope .segmented button {
+    min-width: 0;
+    padding-inline: 8px;
+  }
+  .piano-chord-pick-row {
+    align-items: stretch;
+    flex-direction: column;
+    padding-inline: 16px;
+  }
+  .piano-chord-pick-row .chord-picker-trigger,
+  .piano-chord-pick-row > button {
+    width: 100%;
+  }
   .piano-context-controls {
     display: grid;
     grid-template-columns: minmax(76px, 1fr) minmax(0, 2.5fr);
@@ -390,7 +440,7 @@
     min-width: 0;
   }
   .piano-context-controls label:last-child {
-    grid-column: 1 / -1;
+    grid-column: auto;
   }
   .piano-context-controls select {
     width: 100%;

@@ -700,7 +700,19 @@ kbd {
 }
 .fretboard-scroll {
   overflow-x: auto;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
   padding-bottom: 7px;
+  background:
+    linear-gradient(to right, var(--surface), transparent) left / 26px 100% no-repeat local,
+    linear-gradient(to left, var(--surface), transparent) right / 26px 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgb(29 39 51 / 0.2), transparent) left / 12px 100%
+      no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgb(29 39 51 / 0.2), transparent) right / 12px 100%
+      no-repeat scroll;
+}
+.wide-surface-hint {
+  display: none;
 }
 .fretboard {
   position: relative;
@@ -4154,6 +4166,7 @@ td:first-child {
   .top-nav {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
   }
   .top-nav .home-link {
     display: none;
@@ -4169,6 +4182,19 @@ td:first-child {
   .top-nav .nav-chapter > button {
     min-width: 30px;
     padding: 0 5px;
+  }
+  .wide-surface-hint {
+    display: block;
+    margin: 0;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line);
+    background: var(--burnt-light);
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.45;
+  }
+  .wide-surface-hint b {
+    color: var(--burnt);
   }
 }
 
@@ -4346,6 +4372,9 @@ td:first-child {
 
 /* Compact landscape workbench: controls stay reachable while the instrument remains large. */
 @media (orientation: landscape) and (max-height: 600px) and (max-width: 1000px) {
+  .wide-surface-hint {
+    display: none;
+  }
   :root {
     --header: 96px;
   }
@@ -4390,8 +4419,8 @@ td:first-child {
     padding: 12px 14px 0;
   }
   .fretboard {
-    min-width: 100%;
-    grid-template-columns: 32px repeat(var(--fret-count), minmax(0, 1fr));
+    min-width: max(100%, var(--fretboard-min));
+    grid-template-columns: 32px repeat(var(--fret-count), minmax(44px, 1fr));
   }
   .fretboard .string-name,
   .fretboard .fret-cell {

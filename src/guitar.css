@@ -1,4 +1,4 @@
-.guitar-key-context > .panel-body,
+.guitar-key-context,
 .guitar-key-controls,
 .guitar-key-chords,
 .guitar-chord-workspace,
@@ -7,10 +7,11 @@
   display: flex;
 }
 
-.guitar-key-context > .panel-body {
+.guitar-key-context {
   align-items: center;
   justify-content: space-between;
   gap: 28px;
+  padding: 22px 24px;
 }
 .guitar-key-summary h2 {
   margin: 7px 0 5px;
@@ -308,9 +309,10 @@
 }
 
 @media (max-width: 680px) {
-  .guitar-key-context > .panel-body {
+  .guitar-key-context {
     align-items: stretch;
     flex-direction: column;
+    padding: 18px;
   }
   .guitar-key-controls {
     align-items: stretch;
@@ -326,9 +328,19 @@
   .guitar-key-chords button {
     min-height: 88px;
   }
-  .guitar-shape-panel .panel-head {
+  .guitar-shape-panel .panel-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+  .guitar-shape-panel .panel-heading .guitar-shape-tabs {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .guitar-shape-panel .panel-heading .guitar-shape-tabs button {
+    min-width: 0;
+    min-height: 44px;
+    white-space: normal;
   }
   .guitar-voicing-priority,
   .guitar-voicing-actions,

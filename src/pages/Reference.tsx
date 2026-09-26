@@ -102,10 +102,7 @@ export function ReferencePage() {
   const [labels, setLabels] = useState('Degrees');
   const [comparison, setComparison] = useState('');
   const [guitarShapeIndex, setGuitarShapeIndex] = useState(0);
-  const bassRoute = useMemo(
-    () => (item ? transposeRoute(item.fingering, root) : []),
-    [item, root],
-  );
+  const bassRoute = useMemo(() => (item ? transposeRoute(item.fingering, root) : []), [item, root]);
   const guitarShapes = useMemo(
     () => (item ? guitarScaleShapes(root, item.degreeLabels) : []),
     [item, root],
@@ -194,7 +191,9 @@ export function ReferencePage() {
           )}
           <Segmented
             label="Griffbrett-Beschriftung"
-            options={instrument === 'guitar' ? ['Fingers', 'Degrees', 'Notes'] : ['Degrees', 'Notes']}
+            options={
+              instrument === 'guitar' ? ['Fingers', 'Degrees', 'Notes'] : ['Degrees', 'Notes']
+            }
             value={labels}
             onChange={setLabels}
           />

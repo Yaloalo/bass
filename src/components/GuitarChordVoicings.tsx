@@ -33,7 +33,11 @@ export function GuitarChordVoicings({
       aside={<span className="small-label">{shapes.length} SPIELBARE GRIFFE</span>}
     >
       <div className="guitar-voicing-priority">
-        <div className="guitar-shape-tabs" role="group" aria-label={`Griff für ${chordName} wählen`}>
+        <div
+          className="guitar-shape-tabs"
+          role="group"
+          aria-label={`Griff für ${chordName} wählen`}
+        >
           {shapes.map((candidate, index) => (
             <button
               type="button"
@@ -62,7 +66,8 @@ export function GuitarChordVoicings({
           <Icon name="play" /> Diesen Griff spielen
         </button>
         <span>
-          Akkordtöne: {chord.formula.map((degree) => label.note(spellDegree(root, degree))).join(' · ')}
+          Akkordtöne:{' '}
+          {chord.formula.map((degree) => label.note(spellDegree(root, degree))).join(' · ')}
         </span>
       </div>
       {piano.audioError && (

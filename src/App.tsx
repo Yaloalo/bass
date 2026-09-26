@@ -42,14 +42,7 @@ function Layout() {
   const fullWidth =
     pathname === '/drums' ||
     pathname.startsWith('/tools') ||
-    pathname.startsWith('/exercises') ||
-    // A running programme gets the whole width: the list of the other twenty-nine in
-    // the margin only invites you to leave the session you just started.
-    /^\/programs\/.+/.test(pathname) ||
-    pathname === '/grundlagen' ||
-    ['/piano', '/auswendig-lernen', '/gitarrenakkorde', '/musiktheorie', '/bass'].includes(
-      pathname,
-    );
+    ['/musiktheorie', '/bass'].includes(pathname);
   return (
     <>
       <Navigation />

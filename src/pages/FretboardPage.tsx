@@ -132,8 +132,8 @@ export function FretboardPage() {
   );
   const route =
     instrument === 'guitar' && mode === 'Scale'
-      ? (guitarScalePositions[Math.min(guitarScaleIndex, guitarScalePositions.length - 1)]?.events ??
-        baseRoute)
+      ? (guitarScalePositions[Math.min(guitarScaleIndex, guitarScalePositions.length - 1)]
+          ?.events ?? baseRoute)
       : baseRoute;
   const chordOverlays = useMemo(
     () => makeFretboardChordOverlays(selectedChords, noteLabel.chord, noteLabel.note),

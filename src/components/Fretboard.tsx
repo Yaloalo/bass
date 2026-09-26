@@ -154,6 +154,10 @@ export function Fretboard({
   }, [guidePaths]);
   return (
     <div className="fretboard-wrap">
+      <p className="wide-surface-hint">
+        <b>Handy-Ansicht:</b> Wische über das Griffbrett. Im Querformat bleiben mehr Bünde
+        gleichzeitig sichtbar.
+      </p>
       <div className="fretboard-scroll">
         <div
           ref={board}
@@ -243,8 +247,8 @@ export function Fretboard({
                       ? '○'
                       : String(n?.finger ?? '·')
                     : labels === 'Notes'
-                    ? displayedNote
-                    : displayedDegree
+                      ? displayedNote
+                      : displayedDegree
                   : isMarked
                     ? '?'
                     : '';
@@ -283,7 +287,7 @@ export function Fretboard({
                     }}
                   >
                     <span
-                    className={`degree-marker ${labels === 'Both' && visible ? 'both' : ''} ${labels === 'Fingers' && visible ? 'finger' : ''} ${matches.length ? 'overlay' : isRoot ? 'root' : chord ? 'chord' : 'scale'} ${overlayRoot ? 'overlay-root' : ''} ${!visible && !isMarked ? 'empty' : ''} ${isMarked ? 'marked' : ''} ${n?.role === 'Passing tone' ? 'passing' : ''}`}
+                      className={`degree-marker ${labels === 'Both' && visible ? 'both' : ''} ${labels === 'Fingers' && visible ? 'finger' : ''} ${matches.length ? 'overlay' : isRoot ? 'root' : chord ? 'chord' : 'scale'} ${overlayRoot ? 'overlay-root' : ''} ${!visible && !isMarked ? 'empty' : ''} ${isMarked ? 'marked' : ''} ${n?.role === 'Passing tone' ? 'passing' : ''}`}
                       style={overlayBackground ? { background: overlayBackground } : undefined}
                       title={
                         matches.length

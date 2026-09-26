@@ -80,8 +80,10 @@ function generatedShape(
         const width = used.length ? Math.max(...used) - Math.min(...used) : 0;
         const mutedInside = frets
           .slice(rootIndex + 1)
-          .filter((fret, index, all) => fret === null && all.slice(index + 1).some((next) => next !== null))
-          .length;
+          .filter(
+            (fret, index, all) =>
+              fret === null && all.slice(index + 1).some((next) => next !== null),
+          ).length;
         const duplicates = sounding.length - actual.size;
         const score = width * 20 + mutedInside * 14 + duplicates * 3 + span + rootFret * 0.05;
         if (!best || score < best.score) best = { frets: [...frets], score };

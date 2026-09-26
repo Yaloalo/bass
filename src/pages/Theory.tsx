@@ -173,10 +173,7 @@ export function Theory() {
   const profile = instrumentProfile(instrument);
   const notationRows =
     instrument === 'bass'
-      ? [
-          ['Standardstimmung', 'E–A–D–G, von tief nach hoch.'],
-          ...readingRows.slice(1),
-        ]
+      ? [['Standardstimmung', 'E–A–D–G, von tief nach hoch.'], ...readingRows.slice(1)]
       : [
           [
             'Standardstimmung',
@@ -444,7 +441,13 @@ export function Theory() {
           >
             <ReferenceTable headers={['Begriff', 'Bedeutung']} rows={notationRows} />
           </Panel>
-          <Panel title={instrument === 'bass' ? 'Artikulation und Notationszeichen' : 'Notation und TAB-Zeichen'}>
+          <Panel
+            title={
+              instrument === 'bass'
+                ? 'Artikulation und Notationszeichen'
+                : 'Notation und TAB-Zeichen'
+            }
+          >
             <ReferenceTable
               headers={['Technik', 'Zeichen', 'Bedeutung']}
               rows={instrumentArticulationRows}

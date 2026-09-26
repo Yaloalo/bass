@@ -5,7 +5,7 @@ import { PianoKeyboard } from '../components/PianoKeyboard';
 import { ChordPicker } from '../components/ChordPicker';
 import { Fretboard } from '../components/Fretboard';
 import { scales } from '../data/catalog';
-import { chordById } from '../data/chords';
+import { chordById, chords } from '../data/chords';
 import { chordFamilies } from '../lib/chord-types';
 import { germanNoteName, scaleName } from '../lib/i18n';
 import {
@@ -52,11 +52,13 @@ export function PianoPage() {
   const scaleChords = useMemo(() => diatonicPianoChords(scaleNotes), [scaleNotes]);
   const [selected, setSelected] = useState<number[]>([]);
   const [chordChoice, setChordChoice] = useState('');
+  const [chordScope, setChordScope] = useState<'key' | 'all'>('key');
   const [showFretboard, setShowFretboard] = useState(false);
   const [mode, setMode] = useState('Auswählen + spielen');
   const [volume, setVolume] = useState(55);
   const piano = usePiano(volume);
   const { held, audioError } = piano;
+  useEffect(() => setChordChoice(''), [root, scale.id]);
   const analysis = useMemo(
     () => analyzePiano(selected, root, scaleNotes),
     [selected, root, scaleNotes],
@@ -131,9 +133,31 @@ export function PianoPage() {
       })),
     [scaleChords, label, displayNote],
   );
+  const allChordItems = useMemo(
+    () =>
+      chords
+        .filter((chord) => !chord.voicingFamily)
+        .map((chord) => ({
+          id: `all:${chord.id}`,
+          symbol: label.chord(root, chord.symbol),
+          name: chord.nameDe,
+          detail: chord.formula.map((degree) => displayNote(spellDegree(root, degree))).join(' · '),
+          family: chord.family,
+          keywords: chord.aliases,
+        })),
+    [root, label, displayNote],
+  );
   const chooseChord = (choice: string) => {
     setChordChoice(choice);
     if (!choice) return;
+    if (choice.startsWith('all:')) {
+      const chord = chordById(choice.slice(4));
+      if (!chord) return;
+      const notes = chord.formula.map((degree) => spellDegree(root, degree));
+      piano.stopAll();
+      setSelected(pianoChordMidis({ degree: 1, kind: chord.family, root, notes, chord }));
+      return;
+    }
     const separator = choice.indexOf('-');
     const degree = Number(choice.slice(0, separator));
     const id = choice.slice(separator + 1);
@@ -198,16 +222,44 @@ export function PianoPage() {
 
       <Panel
         className="piano-chord-pick"
-        title="Akkorde der Tonart"
-        aside={<span className="small-label">{scaleChords.length} AKKORDE</span>}
+        title="Akkorde entdecken"
+        aside={
+          <span className="small-label">
+            {chordScope === 'key' ? scaleChords.length : allChordItems.length} AKKORDE
+          </span>
+        }
       >
+        <div className="piano-chord-scope">
+          <Segmented
+            label="Akkordauswahl"
+            value={chordScope === 'key' ? 'In der Tonleiter' : 'Alle Akkorde'}
+            options={['In der Tonleiter', 'Alle Akkorde']}
+            onChange={(next) => {
+              setChordChoice('');
+              setChordScope(next === 'Alle Akkorde' ? 'all' : 'key');
+            }}
+          />
+          <span>
+            {chordScope === 'key'
+              ? `Nur Akkorde, deren Töne vollständig in ${displayNote(root)} ${scaleName(scale.id)} liegen.`
+              : `Der vollständige Akkordkatalog ab ${displayNote(root)} – unabhängig von der Tonleiter.`}
+          </span>
+        </div>
         <div className="piano-chord-pick-row">
           <ChordPicker
-            label="Akkorde der Tonart"
+            label={
+              chordScope === 'key'
+                ? 'Akkorde der Tonleiter'
+                : `Alle Akkorde ab ${displayNote(root)}`
+            }
             value={chordChoice}
-            items={pickerItems}
+            items={chordScope === 'key' ? pickerItems : allChordItems}
             groups={chordFamilies.map((family) => ({ id: family.id, name: family.name }))}
-            degrees={{ label: 'Nach Stufe filtern', options: pickerDegrees }}
+            degrees={
+              chordScope === 'key'
+                ? { label: 'Nach Stufe filtern', options: pickerDegrees }
+                : undefined
+            }
             emptyLabel="Akkord wählen"
             onPick={chooseChord}
           />
@@ -218,9 +270,11 @@ export function PianoPage() {
           )}
         </div>
         <p className="piano-chord-pick-note">
-          {scaleChords.length
-            ? 'Jeder Akkord dieser Tonart, nach Stufe und Art filterbar. Die Tasten werden gesetzt, als hättest du sie selbst angetippt.'
-            : 'Für diese Tonleiter sind keine Akkorde hinterlegt. Tasten kannst du weiterhin frei auswählen.'}
+          {chordScope === 'all'
+            ? 'Hier fehlen bewusst keine skalenfremden Akkorde. Suche nach Symbol oder Name und höre den gewählten Klang direkt auf der Tastatur.'
+            : scaleChords.length
+              ? 'Jeder Akkord dieser Tonart, nach Stufe und Art filterbar. Die Tasten werden gesetzt, als hättest du sie selbst angetippt.'
+              : 'Für diese Tonleiter sind keine Akkorde hinterlegt. Tasten kannst du weiterhin frei auswählen.'}
         </p>
       </Panel>
 

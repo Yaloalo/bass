@@ -99,38 +99,38 @@ export function ChapterSidebar() {
   const { instrument } = useStore();
   const profile = instrumentProfile(instrument);
   const { pathname } = useLocation();
-  const chapter = pathname.split('/')[1];
-  const items = chapterItems(chapter, instrument);
+  const areaId = areaForPath(pathname);
+  const area = areas.find((candidate) => candidate.id === areaId);
+  const presentation = area ? areaPresentation(area, instrument) : undefined;
+  const items = presentation ? [...presentation.items] : [];
   const navigate = useNavigate();
-  if (!items.length) return null;
+  if (!areaId || areaId === 'drums' || !presentation || !items.length) return null;
   const groups = [...new Set(items.map((i) => i.group))];
+  const sectionPath =
+    pathname.startsWith('/harmony') || pathname.startsWith('/arpeggios')
+      ? '/chords'
+      : pathname.startsWith('/theory') || pathname.startsWith('/pdf')
+        ? '/grundlagen'
+        : pathname;
+  const current =
+    [...items]
+      .sort((a, b) => b.path.length - a.path.length)
+      .find((item) => sectionPath === item.path || sectionPath.startsWith(`${item.path}/`))?.path ??
+    areaPath(areaId);
   return (
     <aside className="chapter-sidebar">
-      <Link to={'/' + (chapter === 'harmony' ? 'chords' : chapter)} className="chapter-title">
-        <Icon name={chapter === 'scales' ? 'layers' : 'book'} />
-        {(
-          {
-            scales: 'Tonleitern',
-            arpeggios: 'Akkorde',
-            exercises: 'Übungen',
-            programs: 'Übeprogramme',
-            practice: 'Üben',
-            theory: 'Musiktheorie',
-            chords: 'Akkorde',
-            harmony: 'Harmonie',
-            basslines: instrument === 'guitar' ? 'Gitarrenlinien' : 'Basslinien',
-            improvisation: 'Improvisieren',
-          } as Record<string, string>
-        )[chapter] ?? chapter}
+      <Link to={areaPath(areaId)} className="chapter-title">
+        <Icon name={areaId === 'musiktheorie' ? 'book' : 'grid'} />
+        {presentation.title}
       </Link>
       <label className="mobile-chapter">
-        <span>IN DIESEM KAPITEL</span>
+        <span>BEREICHSNAVIGATION</span>
         <select
-          aria-label="Kapitelseite"
-          value={pathname}
+          aria-label={`${presentation.title}: Seite wählen`}
+          value={current}
           onChange={(e) => navigate(e.target.value)}
         >
-          <option value={'/' + chapter}>Kapitelübersicht</option>
+          <option value={areaPath(areaId)}>Bereichsübersicht</option>
           {groups.map((g) => (
             <optgroup key={g} label={textDe(g)}>
               {items
@@ -144,14 +144,18 @@ export function ChapterSidebar() {
           ))}
         </select>
       </label>
-      <nav aria-label="Kapitelnavigation" className="sidebar-links">
+      <nav aria-label={`${presentation.title}: Bereichsnavigation`} className="sidebar-links">
         {groups.map((g) => (
           <div key={g} className="sidebar-group">
             <div className="eyebrow">{textDe(g)}</div>
             {items
               .filter((i) => i.group === g)
               .map((i) => (
-                <NavLink key={i.path} to={i.path} end>
+                <NavLink
+                  key={i.path}
+                  to={i.path}
+                  className={({ isActive }) => (isActive || current === i.path ? 'active' : '')}
+                >
                   {i.title}
                 </NavLink>
               ))}
