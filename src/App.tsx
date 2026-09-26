@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, Link, Navigate } from 'react-router-dom';
 import { StoreProvider, useStore } from './lib/store';
 import { instrumentProfile } from './lib/instrument';
 import { RhythmProvider } from './lib/rhythm-store';
 import { Navigation, ChapterSidebar } from './components/Navigation';
+import { areaForPath } from './data/navigation';
 import { Home } from './pages/Home';
 import { FretboardPage } from './pages/FretboardPage';
 import { ExerciseLibrary, ExercisePage } from './pages/Exercises';
@@ -36,6 +37,7 @@ function ScrollReset() {
 function Layout() {
   const { pathname } = useLocation();
   const { instrument } = useStore();
+  const [areaNavigationOpen, setAreaNavigationOpen] = useState(false);
   const profile = instrumentProfile(instrument);
   // Full-width pages: tools and area hubs, where a chapter
   // list in the margin only invites you to click out of the session you just started.
@@ -43,12 +45,27 @@ function Layout() {
     pathname === '/drums' ||
     pathname.startsWith('/tools') ||
     ['/musiktheorie', '/bass'].includes(pathname);
+  const areaNavigationAvailable =
+    pathname !== '/' && !fullWidth && areaForPath(pathname) !== 'drums';
   return (
     <>
       <Navigation />
       <ScrollReset />
+      {areaNavigationAvailable && (
+        <div className="area-navigation-toggle-strip">
+          <button
+            type="button"
+            className={areaNavigationOpen ? 'active' : ''}
+            aria-expanded={areaNavigationOpen}
+            aria-controls="area-navigation"
+            onClick={() => setAreaNavigationOpen((open) => !open)}
+          >
+            {areaNavigationOpen ? 'Bereichsnavigation ausblenden' : 'Bereichsnavigation anzeigen'}
+          </button>
+        </div>
+      )}
       <div className={`app-layout ${pathname === '/' || fullWidth ? 'home-layout' : ''}`}>
-        {!fullWidth && <ChapterSidebar />}
+        {areaNavigationAvailable && areaNavigationOpen && <ChapterSidebar />}
         <main id="main" tabIndex={-1}>
           <Routes>
             <Route path="/" element={<Home />} />

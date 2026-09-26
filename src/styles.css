@@ -475,6 +475,25 @@ kbd {
   margin: auto;
   min-height: calc(100vh - 124px);
 }
+.area-navigation-toggle-strip {
+  max-width: 2200px;
+  margin: 0 auto;
+  padding: 10px 42px 0;
+}
+.area-navigation-toggle-strip button {
+  min-height: 38px;
+  padding: 7px 13px;
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 650;
+}
+.area-navigation-toggle-strip button.active {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+}
 .app-layout > main {
   min-width: 0;
   flex: 1;
@@ -1622,6 +1641,9 @@ td:first-child {
   }
 }
 @media (max-width: 1450px) {
+  .area-navigation-toggle-strip {
+    padding-inline: 28px;
+  }
   .nav-edition {
     display: none;
   }
@@ -1665,6 +1687,9 @@ td:first-child {
   }
 }
 @media (max-width: 1150px) {
+  .area-navigation-toggle-strip {
+    padding-inline: 22px;
+  }
   .top-nav {
     gap: 1px;
     padding: 0 15px;
@@ -1952,6 +1977,13 @@ td:first-child {
   }
 }
 @media (max-width: 600px) {
+  .area-navigation-toggle-strip {
+    padding: 8px 16px 0;
+  }
+  .area-navigation-toggle-strip button {
+    width: 100%;
+    min-height: 44px;
+  }
   .topbar {
     padding: 0 12px;
   }

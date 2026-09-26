@@ -118,7 +118,7 @@ export function ChapterSidebar() {
       .find((item) => sectionPath === item.path || sectionPath.startsWith(`${item.path}/`))?.path ??
     areaPath(areaId);
   return (
-    <aside className="chapter-sidebar">
+    <aside className="chapter-sidebar" id="area-navigation">
       <Link to={areaPath(areaId)} className="chapter-title">
         <Icon name={areaId === 'musiktheorie' ? 'book' : 'grid'} />
         {presentation.title}
