@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Icon, PageHeading, Panel, Segmented, usePageTitle } from '../components/UI';
 import { PianoKeyboard } from '../components/PianoKeyboard';
 import { ChordPicker } from '../components/ChordPicker';
+import { QuickChordSelect, quickChordId } from '../components/QuickChordSelect';
 import { Fretboard } from '../components/Fretboard';
 import { scales } from '../data/catalog';
 import { chordById, chords } from '../data/chords';
@@ -27,6 +28,7 @@ import {
   pianoNoteName,
 } from '../lib/piano';
 import type { DiatonicPianoChord, PianoChordMatch } from '../lib/piano';
+import type { DiatonicStackedChord } from '../lib/diatonic';
 import { usePiano } from '../lib/use-piano';
 import { useNoteLabel, useStore } from '../lib/store';
 import { instrumentProfile } from '../lib/instrument';
@@ -52,13 +54,17 @@ export function PianoPage() {
   const scaleChords = useMemo(() => diatonicPianoChords(scaleNotes), [scaleNotes]);
   const [selected, setSelected] = useState<number[]>([]);
   const [chordChoice, setChordChoice] = useState('');
+  const [quickChoice, setQuickChoice] = useState('');
   const [chordScope, setChordScope] = useState<'key' | 'all'>('key');
   const [showFretboard, setShowFretboard] = useState(false);
   const [mode, setMode] = useState('Auswählen + spielen');
   const [volume, setVolume] = useState(55);
   const piano = usePiano(volume);
   const { held, audioError } = piano;
-  useEffect(() => setChordChoice(''), [root, scale.id]);
+  useEffect(() => {
+    setChordChoice('');
+    setQuickChoice('');
+  }, [root, scale.id]);
   const analysis = useMemo(
     () => analyzePiano(selected, root, scaleNotes),
     [selected, root, scaleNotes],
@@ -71,6 +77,7 @@ export function PianoPage() {
 
   const toggle = (midi: number) => {
     setChordChoice('');
+    setQuickChoice('');
     setSelected((old) =>
       old.includes(midi)
         ? old.filter((note) => note !== midi)
@@ -79,6 +86,7 @@ export function PianoPage() {
   };
   const clear = () => {
     setChordChoice('');
+    setQuickChoice('');
     setSelected([]);
     piano.stopAll();
   };
@@ -149,6 +157,7 @@ export function PianoPage() {
   );
   const chooseChord = (choice: string) => {
     setChordChoice(choice);
+    setQuickChoice('');
     if (!choice) return;
     if (choice.startsWith('all:')) {
       const chord = chordById(choice.slice(4));
@@ -165,6 +174,27 @@ export function PianoPage() {
     if (!chord) return;
     piano.stopAll();
     setSelected(pianoChordMidis(chord));
+  };
+
+  const chooseQuickChord = (item: DiatonicStackedChord) => {
+    const id = quickChordId(item);
+    piano.stopAll();
+    if (id === quickChoice) {
+      setQuickChoice('');
+      setSelected([]);
+      return;
+    }
+    setChordChoice('');
+    setQuickChoice(id);
+    const midis = pianoChordMidis({
+      degree: item.degree,
+      kind: item.chord.family,
+      root: item.root,
+      notes: item.notes,
+      chord: item.chord,
+    });
+    setSelected(midis);
+    piano.playChord(midis);
   };
 
   return (
@@ -277,6 +307,13 @@ export function PianoPage() {
               : 'Für diese Tonleiter sind keine Akkorde hinterlegt. Tasten kannst du weiterhin frei auswählen.'}
         </p>
       </Panel>
+
+      <QuickChordSelect
+        scaleNotes={scaleNotes}
+        activeId={quickChoice}
+        onPick={chooseQuickChord}
+        subtitle={`Die Stufenakkorde von ${displayNote(root)} ${scaleName(scale.id)}. Ein Tippen legt den Akkord auf die Tastatur und spielt ihn; noch einmal tippen hebt ihn auf.`}
+      />
 
       <Panel
         className="piano-instrument"

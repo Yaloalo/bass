@@ -167,6 +167,62 @@ export async function checkPiano(browser, check, errors) {
       );
       await expect(page.getByRole('alert')).toHaveCount(0);
     });
+    await check('the quick selection is folded away and sets whole chords', async () => {
+      await page.goto(url('/piano'));
+      const panel = page.locator('.quick-chords');
+      await expect(panel.locator('.section-heading h2')).toHaveText('Schnellauswahl');
+      // Folded by default: the shortcut must not push the keyboard down the page.
+      assert.equal(await panel.evaluate((el) => el.open), false, 'it should start collapsed');
+      await expect(panel.locator('.quick-chord-grid button').first()).toBeHidden();
+
+      await panel.locator('summary').click();
+      await expect(panel.locator('.quick-chord-grid button').first()).toBeVisible();
+      assert.deepEqual(
+        await panel.locator('.quick-chord-group > header > strong').allInnerTexts(),
+        ['Dreiklänge', 'Septakkorde'],
+      );
+      const triads = panel.locator('.quick-chord-group').nth(0).locator('button');
+      const sevenths = panel.locator('.quick-chord-group').nth(1).locator('button');
+      await expect(triads).toHaveCount(7);
+      await expect(sevenths).toHaveCount(7);
+      await expect(panel.locator('.section-aside')).toContainText('14');
+      // The degrees of the key, with German note names and the right chord qualities.
+      assert.deepEqual(
+        (await triads.allInnerTexts()).map((text) => text.split('\n').slice(0, 2).join(' ')),
+        ['I D', 'ii Em', 'iii Fism', 'IV G', 'V A', 'vi Hm', 'vii° Cisdim'],
+      );
+      assert.deepEqual(
+        (await sevenths.allInnerTexts()).map((text) => text.split('\n')[1]),
+        ['Dmaj7', 'Em7', 'Fism7', 'Gmaj7', 'A7', 'Hm7', 'Cism7♭5'],
+      );
+
+      // Picking lays the chord on the keyboard; picking again takes it off.
+      const keys = page.locator('.piano-key.is-selected');
+      await triads.nth(1).click();
+      await expect(keys).toHaveCount(3);
+      await expect(triads.nth(1)).toHaveAttribute('aria-pressed', 'true');
+      await triads.nth(1).click();
+      await expect(keys).toHaveCount(0);
+      await expect(triads.nth(1)).toHaveAttribute('aria-pressed', 'false');
+
+      // A seventh replaces the triad instead of adding to it, and only one is ever lit.
+      await triads.first().click();
+      await expect(keys).toHaveCount(3);
+      await sevenths.first().click();
+      await expect(keys).toHaveCount(4);
+      await expect(panel.locator('button.active')).toHaveCount(1);
+
+      // Touching a key by hand drops the highlight, so it never claims a chord you left.
+      await page.locator('.piano-key').nth(5).click();
+      await expect(panel.locator('button.active')).toHaveCount(0);
+
+      // A scale without seven distinct notes says so instead of showing an empty grid.
+      await page.locator('.piano-context select').last().selectOption({ label: 'Dur-Pentatonik' });
+      await expect(panel.locator('.section-aside')).toContainText('NICHT VERFÜGBAR');
+      await expect(panel.locator('.quick-chords-empty')).toContainText('sieben verschiedenen Töne');
+      await expect(panel.locator('.quick-chord-grid')).toHaveCount(0);
+    });
+
     await check('piano and main navigation remain usable on phones in both themes', async () => {
       await page.setViewportSize({ width: 390, height: 844 });
       for (const theme of ['light', 'dark']) {

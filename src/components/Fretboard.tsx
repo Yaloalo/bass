@@ -35,6 +35,14 @@ interface Props {
   overlays?: readonly FretboardChordOverlay[];
   guidePaths?: readonly FretboardGuidePath[];
 }
+/**
+ * Shared empty defaults. Written as constants rather than inline `= []` defaults because
+ * a default parameter creates a new array on every render, which makes any effect that
+ * depends on it fire forever.
+ */
+const noOverlays: readonly FretboardChordOverlay[] = [];
+const noGuidePaths: readonly FretboardGuidePath[] = [];
+
 export function Fretboard({
   events,
   range,
@@ -45,8 +53,8 @@ export function Fretboard({
   conceal = false,
   marked,
   route = false,
-  overlays = [],
-  guidePaths = [],
+  overlays = noOverlays,
+  guidePaths = noGuidePaths,
 }: Props) {
   const { instrument } = useStore();
   const profile = instrumentProfile(instrument);
@@ -100,7 +108,7 @@ export function Fretboard({
   useLayoutEffect(() => {
     const element = board.current;
     if (!element || !guidePaths.length) {
-      setGuideCurves([]);
+      setGuideCurves((current) => (current.length ? [] : current));
       return;
     }
     const measure = () => {
